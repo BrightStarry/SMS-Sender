@@ -1,0 +1,65 @@
+<div class="am-u-sm-12 ">
+    <form class="am-form">
+        <div class="am-scrollable-horizontal">
+            <table class="am-table am-table-striped am-table-hover table-main ">
+                <!--am-text-nowrap 不分行样式-->
+                <thead>
+                <tr>
+                    <th class="table-check"><input type="checkbox" id="listAll" class="tpl-table-fz-check"
+                                                   onclick="common.checkboxAll(this.checked)"></th>
+                    <th class="table-id">ID</th>
+                    <th class="table-title">名称</th>
+                    <th class="table-title">话术内容</th>
+                    <th class="table-view">备注</th>
+                    <th class="table-date">创建时间</th>
+                    <th class="table-date">修改时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                <#list page.list as item>
+                    <tr>
+                        <td><input type="checkbox" value="${item.id?c}" id="list${item.id?c}" name="list"/></td>
+                        <td><label for="list${item.id?c}">${item.id?c}</label></td>
+                        <td>${item.name}</td>
+                        <td>${item.content}</td>
+                        <td>${item.remark}</td>
+                        <td>${item.createTime}</td>
+                        <td>${item.updateTime}</td>
+                    </tr>
+                </#list>
+                </tbody>
+            </table>
+        </div>
+
+        <!--分页-->
+        <div class="am-cf">
+
+            <div class="am-fr">
+                <ul class="am-pagination tpl-pagination">
+                    <#if page.pageNo == 1>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:smsContentList.page(1)">«</a></li>
+                    <#list 1..page.totalPage as listPage>
+                        <#if page.pageNo == listPage>
+                            <li class="am-active am-disabled">
+                                <#else/>
+                            <li>
+                        </#if>
+                        <a href="javascript:smsContentList.page(${listPage})">${listPage}</a></li>
+                    </#list>
+                    <#if page.pageNo == page.totalPage>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:smsContentList.page(${page.totalPage})">»</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+
+    </form>
+</div>

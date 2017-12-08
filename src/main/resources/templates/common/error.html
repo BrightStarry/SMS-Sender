@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+
+<head>
+
+    <title>统一登录系统-异常</title>
+    <meta name="description" content="统一登录系统-异常">
+    <#include "../common/header.html"/>
+
+</head>
+
+<body data-type="index">
+<#include "../common/topNavigation.html"/>
+
+<div class="tpl-page-container tpl-page-header-fixed">
+    <#include "../common/leftNavigation.html"/>
+
+    <div class="tpl-content-wrapper">
+        <!--<div class="tpl-content-page-title">-->
+            <!--统一登录系统-->
+        <!--</div>-->
+        <!--<ol class="am-breadcrumb">-->
+            <!--<li><a href="#" class="am-icon-home">首页</a></li>-->
+            <!--<li><a href="#">平台管理</a></li>-->
+            <!--<li class="am-active">平台列表</li>-->
+        <!--</ol>-->
+
+
+        <div class="tpl-portlet-components">
+            <div class="portlet-title">
+                <div class="caption font-green bold">
+                    发生问题了
+                </div>
+
+            </div>
+            <div class="tpl-block">
+                <section class="am-panel am-panel-default">
+                    <header class="am-panel-hd">
+                        <h3 class="am-panel-title">异常码：${code}</h3>
+                    </header>
+                    <div class="am-panel-bd">
+                        消息：${message}
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!--消息提示模态框,必须放在最后才能覆盖在元素上-->
+<div class="am-modal am-modal-alert" tabindex="-1" id="messageModal">
+    <div class="am-modal-dialog">
+        <div class="am-modal-hd"></div>
+        <div class="am-modal-bd" id="message">
+
+        </div>
+        <div class="am-modal-footer">
+            <span class="am-modal-btn">确定</span>
+        </div>
+    </div>
+</div>
+<#include "../common/js.html"/>
+<script src="/js/custom/platformList.js"></script>
+</body>
+
+</html>
+<script type="text/javascript">
+    $(function () {
+        platformList.page(1);
+    });
+</script>

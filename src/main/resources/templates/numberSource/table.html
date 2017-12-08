@@ -1,0 +1,71 @@
+<div class="am-u-sm-12  am-scrollable-horizontal">
+    <form class="am-form">
+        <table class="am-table am-table-striped am-table-hover table-main">
+            <thead>
+            <tr>
+                <th class="table-check"><input type="checkbox" id="listAll" class="tpl-table-fz-check" onclick="common.checkboxAll(this.checked)"></th>
+                <th class="table-id">ID</th>
+                <th class="table-title">名称</th>
+                <th class="table-title">号码总数</th>
+                <th class="table-date am-hide-sm-only">是否分组</th>
+                <th class="table-title">已分组号码总数</th>
+                <th class="table-view">备注</th>
+                <th class="table-date">创建时间</th>
+                <th class="table-date">修改时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            <#list page.list as item>
+                <tr>
+                    <td><input type="checkbox" value="${item.id?c}" id="list${item.id?c}" name="list"/></td>
+                    <td><label for="list${item.id?c}">${item.id?c}</label></td>
+                    <td><a href="/numberSource/download/${item.id?c}">${item.name}</a></td>
+                    <td>${item.numberCount?c}</td>
+                    <td class="am-hide-sm-only">
+                        <#if item.status == 1>
+                            <span class="am-icon-check"></span>
+                            <#else/>
+                            <span class="am-icon-remove"></span>
+                        </#if>
+                    </td>
+                    <td>${item.groupedCount?c}</td>
+                    <td>${item.remark}</td>
+                    <td>${item.createTime}</td>
+                    <td>${item.updateTime}</td>
+                </tr>
+
+            </#list>
+            </tbody>
+        </table>
+        <!--分页-->
+        <div class="am-cf">
+
+            <div class="am-fr">
+                <ul class="am-pagination tpl-pagination">
+                    <#if page.pageNo == 1>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:numberSourceList.page(1)">«</a></li>
+                    <#list 1..page.totalPage as listPage>
+                        <#if page.pageNo == listPage>
+                            <li class="am-active am-disabled">
+                                <#else/>
+                            <li>
+                        </#if>
+                        <a href="javascript:numberSourceList.page(${listPage})">${listPage}</a></li>
+                    </#list>
+                    <#if page.pageNo == page.totalPage>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:numberSourceList.page(${page.totalPage})">»</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+
+    </form>
+</div>

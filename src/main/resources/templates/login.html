@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+    <title>短信发送平台-登录</title>
+    <meta name="description" content="短信发送平台-登录">
+    <#include "common/header.html"/>
+</head>
+
+<body data-type="login">
+
+<div class="am-g myapp-login">
+    <div class="myapp-login-logo-block  tpl-login-max">
+        <div class="myapp-login-logo-text">
+            <div class="myapp-login-logo-text">
+                <!--短信发送平台<span> 登录</span> <i class="am-icon-skyatlas"></i>-->
+                短信发送平台<span> 登录</span> </i>
+
+            </div>
+        </div>
+        <!--<div class="login-font">-->
+            <!--<i>Log In </i> or <span> Sign Up</span>-->
+        <!--</div>-->
+        <div class="am-u-sm-10 login-am-center">
+            <form class="am-form" id="loginForm">
+                <fieldset>
+                    <div class="am-form-group">
+                        <input type="text" class="" name="username" id="username" placeholder="账号">
+                    </div>
+                    <div class="am-form-group">
+                        <input type="password" class="" name="password" id="password" placeholder="密码">
+                    </div>
+                    <div class="am-form-group">
+                        <input type="checkbox" name="remember-me" value="true">记住我?
+                    </div>
+                    <p>
+                        <button id="loginButton" type="button" class="am-btn am-btn-default">登录</button>
+                    </p>
+
+                </fieldset>
+            </form>
+        </div>
+            <div id="warnDiv" class="am-alert " data-am-alert hidden>
+                <p id="warnMessage"></p>
+            </div>
+    </div>
+</div>
+<#include "common/js.html"/>
+<script src="/js/custom/login.js"></script>
+<script type="text/javascript">
+    $(function () {
+        login.init();
+    })
+</script>
+</body>
+</html>

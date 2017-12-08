@@ -1,0 +1,64 @@
+<div class="am-u-sm-12">
+    <form class="am-form">
+        <table class="am-table am-table-striped am-table-hover table-main">
+            <thead>
+            <tr>
+                <th class="table-check"><input type="checkbox" class="tpl-table-fz-check"></th>
+                <th class="table-id">ID</th>
+                <th class="table-cell">平台名</th>
+                <th class="table-set">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <#list page.list as platform>
+                <tr>
+                    <td><input type="checkbox"></td>
+                    <td>${platform.platformId?c}</td>
+                    <td>${platform.platformName}</td>
+                    <td>
+                        <div class="am-btn-toolbar">
+                            <div class="am-btn-group am-btn-group-xs">
+                                <button onclick="userList.getOrCancelRoot(${platform.userId?c},${platform.platformId?c},0)" type="button" class="am-btn am-btn-default am-btn-xs am-text-secondary">
+                                    <span class="am-icon-trash-o"></span>
+                                    取消授权
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </#list>
+            </tbody>
+        </table>
+        <!--分页-->
+        <div class="am-cf">
+            <div class="am-fr">
+                <ul class="am-pagination tpl-pagination">
+                    <#if page.pageNo == 1>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:userList.pageByRootPlatform(${page.id?c},1)">«</a></li>
+
+                        <#list 1..page.totalPage as listPage>
+                            <#if page.pageNo == listPage>
+                                <li class="am-active am-disabled">
+                                    <#else/>
+                                <li >
+                            </#if>
+                            <a href="javascript:userList.pageByRootPlatform(${page.id?c},${listPage})">${listPage}</a></li>
+                        </#list>
+
+                    <#if page.pageNo == page.totalPage>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:userList.pageByRootPlatform(${page.id?c},${page.totalPage})">»</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+
+    </form>
+</div>

@@ -1,0 +1,43 @@
+server:
+  port: 80
+  context-path: /
+spring:
+  application:
+    name: sms-sender
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/sms-sender?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: 970389
+#  thymeleaf:
+#    cache: false
+#    check-template-location: false
+#    content-type: text/html
+#    check-template: false
+#    enabled: true
+#    encoding: UTF-8
+#    suffix: .html
+  freemarker:
+    charset: UTF-8
+    cache: false
+    content-type: text/html
+    check-template-location: true
+    expose-request-attributes: true
+    expose-session-attributes: true
+    suffix: .html #指定文件后缀
+    template-loader-path: classpath:/templates/ #默认
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  http:
+    multipart:
+      max-file-size: 20Mb
+      max-request-size: 60Mb
+      file-size-threshold: 3
+# 自定义配置
+smsSender:
+  config:
+    errorUrl: common/error
+    likeSearchMaxNum: 20
+    sessionUserKey: customUser

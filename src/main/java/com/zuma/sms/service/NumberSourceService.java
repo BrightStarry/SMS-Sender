@@ -1,6 +1,8 @@
 package com.zuma.sms.service;
 
 import com.zuma.sms.entity.NumberGroup;
+import com.zuma.sms.enums.db.IntToBoolEnum;
+import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.form.NumberSourceForm;
 import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
@@ -23,10 +25,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -46,6 +48,16 @@ public class NumberSourceService {
 	@Autowired
 	private ConfigStore configStore;
 
+	@Autowired
+	private PageRequestFactory pageRequestFactory;
+
+	/**
+	 * 查询所有
+	 */
+	public List<NumberSource> listAll(IsDeleteEnum isDeleteEnum) {
+		return numberSourceRepository.findAllByIsDelete(isDeleteEnum.getCode());
+	}
+
 	/**
 	 * 查询单个
 	 */
@@ -64,19 +76,9 @@ public class NumberSourceService {
 		NumberSource real = numberSourceRepository.findOne(form.getId());
 		BeanUtils.copyProperties(form,real);
 
-		//修改其他表冗余字段
-
-		//查询所有该号码源下的号码组
-		List<NumberGroup> numberGroups = numberGroupRepository.findAllByNumberSourceIdEquals(real.getId());
-		//如果名称相同,提出队列
-		for (NumberGroup item : numberGroups) {
-			if(StringUtils.equals(item.getNumberSourceName(),real.getName()))
-				numberGroups.remove(item);
-			else
-				item.setNumberSourceName(real.getName());
-		}
-		numberGroupRepository.save(numberGroups);
-
+		//修改关联号码组中的冗余字段
+		//修改该号码源下的号码组的号码源名字
+		numberGroupRepository.updateNumberSourceNameByNumberSourceId(form.getName(),form.getId());
 
 		numberSourceRepository.save(real);
 	}
@@ -85,8 +87,8 @@ public class NumberSourceService {
 	 * 根据名字模糊查询
 	 */
 	public PageVO<NumberSource> searchByName(String name, IsDeleteEnum isDeleteEnum) {
-		PageRequest pageRequest = new PageRequest(0, configStore.likeSearchMaxNum, new Sort(Sort.Direction.DESC, "id"));
-		Page<NumberSource> page = numberSourceRepository.findByNameContainingAndIsDeleteEquals(name,isDeleteEnum.getCode(), pageRequest);
+		Pageable pageable = pageRequestFactory.buildForLikeSearch();
+		Page<NumberSource> page = numberSourceRepository.findByNameContainingAndIsDeleteEquals(name,isDeleteEnum.getCode(), pageable);
 		return JPAPage2PageVOConverter.convert(page);
 	}
 
@@ -96,8 +98,12 @@ public class NumberSourceService {
 	@Transactional
 	public void batchDelete(Long[] ids){
 		List<NumberSource> list = numberSourceRepository.findAllByIdIn(ids);
+		if (CollectionUtils.isEmpty(list))
+			return;
 		for (NumberSource item : list) {
 			item.setIsDelete(IsDeleteEnum.DELETED.getCode());
+			if(item.getStatus().equals(IntToBoolEnum.TRUE.getCode()))
+				throw new SmsSenderException("id:" + item.getId() + " 已分组,无法删除.");
 		}
 		numberSourceRepository.save(list);
 	}
@@ -132,7 +138,7 @@ public class NumberSourceService {
 				//并计算长度
 				int length = phones.length;
 				if (length == 0)
-					throw new SmsSenderException(ErrorEnum.NUMBER_SOURCE_PHONE_EMPTY);
+					throw new SmsSenderException(ErrorEnum.PHONE_EMPTY);
 				for (int j = 0; j < phones.length; j++) {
 					if (!StringUtils.isNumeric(phones[j]) || phones[j].length() != 11)
 						throw new SmsSenderException(ErrorEnum.NUMBER_SOURCE_PHONE_FORMAT_ERROR);
@@ -141,13 +147,32 @@ public class NumberSourceService {
 				NumberSource numberSource = numberSourceRepository.save(new NumberSource(names[i], remarks[i], length));
 				//写入文件
 				try {
-					FileUtils.copyToFile(file.getInputStream(),
-							new File(configStore.numberSourcePre + numberSource.getId() + ".txt"));
+					FileUtils.copyToFile(file.getInputStream(), getFile(numberSource.getId()));
 				} catch (IOException e) {
 					log.error("[号码源]文件写入异常.e:{}",e.getMessage(),e);
 					throw new SmsSenderException(ErrorEnum.IO_ERROR);
 				}
 			}
+	}
+
+	/**
+	 * 根据id获取号码文件输入流
+	 * 需要自行校验id是否存在
+	 */
+	public BufferedInputStream getInputStream(Long id) {
+		try {
+			return new BufferedInputStream(new FileInputStream(getFile(id)));
+		} catch (FileNotFoundException e) {
+			log.error("[numberSource]号码源号码文件不存在.id:{}",id);
+			throw new SmsSenderException(ErrorEnum.NUMBER_SOURCE_FILE_NOT_EXIST);
+		}
+	}
+
+	/**
+	 * 根据id获取号码文件file
+	 */
+	public File getFile(Long id) {
+		return new File(configStore.numberSourcePre + id + ".txt");
 	}
 
 }

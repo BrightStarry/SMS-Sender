@@ -28,6 +28,13 @@ public class PageRequestFactory {
 	}
 
 	/**
+	 * 构建只查询一条记录的分页
+	 */
+	public Pageable buildForLimitOne() {
+		return new PageRequest(0, 1);
+	}
+
+	/**
 	 * 构建模糊查询用的固定数量的分页
 	 * @return
 	 */
@@ -39,7 +46,7 @@ public class PageRequestFactory {
 	 * 构建默认 Sort
 	 * @return
 	 */
-	private Sort buildSort() {
+	public Sort buildSort() {
 		return new Sort(Sort.Direction.DESC, "id");
 	}
 

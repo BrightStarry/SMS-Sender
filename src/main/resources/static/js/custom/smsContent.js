@@ -88,7 +88,7 @@ var smsContentList = {
     },
 
     //弹出修改模态框
-    openUpdateInfoModal: function () {
+    openUpdateModal: function () {
         var ids = common.getCheckedArray();
         if(ids == false){
             common.showMessage("请选择要修改的记录");
@@ -102,22 +102,22 @@ var smsContentList = {
         common.checkboxAll(false);
         $.post(url.commonPre + url.query,{id:ids[0]},function (result) {
             if(!common.errorHandle(result)){
-                $('#addForm :input[name="id"]').val(result.data.id);
-                $('#addForm :input[name="name"]').val(result.data.name);
-                $('#addForm :input[name="content"]').val(result.data.content);
-                $('#addForm :input[name="remark"]').val(result.data.remark);
-                $('#addModal').modal();
+                $('#updateForm :input[name="id"]').val(result.data.id);
+                $('#updateForm :input[name="name"]').val(result.data.name);
+                $('#updateForm :input[name="content"]').val(result.data.content);
+                $('#updateForm :input[name="remark"]').val(result.data.remark);
+                $('#updateModal').modal();
             }
 
         });
     },
     //修改信息
     updateInfo :function() {
-        $.post(url.commonPre + url.updateInfo,$('#addForm').serialize(),function (result) {
+        $.post(url.commonPre + url.updateInfo,$('#updateForm').serialize(),function (result) {
             if(!common.errorHandle(result)){
-                numberSourceList.page(1);
+                smsContentList.page();
                 common.successHandle();
-                common.closeModal($('#updateInfoForm')[0], $('#updateInfoModal'));
+                common.closeModal($('#updateForm')[0], $('#updateModal'));
             }
         } );
     },

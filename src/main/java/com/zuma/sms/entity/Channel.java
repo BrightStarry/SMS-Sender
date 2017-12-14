@@ -94,7 +94,7 @@ public class Channel {
 
 
     /**
-     * 连接管理器
+     * 连接管理器 非DB字段
      */
     @Transient
     public ChannelManager channelManager;

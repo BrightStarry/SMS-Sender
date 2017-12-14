@@ -1,4 +1,4 @@
-package com.zuma.sms.config.security;
+package com.zuma.sms.security;
 
 import com.zuma.sms.entity.User;
 import com.zuma.sms.enums.system.ErrorEnum;
@@ -31,8 +31,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 			throw new CustomSecurityException(ErrorEnum.USER_NOT_EXIST);
 
 
-		return new org.springframework.security.core.userdetails.User(
-				username,user.getPassword(),
+		return new CustomUser(user.getId(),
+				username,user.getPassword(),true,
 				AuthorityUtils.commaSeparatedStringToAuthorityList("admin")
 		);
 	}

@@ -14,11 +14,13 @@ public interface SendSmsProcessor {
 
 	/**
 	 * 处理方法,包装下
+	 * 给短信平台的发送任务调用
 	 */
 	ResultDTO<ErrorData> process(Channel channel, String phones, String message, Long taskId);
 
 	/**
 	 * 处理方法,包装下
+	 * 给其他平台接口调用
 	 */
 	ResultDTO<ErrorData> process(Channel channel, String phones, String message, Platform platform);
 }

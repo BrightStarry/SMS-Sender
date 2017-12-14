@@ -7,6 +7,7 @@ var url = {
     query: '/query',//查询单个
     updateInfo: '/update',//修改信息
 };
+var isUpdate = false;
 var numberGroupTypeList = {
     //分页查询
     page: function (pageNo) {
@@ -23,11 +24,16 @@ var numberGroupTypeList = {
     //弹出新增模态框
     openAddModal : function () {
         common.closeModal($('#addForm')[0], null);
+        isUpdate = false;
         $('#addModal').modal();
     },
 
     //新增
     add : function () {
+        if(isUpdate){
+            numberGroupTypeList.updateInfo();
+            return;
+        }
         $.post(url.commonPre + url.add,$('#addForm').serialize(),function (result) {
             if(!common.errorHandle(result)) {
                 numberGroupTypeList.page();
@@ -105,18 +111,18 @@ var numberGroupTypeList = {
                 $('#addForm :input[name="id"]').val(result.data.id);
                 $('#addForm :input[name="name"]').val(result.data.name);
                 $('#addForm :input[name="remark"]').val(result.data.remark);
+                isUpdate = true;
                 $('#addModal').modal();
             }
-
         });
     },
     //修改信息
     updateInfo :function() {
         $.post(url.commonPre + url.updateInfo,$('#addForm').serialize(),function (result) {
             if(!common.errorHandle(result)){
-                numberSourceList.page(1);
+                numberGroupTypeList.page(1);
                 common.successHandle();
-                common.closeModal($('#updateInfoForm')[0], $('#updateInfoModal'));
+                common.closeModal($('#addForm')[0], $('#addModal'));
             }
         } );
     },

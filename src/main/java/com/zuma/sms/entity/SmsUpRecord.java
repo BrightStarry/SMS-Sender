@@ -27,13 +27,11 @@ public class SmsUpRecord {
     /**
      * 通道id
      */
-    @Column(name = "channel_id")
     private Integer channelId;
 
     /**
      * 通道名
      */
-    @Column(name = "channel_name")
     private String channelName;
 
     /**

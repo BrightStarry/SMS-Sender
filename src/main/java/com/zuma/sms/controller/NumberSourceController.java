@@ -12,7 +12,6 @@ import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.service.NumberSourceService;
 import com.zuma.sms.util.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +51,17 @@ public class NumberSourceController extends BaseController {
 	public String listView(Model model) {
 		model.addAttribute(navTop2, "numberSource");
 		return "numberSource/list";
+	}
+
+	/**
+	 * 查询所有
+	 */
+	@PostMapping("/list/all")
+	@ResponseBody
+	public  ResultDTO<List<NumberSource>> listAll(Integer isDelete) {
+		IsDeleteEnum isDeleteEnum = EnumUtil.getByCode(isDelete, IsDeleteEnum.class,
+				"[numberSource]查询所有接口,传递的是否删除参数不存在.isDelete:{}", isDelete);
+		return ResultDTO.success(numberSourceService.listAll(isDeleteEnum));
 	}
 
 	/**
@@ -101,24 +111,13 @@ public class NumberSourceController extends BaseController {
 	}
 
 	/**
-	 * 号码文件下载
+	 * 文件下载
 	 */
 	@GetMapping("/download/{id:\\d+}")
 	public void download(@PathVariable Long id, HttpServletResponse response) throws IOException {
 		numberSourceService.findOne(id);
 
-		try (InputStream inputStream = new FileInputStream(new File(configStore.numberSourcePre, id + ".txt"));
-			 OutputStream outputStream = response.getOutputStream();) {
-			//定义类型和下载过去的文件名
-			response.setContentType("application/x-download");
-			response.addHeader("Content-Disposition", "attachment;filename=" + id + ".txt");
-			//将输入流输出到输出流
-			IOUtils.copy(inputStream, outputStream);
-			outputStream.flush();
-		} catch (Exception e) {
-			log.error("[号码源]下载号码文件异常.e:{}",e.getMessage(),e);
-			throw new SmsSenderException(ErrorEnum.IO_ERROR);
-		}
+		commonDownload(id, response,numberSourceService.getInputStream(id));
 	}
 
 	/**

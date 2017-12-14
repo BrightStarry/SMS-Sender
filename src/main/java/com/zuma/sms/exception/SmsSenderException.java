@@ -1,6 +1,7 @@
 package com.zuma.sms.exception;
 
 import com.zuma.sms.enums.system.CodeEnum;
+import com.zuma.sms.enums.system.ErrorEnum;
 import lombok.Getter;
 
 /**
@@ -28,5 +29,14 @@ public class SmsSenderException extends RuntimeException {
     public SmsSenderException(String code, String message) {
         super(message);
         this.code = code;
+    }
+
+    /**
+     * 根据消息构造自定义异常
+     * @param message
+     */
+    public SmsSenderException(String message) {
+        super(message);
+        this.code = ErrorEnum.OTHER_ERROR.getCode();
     }
 }

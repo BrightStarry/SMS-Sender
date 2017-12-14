@@ -1,5 +1,7 @@
 package com.zuma.sms.controller;
 
+import com.zuma.sms.entity.NumberSource;
+import com.zuma.sms.enums.db.IsDeleteEnum;
 import com.zuma.sms.form.SmsContentForm;
 import com.zuma.sms.controller.base.BaseController;
 import com.zuma.sms.dto.PageVO;
@@ -8,6 +10,7 @@ import com.zuma.sms.entity.SmsContent;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.service.SmsContentService;
+import com.zuma.sms.util.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * author:ZhengXing
@@ -32,6 +36,16 @@ public class SmsContentController extends BaseController {
 
 	@Autowired
 	private SmsContentService smsContentService;
+
+	/**
+	 * 查询所有
+	 */
+	@PostMapping("/list/all")
+	@ResponseBody
+	public  ResultDTO<List<SmsContent>> listAll() {
+		return ResultDTO.success(smsContentService.listAll());
+	}
+
 
 	/**
 	 * 查询单个
@@ -51,6 +65,17 @@ public class SmsContentController extends BaseController {
 	public ResultDTO<?> add(@Valid SmsContentForm smsContentForm, BindingResult bindingResult) {
 		isValid(bindingResult,log,"");
 		smsContentService.save(smsContentForm);
+		return ResultDTO.success();
+	}
+
+	/**
+	 * 修改
+	 */
+	@PostMapping("/update")
+	@ResponseBody
+	public ResultDTO<?> update(@Valid SmsContentForm smsContentForm,BindingResult bindingResult) {
+		isValid(bindingResult,log,"");
+		smsContentService.update(smsContentForm);
 		return ResultDTO.success();
 	}
 

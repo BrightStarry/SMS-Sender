@@ -29,4 +29,9 @@ public interface NumberSourceRepository extends JpaRepository<NumberSource,Long>
 	 * 分页查询所有删除或未删除记录
 	 */
 	Page<NumberSource> findAllByIsDelete(Integer isDelete, Pageable pageable);
+
+	/**
+	 * 查询所有未删除
+	 */
+	List<NumberSource> findAllByIsDelete(Integer isDelete);
 }

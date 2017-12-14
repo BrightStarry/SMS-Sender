@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * author:ZhengXing
@@ -40,13 +41,34 @@ public class NumberGroupTypeController extends BaseController{
 	private ConfigStore configStore;
 
 	/**
+	 * 查询所有
+	 */
+	@PostMapping("/list/all")
+	@ResponseBody
+	public ResultDTO<List<NumberGroupType>> listAll() {
+		return ResultDTO.success(numberGroupTypeService.listAll());
+	}
+
+	/**
 	 * 查询单个
 	 */
 	@RequestMapping("/query")
 	@ResponseBody
 	public ResultDTO<NumberGroupType> findOne(Long id) {
+
 		NumberGroupType numberGroupType = numberGroupTypeService.findOne(id);
 		return ResultDTO.success(numberGroupType);
+	}
+
+	/**
+	 * 修改
+	 */
+	@PostMapping("/update")
+	@ResponseBody
+	public ResultDTO update(@Valid NumberGroupTypeForm form, BindingResult bindingResult) {
+		isValid(bindingResult,log,"");
+		numberGroupTypeService.update(form);
+		return ResultDTO.success();
 	}
 
 	/**
@@ -64,7 +86,7 @@ public class NumberGroupTypeController extends BaseController{
 	 * 进入列表
 	 */
 	@GetMapping("/list")
-	public String listView(Model model, HttpSession session) {
+	public String listView(Model model) {
 		model.addAttribute(navTop2, "numberGroupType");
 		return "numberGroupType/list";
 	}

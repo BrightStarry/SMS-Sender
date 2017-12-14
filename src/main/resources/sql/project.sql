@@ -22,7 +22,7 @@ CREATE TABLE channel(
   key_ame VARCHAR(32) DEFAULT '' COMMENT 'key,用于spring容器',
   type TINYINT NOT NULL COMMENT '通道类型,对同一个ip的接口调用为同一类型',
   support_operator TINYINT DEFAULT 0 COMMENT '支持的运营商. 0:未知;1:移动;2:联通;3.电信',
-  max_group_number SMALLINT DEFAULT 1 COMMENT '最大群发数.如果不支持,则为1',
+  max_group_number SMALLINT DEFAULT 1 COMMENT '最大群发数(每次最多发送号码数).如果不支持,则为1',
   max_connect TINYINT DEFAULT 1 COMMENT '最大连接数,针对socket',
   max_concurrent Integer NOT NULL COMMENT '最大并发数,针对所有,类型相同,并发肯定一样',
 
@@ -40,14 +40,14 @@ CREATE TABLE channel(
 
 INSERT INTO channel(name, max_connect,max_concurrent,sort ,type,key_ame, cache_name,support_operator,a_key,b_key,c_cey)
     VALUES
-      ('掌游_移动',1,200,1,0,'ZhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
-      ('宽信_移动',1,200,2,1,'KuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_联通',1,200,3,1,'KuanXin','kuanXinLT',2,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_电信',1,200,4,1,'KuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('掌游_移动',1,100,1,0,'ZhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
+      ('宽信_移动',1,100,2,1,'KuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('宽信_联通',1,100,3,1,'KuanXin','kuanXinLT',2,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('宽信_电信',1,100,4,1,'KuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
       ('宽信_CMPP',1,200,5,2,'CMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
-      ('群正_移动',1,200,6,3,'QunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
-      ('筑望CMPP_移动',1,200,7,4,'CMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
-      ('畅想_移动',1,200,8,5,'ChangXiang','changXiangYD',1,'zmkj','zmkj','');
+      ('群正_移动',1,100,6,3,'QunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
+      ('筑望CMPP_移动',1,300,7,4,'CMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
+      ('畅想_移动',1,100,8,5,'ChangXiang','changXiangYD',1,'zmkj','zmkj','');
 
 
 /*系统用户表*/
@@ -64,7 +64,7 @@ CREATE TABLE user(
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信通道信息表';
 
 INSERT INTO user (username, password) VALUES
-  ("zuma", "123456");
+  ('zuma', '123456');
 
 
 /*字典表*/
@@ -156,40 +156,42 @@ CREATE TABLE sms_send_record(
 /*发送任务表*/
 CREATE TABLE send_task_record(
   id BIGINT AUTO_INCREMENT COMMENT 'id',
+  name VARCHAR(32) NOT NULL COMMENT '任务名',
   remark VARCHAR(64) DEFAULT '' COMMENT '备注',
   user_id BIGINT NOT NULL COMMENT '创建任务的用户id',
   channel_id BIGINT DEFAULT 0 COMMENT '通道id',
   channel_name VARCHAR(16) DEFAULT 0 COMMENT '通道名',
-  number_gruop_id BIGINT NOT NULL COMMENT '号码组id',
+  number_group_id BIGINT NOT NULL COMMENT '号码组id',
   number_group_name VARCHAR(32) NOT NULL COMMENT '号码组名字',
   sms_content_id BIGINT NOT NULL COMMENT '短信内容id',
+  sms_content_name VARCHAR(32) NOT NULL COMMENT '短信内容名',
   content VARCHAR(256) NOT NULL COMMENT '发送内容',
   thread_count TINYINT DEFAULT 2 COMMENT '开启线程数',
 
   expect_start_time TIMESTAMP DEFAULT current_timestamp COMMENT '期望发送时间',
-  expect_end_time TIMESTAMP DEFAULT '0000-00-00 00:00:00' COMMENT '期望结束时间',
-  real_start_time TIMESTAMP DEFAULT '0000-00-00 00:00:00' COMMENT '实际发送时间',
-  real_end_time TIMESTAMP DEFAULT '0000-00-00 00:00:00' COMMENT  '实际结束时间',
+  expect_end_time TIMESTAMP NOT NULL DEFAULT 0 COMMENT '期望结束时间',
+  real_start_time TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '实际发送时间',
+  real_end_time TIMESTAMP NOT NULL DEFAULT 0 COMMENT  '实际结束时间',
   total_time SMALLINT DEFAULT 0 COMMENT '总用时(秒)',
 
   status TINYINT DEFAULT 0 COMMENT '状态. 0:等待中;1:运行中;2:成功;-1:失败;-2:中断',
   number_num SMALLINT NOT NULL COMMENT '号码总数',
   success_num SMALLINT DEFAULT 0 COMMENT '成功数,异步成功',
   failed_num SMALLINT DEFAULT 0 COMMENT '失败数,异步失败',
-  sync_un_response SMALLINT DEFAULT 0 COMMENT '同步未响应数',
-  async_un_response SMALLINT DEFAULT 0 COMMENT '异步未响应数',
+  un_response SMALLINT DEFAULT 0 COMMENT '未响应数',
+#   async_un_response SMALLINT DEFAULT 0 COMMENT '异步未响应数',
   used_num SMALLINT DEFAULT 0 COMMENT '已操作总数(可能被中断导致后续号码未操作)',
 
   error_number_path VARCHAR(128) DEFAULT '' COMMENT '失败号码路径,可供下载',
   error_info VARCHAR(256) DEFAULT '' COMMENT '失败信息,可能为空',
 
   is_delete TINYINT DEFAULT 0 COMMENT '是否被删除. 0:否;1:是',
-  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间,也是发送时间',
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 
   PRIMARY KEY (id),
   KEY idx_user_id(user_id),
-  KEY idx_number_group_id(number_gruop_id)
+  KEY idx_number_group_id(number_group_id)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '发送任务表';
 
 /*号码源数据表*/
@@ -215,18 +217,19 @@ CREATE TABLE number_group (
   name VARCHAR(32) NOT NULL COMMENT '名字',
   remark VARCHAR(128) DEFAULT '' COMMENT '备注',
   type_id BIGINT NOT NULL COMMENT '号码组类别id',
-  type_name BIGINT NOT NULL COMMENT '号码组类别名',
+  type_name VARCHAR(32) NOT NULL COMMENT '号码组类别名',
   number_source_id BIGINT COMMENT '号码源id',
   number_source_name VARCHAR(32) COMMENT '号码源名称',
   number_count INT NOT NULL COMMENT '号码总数',
   group_mode TINYINT DEFAULT 0 COMMENT '分组模式. 0:顺序;1:随机;2:手动',
 
-  is_delete TINYINT DEFAULT 0 COMMENT '是否被删除. 0:否;1:是',
+#   is_delete TINYINT DEFAULT 0 COMMENT '是否被删除. 0:否;1:是',
   create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 
   PRIMARY KEY (id),
-  KEY idx_type_id(type_id)
+  KEY idx_type_id(type_id),
+  KEY idx_number_source_id(number_source_id)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '号码组数据表';
 
 

@@ -45,7 +45,7 @@ public enum ErrorEnum implements CodeEnum<String> {
     //任务线程
     TASK_START_ERROR("2001","任务启动失败"),
     TASK_DELAY_TAKE_ERROR("2002", "取出延时任务失败"),
-    TASK_EMPTY_IN_WAIT_QUEUE_ERROR("2003","任务在等待队列不存在"),
+    TASK_EMPTY_IN_WAIT_QUEUE_ERROR("2003","任务在等待队列不存在,无法删除或修改"),
 
     //controller
     FORM_ERROR("3000","参数校验失败"),
@@ -62,9 +62,19 @@ public enum ErrorEnum implements CodeEnum<String> {
 
     //业务
     UPLOAD_MULTI_FORMAT_ERROR("4001","多文件上传,其他参数格式不匹配"),
-    NUMBER_SOURCE_PHONE_EMPTY("4002", "号码源数量为空"),
+    PHONE_EMPTY("4002", "号码源数量为空"),
     NUMBER_SOURCE_PHONE_FORMAT_ERROR("4003", "号码格式不正确"),
     RELEVANCE_PARAM_MISMATCHING("4004", "关联参数不匹配"),
+    ASK_NUMBER_NUMBER_OUTSIZE("4005", "需要的号码数量过大"),
+    NUMBER_SOURCE_FILE_NOT_EXIST("4006","号码源号码文件不存在"),
+
+
+
+    //UTIL
+    GET_ENUM_ERROR("5001","参数异常"),
+
+    OTHER_ERROR("9999", "其他异常(消息自定义)"),
+
 
 
 

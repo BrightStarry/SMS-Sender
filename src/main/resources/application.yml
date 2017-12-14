@@ -1,6 +1,7 @@
 server:
   port: 80
   context-path: /
+
 spring:
   application:
     name: sms-sender
@@ -26,6 +27,7 @@ spring:
     expose-session-attributes: true
     suffix: .html #指定文件后缀
     template-loader-path: classpath:/templates/ #默认
+    
   jpa:
     hibernate:
       ddl-auto: update
@@ -35,9 +37,10 @@ spring:
       max-file-size: 20Mb
       max-request-size: 60Mb
       file-size-threshold: 3
+
 # 自定义配置
 smsSender:
   config:
     errorUrl: common/error
     likeSearchMaxNum: 20
-    sessionUserKey: customUser
+#    sessionUserKey: customUser

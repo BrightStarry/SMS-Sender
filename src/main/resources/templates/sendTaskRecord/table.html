@@ -1,0 +1,108 @@
+<div class="am-u-sm-12 ">
+    <form class="am-form">
+        <div class="am-scrollable-horizontal">
+            <table class="am-table am-table-striped am-table-hover table-main am-text-nowrap">
+                <!--am-text-nowrap 不分行样式-->
+                <thead>
+                <tr>
+                    <th class="table-check"><input type="checkbox" id="listAll" class="tpl-table-fz-check"
+                                                   onclick="common.checkboxAll(this.checked)"></th>
+                    <th class="table-id">ID</th>
+                    <th class="table-title">名称</th>
+                    <th class="table-view">备注</th>
+                    <th class="table-title">通道名</th>
+                    <th class="table-title">号码组id</th>
+                    <th class="table-title">号码组名</th>
+                    <th class="table-title">短信名</th>
+                    <th class="table-title">短信内容</th>
+                    <th class="table-title">开启线程数</th>
+                    <th class="table-date">发送时间</th>
+                    <th class="table-date">结束时间</th>
+                    <th class="table-title">总用时</th>
+                    <th class="table-title">状态</th>
+                    <th class="table-title">号码总数</th>
+                    <th class="table-title">已操作数</th>
+                    <th class="table-title">成功数</th>
+                    <th class="table-title">失败数</th>
+                    <th class="table-title">未响应数</th>
+                    <th class="table-title">失败信息</th>
+                    <th class="table-date">创建时间</th>
+                    <th class="table-date">修改时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                <#list page.list as item>
+                    <tr>
+                        <td><input type="checkbox" value="${item.id?c}" id="list${item.id?c}" name="list"/></td>
+                        <td><label for="list${item.id?c}">${item.id?c}</label></td>
+                        <td><a href="/sendTaskRecord/download/${item.id?c}">${item.name}</a></td>
+                        <td>${item.remark}</td>
+                        <td>${item.channelName}</td>
+                        <td>${item.numberGroupId?c}</td>
+                        <td>${item.numberGroupName}</td>
+                        <td>${item.smsContentName}</td>
+                        <td>${item.content}</td>
+                        <td>${item.threadCount}</td>
+                        <td>${item.expectStartTime}</td>
+                        <td>${item.expectEndTime}</td>
+                        <td>${item.totalTime!}</td>
+                        <td>
+                            <#if item.status == 0>
+                                等待
+                            <#elseif item.status == 1>
+                                运行
+                            <#elseif item.status == 2>
+                                成功
+                            <#elseif item.status == -1>
+                                失败
+                            <#elseif item.status == -2>
+                                中断
+                            </#if>
+                            ${item.status}
+                        </td>
+                        <td>${item.numberNum}</td>
+                        <td>${item.usedNum!}</td>
+                        <td>${item.successNum!}</td>
+                        <td>${item.failedNum!}</td>
+                        <td>${item.unResponse!}</td>
+                        <td>${item.errorInfo!}</td>
+                        <td>${item.createTime}</td>
+                        <td>${item.updateTime}</td>
+                    </tr>
+                </#list>
+                </tbody>
+            </table>
+        </div>
+
+        <!--分页-->
+        <div class="am-cf">
+
+            <div class="am-fr">
+                <ul class="am-pagination tpl-pagination">
+                    <#if page.pageNo == 1>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:sendTaskRecordList.page(1)">«</a></li>
+                    <#list 1..page.totalPage as listPage>
+                        <#if page.pageNo == listPage>
+                            <li class="am-active am-disabled">
+                                <#else/>
+                            <li>
+                        </#if>
+                        <a href="javascript:sendTaskRecordList.page(${listPage})">${listPage}</a></li>
+                    </#list>
+                    <#if page.pageNo == page.totalPage>
+                        <li class="am-disabled">
+                            <#else/>
+                        <li>
+                    </#if>
+                    <a href="javascript:sendTaskRecordList.page(${page.totalPage})">»</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+
+    </form>
+</div>

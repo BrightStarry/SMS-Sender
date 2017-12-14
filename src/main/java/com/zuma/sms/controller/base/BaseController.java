@@ -4,12 +4,19 @@ import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * author:ZhengXing
@@ -17,6 +24,7 @@ import org.springframework.validation.BindingResult;
  * 基础Controller，复用一些方法
  */
 @Controller
+@Slf4j
 public class BaseController {
     protected static final String navTop1 =  "navTop1";
     protected static final String navTop2 =  "navTop2";
@@ -74,6 +82,20 @@ public class BaseController {
         return pageRequestFactory.buildForCommon(pageNo, pageSize);
     }
 
+	protected void commonDownload(@PathVariable Long id, HttpServletResponse response,InputStream inputStream) {
+		try (InputStream inputStream1 = inputStream;
+			 OutputStream outputStream = response.getOutputStream()) {
+			//定义类型和下载过去的文件名
+			response.setContentType("application/x-download");
+			response.addHeader("Content-Disposition", "attachment;filename=" + id + ".txt");
+			//将输入流输出到输出流
+			IOUtils.copy(inputStream, outputStream);
+			outputStream.flush();
+		} catch (Exception e) {
+			log.error("下载文件异常.e:{}",e.getMessage(),e);
+			throw new SmsSenderException(ErrorEnum.IO_ERROR);
+		}
+	}
 
 
 }

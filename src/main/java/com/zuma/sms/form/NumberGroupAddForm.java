@@ -5,6 +5,8 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * author:ZhengXing
  * datetime:2017/12/8 0008 16:16
@@ -24,24 +26,23 @@ public class NumberGroupAddForm {
 	private String remark;
 
 	@Range(min = 1000,message = "id范围错误")
-	@NotBlank(message = "号码组类别为空")
+	@NotNull(message = "类别id为空")
 	private Long typeId;
 
-	@NotBlank(message = "号码组类别名为空")
-	@Length(min = 1, max = 32, message = "号码组类别名长度不正确（1-32）")
-	private Long typeName;
+
 
 	@Range(min = 1000,message = "id范围错误")
-	@NotBlank(message = "号码源为空")
+	@NotNull(message = "号码源id为空")
 	private Long numberSourceId;
 
-	@NotBlank(message = "号码源为空")
-	@Length(min = 1, max = 32, message = "号码源名称长度不正确（1-32）")
-	private String numberSourceName;
 
 
-	private Short numberCount;
+	@Range(min = 1,message = "号码总数不能少于1")
+	private Integer numberCount;
 
 	@Range(min = 0,max = 2,message = "分组模式错误")
 	private Integer groupMode;
+
+	//号码字符.当手动分组时需要传入
+	private String phones;
 }

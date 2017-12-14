@@ -1,11 +1,14 @@
 package com.zuma.sms.entity;
 
+import com.zuma.sms.enums.db.IsDeleteEnum;
+import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -19,13 +22,32 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
-public class SendTaskRecord {
+public class SendTaskRecord implements Cloneable{
+
+    /**
+     * 深拷贝.重写Object.clone方法
+     * Date/Integer/String 全为值传递,暂不重写该方法
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+
+
     /**
      * id
      */
     @Id
     @GeneratedValue
     private Long id;
+
+    /**
+     * 任务名
+     */
+    private String name;
 
     /**
      * 备注
@@ -35,38 +57,37 @@ public class SendTaskRecord {
     /**
      * 创建任务的用户id
      */
-    @Column(name = "user_id")
     private Long userId;
 
     /**
      * 通道id
      */
-    @Column(name = "channel_id")
     private Long channelId;
 
     /**
      * 通道名
      */
-    @Column(name = "channel_name")
     private String channelName;
 
     /**
      * 号码组id
      */
-    @Column(name = "number_gruop_id")
-    private Long numberGruopId;
+    private Long numberGroupId;
 
     /**
      * 号码组名字
      */
-    @Column(name = "number_group_name")
     private String numberGroupName;
 
     /**
      * 短信内容id
      */
-    @Column(name = "sms_content_id")
     private Long smsContentId;
+
+    /**
+     * 短信内容名
+     */
+    private String smsContentName;
 
     /**
      * 发送内容
@@ -76,31 +97,26 @@ public class SendTaskRecord {
     /**
      * 开启线程数
      */
-    @Column(name = "thread_count")
-    private Byte threadCount;
+    private Integer threadCount;
 
     /**
-     * 期望发送时间
+     * 期望发送时间,默认当前时间
      */
-    @Column(name = "expect_start_time")
-    private Date expectStartTime;
+    private Date expectStartTime = new Date();
 
     /**
      * 期望结束时间
      */
-    @Column(name = "expect_end_time")
     private Date expectEndTime;
 
     /**
      * 实际发送时间
      */
-    @Column(name = "real_start_time")
     private Date realStartTime;
 
     /**
      * 实际结束时间
      */
-    @Column(name = "real_end_time")
     private Date realEndTime;
 
     /**
@@ -111,7 +127,7 @@ public class SendTaskRecord {
     /**
      * 状态. 0:等待中;1:运行中;2:成功;-1:部分失败;-2:全部失败;
      */
-    private Integer status;
+    private Integer status = SendTaskRecordStatusEnum.WAIT.getCode();
 
     /**
      * 号码总数
@@ -129,14 +145,10 @@ public class SendTaskRecord {
     private Integer failedNum;
 
     /**
-     * 同步未响应数
+     * 未响应数
      */
-    private Integer syncUnResponse;
+    private Integer unResponse;
 
-    /**
-     * 异步未响应数
-     */
-    private Integer asyncUnResponse;
 
     /**
      * 已操作总数(可能被中断导致后续号码未操作)
@@ -156,18 +168,16 @@ public class SendTaskRecord {
     /**
      * 是否被删除. 0:否;1:是
      */
-    private Byte isDelete;
+    private Integer isDelete = IsDeleteEnum.NOT_DELETE.getCode();
 
     /**
-     * 创建时间,也是发送时间
+     * 创建时间
      */
-    @Column(name = "create_time")
     private Date createTime;
 
     /**
      * 修改时间
      */
-    @Column(name = "update_time")
     private Date updateTime;
 
 }

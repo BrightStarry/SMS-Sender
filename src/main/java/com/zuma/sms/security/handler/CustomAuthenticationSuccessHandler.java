@@ -1,8 +1,9 @@
-package com.zuma.sms.config.security.handler;
+package com.zuma.sms.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.dto.ResultDTO;
+import com.zuma.sms.security.CustomUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -45,10 +46,10 @@ public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 		log.info("登录成功");
-		//登录成功后取出用户信息
-		User user = (User) authentication.getPrincipal();
-		//自己换个key存入session中
-		request.getSession().setAttribute(configStore.sessionUserKey,user);
+//		//登录成功后取出用户信息
+//		CustomUser user = (CustomUser) authentication.getPrincipal();
+//		//自己换个key存入session中
+//		request.getSession().setAttribute(configStore.sessionUserKey,user);
 
 		//如果配置的的登录方式是json,使用自定义处理器
 		response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);

@@ -1,5 +1,8 @@
 package com.zuma.sms.service;
 
+import com.zuma.sms.entity.SendTaskRecord;
+import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
+import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.form.SmsContentForm;
 import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
@@ -7,8 +10,11 @@ import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.entity.SmsContent;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
+import com.zuma.sms.repository.SendTaskRecordRepository;
 import com.zuma.sms.repository.SmsContentRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +22,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * author:ZhengXing
@@ -28,7 +38,18 @@ public class SmsContentService {
 	@Autowired
 	private SmsContentRepository smsContentRepository;
 	@Autowired
+	private SendTaskRecordRepository sendTaskRecordRepository;
+	@Autowired
 	private ConfigStore configStore;
+	@Autowired
+	private PageRequestFactory pageRequestFactory;
+
+	/**
+	 * 查询所有
+	 */
+	public List<SmsContent> listAll() {
+		return smsContentRepository.findAll();
+	}
 
 
 	/**
@@ -62,6 +83,9 @@ public class SmsContentService {
 	 * 批量删除
 	 */
 	public void batchDelete(Long[] ids){
+		//校验话术是否使用过
+		verifyIsUsedByIds(ids);
+
 		smsContentRepository.deleteAllByIdIn(ids);
 	}
 
@@ -82,6 +106,9 @@ public class SmsContentService {
 	 * 修改
 	 */
 	public void update(SmsContentForm smsContentForm){
+		//校验话术是否使用过
+		verifyIsUsedByIds(new Long[]{smsContentForm.getId()});
+
 		SmsContent smsContent = smsContentRepository.findOne(smsContentForm.getId());
 		BeanUtils.copyProperties(smsContentForm,smsContent);
 		/**
@@ -91,6 +118,24 @@ public class SmsContentService {
 		smsContentRepository.save(smsContent);
 	}
 
+
+	/**
+	 * 根据id查询所有
+	 */
+	public List<SmsContent> findAllById(Long[] ids) {
+		return smsContentRepository.findAll(Arrays.asList(ids));
+	}
+
+	/**
+	 * 查询某些话术是否被使用过
+	 */
+	private void verifyIsUsedByIds(Long[] ids) {
+		//查询该话术是否被使用过
+		Page<SendTaskRecord> page = sendTaskRecordRepository.findBySmsContentIdIn(
+				ids,pageRequestFactory.buildForLimitOne());
+		if(page.getTotalElements() > 0)
+			throw new SmsSenderException("存在被使用了的话术,无法操作");
+	}
 
 
 }

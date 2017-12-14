@@ -2,6 +2,8 @@ package com.zuma.sms.repository;
 
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.Dict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,6 +15,13 @@ import java.util.List;
  */
 public interface DictRepository extends JpaRepository<Dict,Long> {
 
-	//查询指定模块的所有配置
+	/**
+	 * 查询指定模块的所有配置
+	 */
 	List<Dict> findByModuleEquals(String module);
+
+	/**
+	 * 根据备注模糊查询
+	 */
+	Page<Dict> findByRemarkContaining(String remark, Pageable pageable);
 }

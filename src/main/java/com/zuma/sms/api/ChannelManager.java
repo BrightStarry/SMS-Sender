@@ -22,6 +22,8 @@ public class ChannelManager {
 	private Semaphore semaphore;
 	//清理器-自身维护的定时线程池,用来每若干秒清空信号量的值
 	private ScheduledExecutorService cleaner;
+	//是否已经预警
+	private volatile Boolean isWarn;
 
 	/**
 	 * 构造
@@ -38,20 +40,30 @@ public class ChannelManager {
 	 */
 	public void setup() {
 		this.cleaner = Executors.newScheduledThreadPool(1);
-		//该定时器方法能保证固定频率的执行任务,如果任务延期则会发生任务并发(但Semaphore类不会释放负长度的信号,不会有问题)
+		//该定时器方法能保证固定频率的执行任务,如果任务延期则会发生任务并发
 		//1秒后开始执行,每秒1秒执行一次,释放全部信号
 		//在进行发送数据操作时,将只获取信号量,不再释放信号量
 		cleaner.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					semaphore.release( maxNum);
+					//当前并发数
+					int i = getConcurrentNum();
+					//释放当前并发数-此处无需同步,即使有误差,也只会让线程等待而已.
+					//可以适当微调信号量即可
+					semaphore.release(i);
+
+					//如果当前并发超过最大并发的3/4,预警
+					if(i > maxNum/4*3){
+						//...TODO 预警操作
+						log.warn("通道类型ID:{},当前并发警告.当前并发:{},最大并发:{}",channelType,i,maxNum);
+					}
 				} catch (Exception e) {
-					//....
+					//....此处只是为了防止异常后,定时线程池中断
 				}
 			}
 		}, 1000, 1000, TimeUnit.MILLISECONDS);
-		//状态:打开
+
 	}
 
 	/**

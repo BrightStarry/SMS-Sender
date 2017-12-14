@@ -12,10 +12,10 @@
 
     <div class="am-collapse am-topbar-collapse" id="topbar-collapse" >
         <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list tpl-header-list">
-            <#if Session.customUser??>
+            <#if Session.SPRING_SECURITY_CONTEXT.authentication.principal.username??>
                 <li class="am-dropdown" data-am-dropdown data-am-dropdown-toggle>
                     <a class="am-dropdown-toggle tpl-header-list-link" href="javascript:;">
-                        <span class="tpl-header-list-user-nick">欢迎，${(Session.customUser.username)!'未登录'}</span><span class="tpl-header-list-user-ico"> </span>
+                        <span class="tpl-header-list-user-nick">欢迎，${(Session.SPRING_SECURITY_CONTEXT.authentication.principal.username)!'未登录'}</span><span class="tpl-header-list-user-ico"> </span>
                     </a>
                     <!--<ul class="am-dropdown-content">-->
                     <!--<li><a href="#"><span class="am-icon-bell-o"></span> 资料</a></li>-->

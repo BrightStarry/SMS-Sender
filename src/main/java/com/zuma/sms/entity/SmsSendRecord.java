@@ -27,6 +27,8 @@ public class SmsSendRecord {
     @GeneratedValue
     private Long id;
 
+
+
     /**
      * 平台id,当接口调用发送时
      */

@@ -46,7 +46,7 @@ public class NumberGroup {
     /**
      * 号码组类别名
      */
-    private Long typeName;
+    private String typeName;
 
     /**
      * 号码源id
@@ -71,7 +71,7 @@ public class NumberGroup {
     /**
      * 是否被删除. 0:否;1:是
      */
-    private Integer isDelete = IntToBoolEnum.FALSE.getCode();
+//    private Integer isDelete = IntToBoolEnum.FALSE.getCode();
 
     /**
      * 创建时间

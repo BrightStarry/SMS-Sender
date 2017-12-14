@@ -1,4 +1,4 @@
-package com.zuma.sms.config.security.handler;
+package com.zuma.sms.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zuma.sms.dto.ResultDTO;

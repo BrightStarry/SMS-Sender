@@ -34,7 +34,7 @@ public class FileAccessor {
 	 */
 	public ConcurrentLinkedQueue<String> readBySendTask(long numberGroupId){
 		//文件路径
-		File file = new File(configStore.numberGroupPre + numberGroupId);
+		File file = new File(configStore.numberGroupPre + numberGroupId + ".txt");
 		//读取到所有手机号
 		String tmp = readToString(file);
 		//切割
@@ -47,7 +47,7 @@ public class FileAccessor {
 	 * 指定 发送任务id,异常信息,将其写入文件
 	 */
 	public void writeBySendTaskIdAndInfo(long taskId,String data) {
-		File file = new File(configStore.sendTaskErrorInfoPre + taskId);
+		File file = new File(configStore.sendTaskErrorInfoPre + taskId + ".txt");
 		writeStringToFile(file,data,true);
 	}
 
@@ -55,7 +55,7 @@ public class FileAccessor {
 	 * 指定 发送任务id,,将指定格式的异常信息写入文件
 	 */
 	public void writeBySendTaskId(long taskId,String phones) {
-		writeBySendTaskId(taskId,"errorPhone:" + phones);
+		writeBySendTaskIdAndInfo(taskId,"errorPhone:" + phones);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class FileAccessor {
 	public void writeStringToFile(File file,String data,boolean isLine){
 		try {
 			FileUtils.writeStringToFile(file,
-					(isLine ? LINE_BREAK : "") + data,
+					  data + (isLine ? LINE_BREAK : ""),
 					CharsetUtil.UTF_8,
 					true);
 		} catch (IOException e) {

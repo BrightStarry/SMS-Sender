@@ -27,6 +27,7 @@ public abstract class AbstractSendSmsProcessor<R,P> implements SendSmsProcessor{
 
 	/**
 	 * 处理方法,包装下
+	 * 给短信平台的发送任务调用
 	 */
 	public ResultDTO<ErrorData> process(Channel channel, String phones, String message, Long taskId) {
 		return process(channel, phones, message, taskId, null);
@@ -34,6 +35,7 @@ public abstract class AbstractSendSmsProcessor<R,P> implements SendSmsProcessor{
 
 	/**
 	 * 处理方法,包装下
+	 *  给其他平台接口调用
 	 */
 	public ResultDTO<ErrorData> process(Channel channel, String phones, String message, Platform platform) {
 		return process(channel, phones, message, null, platform);

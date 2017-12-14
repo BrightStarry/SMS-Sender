@@ -39,21 +39,21 @@
                             <#else/>
                         <li>
                     </#if>
-                    <a href="javascript:smsContentList.page(1)">«</a></li>
+                    <a href="javascript:numberGroupTypeList.page(1)">«</a></li>
                     <#list 1..page.totalPage as listPage>
                         <#if page.pageNo == listPage>
                             <li class="am-active am-disabled">
                                 <#else/>
                             <li>
                         </#if>
-                        <a href="javascript:smsContentList.page(${listPage})">${listPage}</a></li>
+                        <a href="javascript:numberGroupTypeList.page(${listPage})">${listPage}</a></li>
                     </#list>
                     <#if page.pageNo == page.totalPage>
                         <li class="am-disabled">
                             <#else/>
                         <li>
                     </#if>
-                    <a href="javascript:smsContentList.page(${page.totalPage})">»</a></li>
+                    <a href="javascript:numberGroupTypeList.page(${page.totalPage})">»</a></li>
                 </ul>
             </div>
         </div>

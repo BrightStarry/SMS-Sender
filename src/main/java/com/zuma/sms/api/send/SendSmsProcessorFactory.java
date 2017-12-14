@@ -17,11 +17,11 @@ public class SendSmsProcessorFactory {
 	private static Map<String,SendSmsProcessor> sendSmsProcessorMap;
 
 	// TODO
-//	@Autowired
-//	private void init(Map<String,SendSmsProcessor> sendSmsProcessorMap) {
-//		SendSmsProcessorFactory.sendSmsProcessorMap = sendSmsProcessorMap;
-//	}
-//
+	@Autowired
+	private void init(Map<String,SendSmsProcessor> sendSmsProcessorMap) {
+		SendSmsProcessorFactory.sendSmsProcessorMap = sendSmsProcessorMap;
+	}
+
 	public static SendSmsProcessor build(Channel channel) {
 		return sendSmsProcessorMap.get(channel.getKeyName() + "SendSmsProcessor");
 	}

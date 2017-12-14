@@ -2,7 +2,7 @@ var common = {
     //填充消息并提示
     showMessage : function (message) {
         $('#message').text(message);
-        $('#messageModal').modal({closeViaDimmer: true});
+        $('#messageModal').modal();
     },
     //弹出选择消息
 
@@ -45,9 +45,18 @@ var common = {
         }
         return false;
     },
+    //判断是否成功
     isSuccess : function(result) {
         return result.code == '0000';
     },
+    //获取当前时间加减指定分钟后的时间
+    getDateByMinute : function (minute) {
+        var time = new Date();
+        time = time.setMinutes(time.getMinutes() + minute, time.getSeconds(), 0);
+        return time = new Date(time);
+    }
+
+
 
 
 };

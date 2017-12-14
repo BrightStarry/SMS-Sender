@@ -1,10 +1,14 @@
 package com.zuma.sms.config.store;
 
+import com.zuma.sms.entity.Dict;
 import com.zuma.sms.enums.system.ConfigModuleEnum;
+import com.zuma.sms.repository.DictRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,10 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 @ConfigurationProperties(prefix = "smsSender.config")
+@Slf4j
 public class ConfigStore {
 
 	//session中的用户key
-	public String sessionUserKey = "customUser";
+//	public String sessionUserKey = "customUser";
 
 	//异常页面
 	public String errorUrl = "common/error";
@@ -93,5 +98,30 @@ public class ConfigStore {
 
 	public void setConfig(Map<String, Map<String, String>> config) {
 		this.config = config;
+	}
+
+	/**
+	 * 加载配置属性到Config
+	 */
+	public void loadConfig(DictRepository dictRepository) {
+		Map<String, Map<String, String>> map = new ConcurrentHashMap<>();
+		for (ConfigModuleEnum item : ConfigModuleEnum.class.getEnumConstants()) {
+			List<Dict> list = dictRepository.findByModuleEquals(item.getCode());
+			Map<String, String> childMap = new ConcurrentHashMap<>();
+			for (Dict dict : list) {
+				childMap.put(dict.getName(), dict.getValue());
+			}
+			map.put(item.getCode(), childMap);
+		}
+		setConfig(map);
+	}
+
+	/**
+	 * 修改某个属性
+	 */
+	public void update(Dict dict) {
+		Map<String, String> childMap = config.get(dict.getModule());
+		childMap.put(dict.getName(), dict.getValue());
+		log.info("[配置类]属性修改成功.dict:{},currentValue:{}",dict,childMap.get(dict.getName()));
 	}
 }

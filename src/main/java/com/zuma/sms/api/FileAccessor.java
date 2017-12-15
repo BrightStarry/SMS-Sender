@@ -54,8 +54,8 @@ public class FileAccessor {
 	/**
 	 * 指定 发送任务id,,将指定格式的异常信息写入文件
 	 */
-	public void writeBySendTaskId(long taskId,String phones) {
-		writeBySendTaskIdAndInfo(taskId,"errorPhone:" + phones);
+	public void writeBySendTaskId(long taskId,String phones,String errorInfo) {
+		writeBySendTaskIdAndInfo(taskId,"errorPhone:" + phones + "---" + "errorInfo:"+errorInfo);
 	}
 
 	/**

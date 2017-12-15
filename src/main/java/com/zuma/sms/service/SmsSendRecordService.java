@@ -27,10 +27,17 @@ public class SmsSendRecordService {
 	 * @return
 	 */
 	public SmsSendRecord newRecord(Platform platform,Long taskId,
-								   Channel channel, String phones, String requestBody) {
-		SmsSendRecord temp = new SmsSendRecord(taskId, channel.getId(), channel.getName(), phones, requestBody);
+								   Channel channel, String phones,  String message,String requestBody) {
+		SmsSendRecord temp = new SmsSendRecord(taskId, channel.getId(), channel.getName(), phones, message,requestBody);
 		if(platform != null)
 			temp.setPlatformId(platform.getId()).setPlatformName(platform.getName());
 		return smsSendRecordRepository.save(temp);
+	}
+
+	/**
+	 * 修改记录
+	 */
+	public SmsSendRecord save(SmsSendRecord smsSendRecord) {
+		return smsSendRecordRepository.save(smsSendRecord);
 	}
 }

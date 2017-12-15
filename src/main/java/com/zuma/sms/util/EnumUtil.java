@@ -52,9 +52,10 @@ public class EnumUtil {
 
     /**
      * 某个 code 和某个枚举的的code是否一致
+     * 注意,一定要前者equals后者.否则容易空指针
      */
-    public static <T extends CodeEnum<X>,X> boolean equals(Integer code,T enumObj) {
-        return code.equals(enumObj.getCode());
+    public static <T extends CodeEnum<X>,X> boolean equals(X code,T enumObj) {
+        return enumObj.getCode().equals(code);
     }
 
 

@@ -79,16 +79,4 @@ public class OperatorPatternPoolFactory {
         pools.add(liantongPatternPool);
     }
 
-    //单例
-    private static OperatorPatternPoolFactory instance;
-    private static ReentrantLock lock = new ReentrantLock();
-    public static OperatorPatternPoolFactory getInstance(){
-        if(instance == null){
-            lock.lock();
-            if(instance == null)
-                instance = new OperatorPatternPoolFactory();
-            lock.unlock();
-        }
-        return instance;
-    }
 }

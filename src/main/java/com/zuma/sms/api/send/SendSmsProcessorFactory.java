@@ -16,8 +16,8 @@ import java.util.Map;
 public class SendSmsProcessorFactory {
 	private static Map<String,SendSmsProcessor> sendSmsProcessorMap;
 
-	// TODO
-	@Autowired
+	// TODO  去掉equeired
+	@Autowired(required = false)
 	private void init(Map<String,SendSmsProcessor> sendSmsProcessorMap) {
 		SendSmsProcessorFactory.sendSmsProcessorMap = sendSmsProcessorMap;
 	}

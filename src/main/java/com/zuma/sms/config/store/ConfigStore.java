@@ -1,5 +1,6 @@
 package com.zuma.sms.config.store;
 
+import com.zuma.sms.api.socket.IPPortPair;
 import com.zuma.sms.entity.Dict;
 import com.zuma.sms.enums.system.ConfigModuleEnum;
 import com.zuma.sms.repository.DictRepository;
@@ -22,14 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ConfigStore {
 
-	//session中的用户key
-//	public String sessionUserKey = "customUser";
 
 	//异常页面
 	public String errorUrl = "common/error";
-
-	//号码源最大上传数
-	public Integer numberSourceMaxUpload = 1;
 
 	//模糊查询,最大显示数目
 	public Integer likeSearchMaxNum = 20;
@@ -50,6 +46,19 @@ public class ConfigStore {
 
 	//Common模块配置map,从数据库中读取
 	public Map<String, Map<String, String>> config = new ConcurrentHashMap<>();
+
+	//CMPP
+	//cmpp心跳检测间隔,超过x秒未收到对方请求
+	public Long cmppActiveTestSecond = 180L;
+
+	//cmpp类型的通道的ip和端口,以通道id为key.
+	public Map<Long,IPPortPair> cmppIpPortMap;
+
+
+	//url
+	//掌游发送短信url
+	public  String zhangyouSendSmsUrl = "http://ysms.game2palm.com:8899/smsAccept";
+
 
 
 	/**

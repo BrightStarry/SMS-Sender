@@ -1,13 +1,15 @@
 package com.zuma.sms.dto.api.cmpp;
 
 import com.zuma.sms.enums.CMPPCommandIdEnum;
+import com.zuma.sms.util.CMPPUtil;
 import com.zuma.sms.util.EnumUtil;
 import lombok.AllArgsConstructor;
+import lombok.Cleanup;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * author:ZhengXing
@@ -30,6 +32,7 @@ public  class CMPPHeader implements ToByteArray{
     //消息流水号,顺序累加,步长为1,循环使用（一对请求和应答消息的流水号必须相同-UnsignedInteger-4
     protected Integer sequenceId;
 
+
     //自定义.commandId枚举string
     private String commandStr;
 
@@ -42,8 +45,19 @@ public  class CMPPHeader implements ToByteArray{
     }
 
 
+    public CMPPHeader(byte[] data) throws IOException {
+        @Cleanup ByteArrayInputStream bins = new ByteArrayInputStream(data);
+        @Cleanup DataInputStream dins = new DataInputStream(bins);
+        CMPPUtil.setHeader(dins,this);
+    }
+
+
     @Override
     public byte[] toByteArray()  throws IOException{
-        return new byte[0];
+        @Cleanup ByteArrayOutputStream bous = new ByteArrayOutputStream();
+        @Cleanup DataOutputStream dous = new DataOutputStream(bous);
+        dous.writeInt(this.getCommandId());
+        dous.writeInt(this.getSequenceId());
+        return bous.toByteArray();
     }
 }

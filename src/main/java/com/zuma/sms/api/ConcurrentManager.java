@@ -1,7 +1,11 @@
 package com.zuma.sms.api;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.ListUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
@@ -10,29 +14,39 @@ import java.util.concurrent.TimeUnit;
 /**
  * author:ZhengXing
  * datetime:2017/12/7 0007 09:45
- * 连接管理器-限制每个通道的每秒并发数
+ * 并发管理器-限制每个连接的每秒并发数
  */
 @Slf4j
-public class ChannelManager {
-	//该连接管理器所属的通道类型
-	private Long channelType;
+public class ConcurrentManager {
+	//唯一名字
+	private String name;
 	//该连接管理并发总量-和信号量设置的总量相同
-	private Integer maxNum;
+	//volatile,便于并发修改
+	//当通道为cmpp时,该数量需要乘以socket连接数
+	private volatile Integer maxNum;
 	//信号量,表示当前该socket的并发数
 	private Semaphore semaphore;
 	//清理器-自身维护的定时线程池,用来每若干秒清空信号量的值
 	private ScheduledExecutorService cleaner;
 	//是否已经预警
-	private volatile Boolean isWarn;
+	private volatile Boolean isWarn = false;
 
 	/**
 	 * 构造
 	 */
-	public ChannelManager(long channelType, int maxNum) {
-		this.channelType = channelType;
+	public ConcurrentManager(String name, int maxNum) {
+		this.name = name + "-并发管理器";
 		this.maxNum = maxNum;
 		this.semaphore = new Semaphore(maxNum,true);
 		setup();
+	}
+
+	/**
+	 * 结束定时线程,清空该对象
+	 */
+	public void clean() {
+		cleaner.shutdown();
+		cleaner = null;
 	}
 
 	/**
@@ -55,9 +69,19 @@ public class ChannelManager {
 
 					//如果当前并发超过最大并发的3/4,预警
 					if(i > maxNum/4*3){
+						//该判断必须写在上面这个if里面.具体逻辑自行思考...
+						//反正就是一波预警发生后,只执行一次预警操作,之后如果并发小了
+						//就将预警设置为false.以达到可以重复预警的目的
+						if(isWarn = true)
+							return;
+						log.warn("[并发管理器]{},当前并发警告.当前并发:{},最大并发:{}",name,i,maxNum);
 						//...TODO 预警操作
-						log.warn("通道类型ID:{},当前并发警告.当前并发:{},最大并发:{}",channelType,i,maxNum);
-					}
+
+						//表示已经预警
+						isWarn = true;
+					}else
+						//当并发量小了,设为false,表示该次预警结束
+						isWarn = false;
 				} catch (Exception e) {
 					//....此处只是为了防止异常后,定时线程池中断
 				}
@@ -81,7 +105,7 @@ public class ChannelManager {
 		try {
 			semaphore.acquire();
 		} catch (InterruptedException e) {
-			log.error("[通道管理器]获取信号量失败.通道id:{},当前并发数:{}", channelType,getConcurrentNum());
+			log.error("[并发管理器]{},获取信号量失败.通道:{},当前并发数:{}", name,getConcurrentNum());
 		}
 	}
 

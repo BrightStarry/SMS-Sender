@@ -21,10 +21,10 @@ public enum ErrorEnum implements CodeEnum<String> {
     UNSUPPORTED_OPERATOR("0009","包含指定通道不支持的运营商"),
     HTTP_RESPONSE_IO_ERROR("0010","http请求response对象，转换时io异常"),
     HTTP_STATUS_CODE_ERROR("0011","http请求状态码非200"),
-    STRING_TO_RESPONSE_ERROR("0012","短信API返回参数有误"),
+//    STRING_TO_RESPONSE_ERROR("0012","短信API返回参数有误"),
     SEND_SMS_ERROR("0013","短信发送异常"),
     TRANSCODE_ERROR("0014","转码失败"),
-    IP_UNALLOW("0015","IP非法"),
+//    IP_UNALLOW("0015","IP非法"),
     CACHE_EXPIRE("0016","缓存过期,无法解析发送短信接口异步回调信息"),
     SEND_CALLBACK_TO_PLATFORM_ERROR("0017", "发送回调请求到平台失败"),
     SIGN_NOT_MATCH_ERROR("0018","签名不匹配"),
@@ -32,7 +32,7 @@ public enum ErrorEnum implements CodeEnum<String> {
     ZHUWANG_CONNECT_ERROR("0020", "连接筑望服务器失败"),
     MD5_SIGN_ERROR("0021", "MD5签名异常"),
     ZHUWANG_RESPONSE_MESSAGE_ERROR("0022","筑望服务器响应异常"),
-    SOCKET_REQUEST_ERROR("0023","socket请求失败"),
+//    SOCKET_REQUEST_ERROR("0023","socket请求失败"),
     ENCODE_ERROR("0024","消息对象编码异常"),
     NON_AVAILABLE_SOCKET("0025","该平台没有可用socket连接"),
     NOT_FOUND("0026","没有该路径"),
@@ -52,6 +52,7 @@ public enum ErrorEnum implements CodeEnum<String> {
     UPLOAD_FILE_EMPTY("3001","上传文件为空"),
     UPLOAD_FILE_TOO_MANY("3002","上传文件过多"),
     ARRAY_EMPTY("3003","数组为空"),
+    IP_UNALLOW("3004","IP非法"),
 
 
 
@@ -73,7 +74,15 @@ public enum ErrorEnum implements CodeEnum<String> {
     //UTIL
     GET_ENUM_ERROR("5001","参数异常"),
 
+    //CMPP
+    RESPONSE_MESSAGE_ERROR("6001","服务器响应异常"),
+    SOCKET_REQUEST_ERROR("6002","socket发送失败"),
+
+	//http api
+	STRING_TO_RESPONSE_ERROR("7001","短信API返回参数有误"),
+
     OTHER_ERROR("9999", "其他异常(消息自定义)"),
+
 
 
 

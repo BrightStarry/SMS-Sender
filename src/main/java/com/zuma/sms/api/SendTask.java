@@ -254,13 +254,7 @@ public class SendTask implements Delayed {
 							//总操作数+
 							usedNum.addAndGet(thisSendPhoneNum);
 							//发送
-							ErrorData errorData = new ErrorData();
-							errorData.setCount(1);
-							errorData.setMessages("xxx");
-							errorData.setPhones(phones.toString());
-							ResultDTO<ErrorData> result = ResultDTO.error(ErrorEnum.OTHER_ERROR,errorData);
-							channel.getChannelManager().increment();
-	//						ResultDTO<ErrorData> result = sendSmsProcessor.process(channel, phones.toString(), message, taskId);
+							ResultDTO<ErrorData> result = sendSmsProcessor.process(channel, phones.toString(), message, taskId);
 
 							//处理返回对象
 							//如果成功
@@ -276,8 +270,8 @@ public class SendTask implements Delayed {
 							Integer errorCount = result.getData().getCount();
 							//失败总数增加
 							failedIncrement(errorCount);
-							//写入失败日志--TODO 可能需要同步
-							fileAccessor.writeBySendTaskId(taskId,errorPhone);
+							//写入失败日志
+							fileAccessor.writeBySendTaskId(taskId,errorPhone,result.getMessage());
 						} catch (Exception e) {
 							//失败,则发送不可能为成功,累加失败总数(如果进行本次发送数量不为0)
 							if(thisSendPhoneNum != 0)

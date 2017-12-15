@@ -5,17 +5,21 @@ import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.Platform;
 import com.zuma.sms.entity.SmsSendRecord;
+import com.zuma.sms.enums.system.ErrorEnum;
+import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.service.SmsSendRecordService;
 import com.zuma.sms.util.CodeUtil;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * author:ZhengXing
  * datetime:2017/12/5 0005 15:13
  * 抽象发送短信处理器
  */
+@Slf4j
 public abstract class AbstractSendSmsProcessor<R,P> implements SendSmsProcessor{
 
-	private SmsSendRecordService smsSendRecordService;
+	protected SmsSendRecordService smsSendRecordService;
 
 	/**
 	 * spring容器注入方法,子类需要重写,执行父类方法,并增加Autowired注解
@@ -52,14 +56,21 @@ public abstract class AbstractSendSmsProcessor<R,P> implements SendSmsProcessor{
 	 * @return 单次发送结果
 	 */
 	private ResultDTO<ErrorData> process(Channel channel, String phones, String message, Long taskId, Platform platform) {
-		//将参数转为请求对象
-		R requestObject = toRequestObject(channel,phones,message);
-		//新建发送记录
-		SmsSendRecord record = smsSendRecordService.newRecord(platform,taskId, channel, phones, CodeUtil.objectToJsonString(requestObject));
-		//获取信号量
-		channel.getChannelManager().increment();
-		//发送并返回ResultDTO
-		return getResult(requestObject,record);
+		try {
+			//将参数转为请求对象
+			R requestObject = toRequestObject(channel,phones,message);
+			//新建发送记录
+			SmsSendRecord record = smsSendRecordService.newRecord(platform,taskId, channel, phones,message, CodeUtil.objectToJsonString(requestObject));
+			//获取信号量
+			channel.getConcurrentManager().increment();
+			//发送并返回ResultDTO
+			return getResult(requestObject,record);
+		}catch (SmsSenderException e){
+			return ResultDTO.error(e.getCode(), e.getMessage(), new ErrorData(phones, message));
+		} catch (Exception e) {
+			log.error("[短信发送过程]发生未知异常.e:{}",e.getMessage(),e);
+			return ResultDTO.error(ErrorEnum.UNKNOWN_ERROR, new ErrorData(phones, message));
+		}
 	}
 
 
@@ -80,7 +91,9 @@ public abstract class AbstractSendSmsProcessor<R,P> implements SendSmsProcessor{
 	 */
 	protected  ResultDTO<ErrorData> getResult(R requestObject,SmsSendRecord record){
 		//发送并获取结果
-		P response = send(requestObject);
+		String result = send(requestObject);
+		//将string的结果转为响应对象
+		P response = stringToResponseObject(result);
 		//将结果更新到本次发送记录
 		record = updateRecord(response, record);
 		//根据响应返回结果
@@ -107,5 +120,12 @@ public abstract class AbstractSendSmsProcessor<R,P> implements SendSmsProcessor{
 	 * @param requestObject
 	 * @return
 	 */
-	protected abstract P send(R requestObject);
+	protected abstract String send(R requestObject);
+
+	/**
+	 * 将返回的string转为对应response对象
+	 * @param result
+	 * @return
+	 */
+	abstract P stringToResponseObject(String result);
 }

@@ -18,6 +18,9 @@ public enum CMPPCommandIdEnum implements CodeEnum<Integer> {
     CMPP_DELIVER_RESP(0x80000005, "短信下发应答"),
     CMPP_ACTIVE_TEST(0x00000008, "激活测试"),
     CMPP_ACTIVE_TEST_RESP(0x80000008, "激活测试应答"),
+    CMPP_TERMINATE(0x00000002, "终止连接"),
+    CMPP_TERMINATE_RESP(0x80000002, "终止连接"),
+
 
     UNKNOWN(0X00000000, "未知"),
 

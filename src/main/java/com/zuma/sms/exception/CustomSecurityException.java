@@ -7,6 +7,7 @@ import org.springframework.security.core.AuthenticationException;
 /**
  * author:ZhengXing
  * datetime:2017/11/7 0007 16:40
+ * 自定义安全异常
  */
 @Getter
 public class CustomSecurityException extends AuthenticationException {

@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class CMPPUtil {
 
-    private static final AtomicInteger sequence = new AtomicInteger(10000);
+    private static final AtomicInteger sequence = new AtomicInteger(1);
     private static final Integer SEQUENCE_MAX_NUM = Integer.MAX_VALUE - 10000;
 
     /**

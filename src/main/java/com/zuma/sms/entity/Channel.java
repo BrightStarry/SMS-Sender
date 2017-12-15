@@ -1,6 +1,7 @@
 package com.zuma.sms.entity;
 
-import com.zuma.sms.api.ChannelManager;
+import com.zuma.sms.api.ConcurrentManager;
+import com.zuma.sms.api.socket.CMPPConnectionManager;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -75,12 +76,17 @@ public class Channel {
     private Integer maxConcurrent;
 
     /**
+     * 是否是cmpp
+     */
+    private Boolean isCMPP;
+
+    /**
      * 连接用的字符若干
      */
-    private String akey;
-    private String bkey;
-    private String ckey;
-    private String dkey;
+    private String aKey;
+    private String bKey;
+    private String cKey;
+    private String dKey;
 
     /**
      * 创建时间
@@ -94,10 +100,16 @@ public class Channel {
 
 
     /**
-     * 连接管理器 非DB字段
+     * 并发管理器 非DB字段
      */
     @Transient
-    public ChannelManager channelManager;
+    private ConcurrentManager concurrentManager;
+
+    /**
+     * CMPP连接管理器 非DB字段
+     */
+    @Transient
+    private CMPPConnectionManager cmppConnectionManager;
 
 
 

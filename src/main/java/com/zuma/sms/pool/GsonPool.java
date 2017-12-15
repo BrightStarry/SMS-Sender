@@ -1,6 +1,7 @@
 package com.zuma.sms.pool;
 
 import com.google.gson.Gson;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -9,9 +10,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * datetime:2017/11/13 0013 15:12
  * 实现{@link Gson}对象池,
  */
+@Component
 public class GsonPool extends BaseCommonPool<Gson> {
-
-
     @Override
     SimpleObjectFactory<Gson> initCommonPool() {
         return  new SimpleObjectFactory<Gson>() {
@@ -22,17 +22,4 @@ public class GsonPool extends BaseCommonPool<Gson> {
         };
     }
 
-
-    private GsonPool(){}
-    private static GsonPool instance;
-    private static ReentrantLock lock = new ReentrantLock();
-    public static GsonPool getInstance(){
-        if(instance == null){
-            lock.lock();
-            if(instance == null)
-                instance = new GsonPool();
-            lock.unlock();
-        }
-        return instance;
-    }
 }

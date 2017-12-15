@@ -25,10 +25,11 @@ CREATE TABLE channel(
   max_group_number SMALLINT DEFAULT 1 COMMENT '最大群发数(每次最多发送号码数).如果不支持,则为1',
   max_connect TINYINT DEFAULT 1 COMMENT '最大连接数,针对socket',
   max_concurrent Integer NOT NULL COMMENT '最大并发数,针对所有,类型相同,并发肯定一样',
+  is_cmpp TINYINT NOT NULL COMMENT  '是否为cmpp. 0:否; 1:是',
 
   a_key VARCHAR(32) DEFAULT '' COMMENT '连接用的字符a',
   b_key VARCHAR(32) DEFAULT '' COMMENT '连接用的字符b',
-  c_cey VARCHAR(32) DEFAULT '' COMMENT '连接用的字符c',
+  c_key VARCHAR(32) DEFAULT '' COMMENT '连接用的字符c',
   d_key VARCHAR(32) DEFAULT '' COMMENT '连接用的字符d',
 
   create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -38,16 +39,15 @@ CREATE TABLE channel(
   KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信通道信息表';
 
-INSERT INTO channel(name, max_connect,max_concurrent,sort ,type,key_ame, cache_name,support_operator,a_key,b_key,c_cey)
+INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_ame, cache_name,support_operator,a_key,b_key,c_cey)
     VALUES
-      ('掌游_移动',1,100,1,0,'ZhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
-      ('宽信_移动',1,100,2,1,'KuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_联通',1,100,3,1,'KuanXin','kuanXinLT',2,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_电信',1,100,4,1,'KuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_CMPP',1,200,5,2,'CMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
-      ('群正_移动',1,100,6,3,'QunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
-      ('筑望CMPP_移动',1,300,7,4,'CMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
-      ('畅想_移动',1,100,8,5,'ChangXiang','changXiangYD',1,'zmkj','zmkj','');
+      ('掌游_移动',0,1,100,1,0,'ZhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
+      ('宽信_移动',0,1,100,2,1,'KuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('宽信_联通',0,1,100,4,1,'KuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('宽信_CMPP',1,1,200,5,2,'CMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
+      ('群正_移动',0,1,100,6,3,'QunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
+      ('筑望CMPP_移动',1,1,300,7,4,'CMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
+      ('畅想_移动',0,1,100,8,5,'ChangXiang','changXiangYD',1,'zmkj','zmkj','');
 
 
 /*系统用户表*/
@@ -144,13 +144,17 @@ CREATE TABLE sms_send_record(
   async_time TIMESTAMP DEFAULT '0000-00-00 00:00:00' COMMENT '异步回调时间',
   async_result_body VARCHAR(1024) DEFAULT  '' COMMENT '异步返回对象json字符',
 
+  error_info VARCHAR(128) COMMENT '异常信息,如果有的话',
+
   status TINYINT DEFAULT 0 COMMENT '状态. 0:默认;1:同步成功;2:异步成功;-1:同步失败;-2:异步失败',
 
   create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间,也是发送时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   PRIMARY KEY (id),
   KEY idx_platform_id(platform_id),
-  KEY idx_task_id(send_task_id)
+  KEY idx_task_id(send_task_id),
+  KEY idx_channel_id(channel_id),
+  KEY idx_other_id(other_id)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信发送记录表,每调用接口一次,生成一条记录';
 
 /*发送任务表*/

@@ -14,7 +14,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorData {
-    private Integer count;//失败数
+    private Integer count = 1;//失败数
     private String phones;//失败的手机号
     private String messages;//失败的短信消息
+
+    public ErrorData(String phones, String messages) {
+        this.phones = phones;
+        this.messages = messages;
+    }
 }

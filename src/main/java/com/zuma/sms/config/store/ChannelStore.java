@@ -1,6 +1,7 @@
 package com.zuma.sms.config.store;
 
-import com.zuma.sms.api.ChannelManager;
+import com.zuma.sms.api.ConcurrentManager;
+import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.repository.ChannelRepository;
 import lombok.Setter;
@@ -37,22 +38,29 @@ public class ChannelStore {
 	/**
 	 * 加载所有短信通道到ChannelStore,并加载对应的
 	 * 通道管理器
-	 * See{@link com.zuma.sms.api.ChannelManager}
+	 * See{@link ConcurrentManager}
 	 */
 	public  void loadChannel(ChannelRepository channelRepository) {
 		Map<Long, Channel> map = new ConcurrentHashMap<>();
 		//查询所有通道
 		List<Channel> list = channelRepository.findAll();
-		//存储已经加载的通道管理器
-		ChannelManager[] channelManagers = new ChannelManager[list.size()];
+		//存储已经加载的并发管理器
+		ConcurrentManager[] concurrentManagers = new ConcurrentManager[list.size()];
 		//遍历
 		for (Channel channel : list) {
 			map.put(channel.getId(), channel);
 
-			//如果未加载该类型
-			if(channelManagers[channel.getType()] == null)
-				channelManagers[channel.getType()] = new ChannelManager(channel.getType(), channel.getMaxConcurrent());
-			channel.setChannelManager(channelManagers[channel.getType()]);
+			//如果未加载该类型,则加载新的并发管理器
+			if(concurrentManagers[channel.getType()] == null)
+				concurrentManagers[channel.getType()] = new ConcurrentManager(channel.getName(), channel.getMaxConcurrent());
+			channel.setConcurrentManager(concurrentManagers[channel.getType()]);
+
+			//如果是cmpp类型,加载 CMPP连接管理器
+			if (channel.getIsCMPP()) {
+				CMPPConnectionManager cmppConnectionManager = new CMPPConnectionManager(channel);
+				cmppConnectionManager.openConnection();
+				channel.setCmppConnectionManager(cmppConnectionManager);
+			}
 		}
 		setChannels(map);
 	}

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -19,7 +20,8 @@ import java.util.Date;
 public interface ZhangYouAPI {
 
 	@Data
-	@Builder
+	@Accessors(chain = true)
+	@NoArgsConstructor
 	class Request {
 		private String sid;//* 合作商家的企业代码，每个合作商家仅有一个。由我方分配，形式如:10010001。
 		private String cpid;//* 业务代码，用于区分同一合作商的不同业务。由我方分配，形式如:600100。

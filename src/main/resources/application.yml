@@ -43,4 +43,12 @@ smsSender:
   config:
     errorUrl: common/error
     likeSearchMaxNum: 20
-#    sessionUserKey: customUser
+    cmppActiveTestSecond: 180
+    cmppIpPortMap:
+      1004:
+        ip: 118.178.35.191
+        port: 7892
+      1006:
+        ip: 115.231.73.206
+        port: 8855
+    allowIp: 127.0.0.1

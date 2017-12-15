@@ -1,5 +1,6 @@
 package com.zuma.sms.entity;
 
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,24 +41,21 @@ public class Platform {
     /**
      * 回调url
      */
-    @Column(name = "callback_url")
     private String callbackUrl;
 
     /**
      * 状态： 0：停止授权；1：启用授权
      */
-    private Byte status;
+    private Integer status = IntToBoolEnum.TRUE.getCode();
 
     /**
      * 创建时间
      */
-    @Column(name = "create_time")
     private Date createTime;
 
     /**
      * 修改时间
      */
-    @Column(name = "update_time")
     private Date updateTime;
 
 

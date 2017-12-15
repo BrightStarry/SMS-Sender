@@ -4,6 +4,13 @@
     <title>短信发送平台-登录</title>
     <meta name="description" content="短信发送平台-登录">
     <#include "common/header.html"/>
+    <style>
+        .white {
+            font-family: Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo, "Droid Sans", "wenquanyi micro hei", "Hiragino Sans GB", "Hiragino Sans GB W3", FontAwesome, sans-serif;
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
 </head>
 
 <body data-type="login">
@@ -29,13 +36,13 @@
                     <div class="am-form-group">
                         <input type="password" class="" name="password" id="password" placeholder="密码">
                     </div>
-                    <div class="am-form-group">
-                        <input type="checkbox" name="remember-me" value="true">记住我?
+                    <div class="am-form-group ">
+                        <input id="remember-me" type="checkbox" name="remember-me" value="true">
+                        <label for="remember-me"   class="white"><strong>记住我? </strong></label>
                     </div>
                     <p>
-                        <button id="loginButton" type="button" class="am-btn am-btn-default">登录</button>
+                        <button id="loginButton" type="button" class="am-btn am-btn-default ">登录</button>
                     </p>
-
                 </fieldset>
             </form>
         </div>
@@ -53,3 +60,22 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

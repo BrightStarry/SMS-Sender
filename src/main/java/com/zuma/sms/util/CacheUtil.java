@@ -13,9 +13,9 @@ import java.util.concurrent.TimeUnit;
 public class CacheUtil {
     private static final Cache<String,String> cache = CacheBuilder.newBuilder()
             //缓存初始大小
-            .initialCapacity(10)
+            .initialCapacity(100)
             //缓存并发数,同一时间最多x个线程执行写入操作
-            .concurrencyLevel(10)
+            .concurrencyLevel(30)
             //过期时间,在写入后的-可设置为读写后的每次读写刷新过期时间
             .expireAfterWrite(3, TimeUnit.HOURS)
             .build();

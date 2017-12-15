@@ -37,6 +37,12 @@ public interface CMPPActiveTestAPI {
             dataOutputStream.writeByte(this.reserved);
             return byteArrayOutputStream.toByteArray();
         }
+
+        public Request(byte[] data) throws IOException {
+            @Cleanup ByteArrayInputStream bins = new ByteArrayInputStream(data);
+            @Cleanup DataInputStream dins = new DataInputStream(bins);
+            CMPPUtil.setHeader(dins,this);
+        }
     }
 
 

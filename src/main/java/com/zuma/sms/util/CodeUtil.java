@@ -4,6 +4,8 @@ import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.zuma.sms.pool.CommonPool;
 import com.zuma.sms.pool.GsonPool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -15,9 +17,16 @@ import java.net.URLEncoder;
  * datetime:2017/11/7 0007 16:02
  * md5工具类
  */
+@Component
 public class CodeUtil {
 
-    private static final CommonPool<Gson> gsonFactory = GsonPool.getInstance();
+
+    private static  CommonPool<Gson> gsonFactory;
+
+    @Autowired
+    public void init(CommonPool<Gson> gsonFactory) {
+        CodeUtil.gsonFactory = gsonFactory;
+    }
 
 
     //BASE64

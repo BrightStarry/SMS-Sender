@@ -58,6 +58,14 @@ public class ConfigStore {
 	//url
 	//掌游发送短信url
 	public  String zhangyouSendSmsUrl = "http://ysms.game2palm.com:8899/smsAccept";
+	//宽信url前缀
+	public String kuanxinUrlPre = "http://114.55.90.98:8808/api";
+	//宽信发送短信url
+	public String kuanxinSendSmsUrl = kuanxinUrlPre + "/sms/send";
+	//群正发送短信Url
+	public String qunzhengSendSmsUrl = "http://sms.uninets.com.cn/Modules/Interface/http/IservicesBSJY.aspx";
+	//畅想发送短信url
+	public String changxiangSendSmsUrl = "http://api.cxton.com:8080/eums/utf8/send_strong.do";
 
 
 

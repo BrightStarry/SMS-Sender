@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorEnum implements CodeEnum<String> {
     SUCCESS("0000","成功"),
-    UNKNOWN_ERROR("0001","发生未知异常"),
+    UNKNOWN_ERROR("0001","未知异常"),
     HTTP_ERROR("0002","http请求失败"),
 
     PLATFORM_EMPTY("0004","平台不存在"),
@@ -26,7 +26,7 @@ public enum ErrorEnum implements CodeEnum<String> {
     TRANSCODE_ERROR("0014","转码失败"),
 //    IP_UNALLOW("0015","IP非法"),
     CACHE_EXPIRE("0016","缓存过期,无法解析发送短信接口异步回调信息"),
-    SEND_CALLBACK_TO_PLATFORM_ERROR("0017", "发送回调请求到平台失败"),
+//    SEND_CALLBACK_TO_PLATFORM_ERROR("0017", "发送回调请求到平台失败"),
     SIGN_NOT_MATCH_ERROR("0018","签名不匹配"),
     POOL_ERROR("0019","对象池异常"),
     ZHUWANG_CONNECT_ERROR("0020", "连接筑望服务器失败"),
@@ -80,6 +80,7 @@ public enum ErrorEnum implements CodeEnum<String> {
 
 	//http api
 	STRING_TO_RESPONSE_ERROR("7001","短信API返回参数有误"),
+    SEND_CALLBACK_TO_PLATFORM_ERROR("7002", "发送回调请求到平台失败"),
 
     OTHER_ERROR("9999", "其他异常(消息自定义)"),
 

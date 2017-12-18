@@ -1,5 +1,6 @@
 package com.zuma.sms.dto.api.cmpp;
 
+import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.CMPPCommandIdEnum;
 import com.zuma.sms.enums.error.CMPPSubmitErrorEnum;
 import com.zuma.sms.util.CMPPUtil;
@@ -182,6 +183,29 @@ public interface CMPPSubmitAPI {
             CMPPUtil.writeString(dous, this.reserve, 8);// 保留
 
             return bous.toByteArray();
+        }
+
+
+        /**
+         * 根据  短信通道  手机号  消息 构建对象
+         */
+        public static Request build(Channel channel,String phone,String msg) throws IOException {
+            //流水号
+            Integer sequenceId = CMPPUtil.getSequenceId();
+            //消息内容
+            byte[] msgContent= msg.getBytes("gb2312");
+            //信息长度
+            byte msgLength = (byte)msgContent.length;
+
+            //构建对象
+            CMPPSubmitAPI.Request request = new CMPPSubmitAPI.Request()
+                    .setMsgSrc(channel.getAKey())//信息内容来源(SP_Id)
+                    .setDestTerminalId(phone)//手机号
+                    .setMsgContent(msgContent)
+                    .setMsgLength(msgLength);
+            request.setSequenceId(sequenceId);
+
+            return request;
         }
 
     }

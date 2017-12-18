@@ -1,6 +1,7 @@
 package com.zuma.sms.api;
 
 import com.zuma.sms.api.send.SendSmsProcessor;
+import com.zuma.sms.api.send.SendSmsProcessorFactory;
 import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
@@ -119,7 +120,7 @@ public class SendTask implements Delayed {
 			sendTaskRecord
 					.setRealStartTime(new Date(this.realStartTime))
 					.setRealEndTime(new Date(this.realEndTime))
-					.setTotalTime((int)(this.realEndTime - this.realStartTime))
+					.setTotalTime((int)(TimeUnit.SECONDS.convert((this.realEndTime - this.realStartTime),TimeUnit.MILLISECONDS)))
 					.setSuccessNum(this.successNum.get())
 					.setFailedNum(this.failedNum.get())
 					.setUnResponse(this.unResponse.get())
@@ -283,6 +284,7 @@ public class SendTask implements Delayed {
 					//通知主线程,该线程运行完毕
 					latch.countDown();
 				}
+
 			}
 		};
 
@@ -321,8 +323,8 @@ public class SendTask implements Delayed {
 		this.usedNum = new AtomicInteger();
 		//查询通道
 		this.channel = channelStore.get(sendTaskRecord.getChannelId());
-		//匹配短信发送器 TODO 暂时注释
-//		this.sendSmsProcessor = SendSmsProcessorFactory.build(this.channel);
+		//匹配短信发送器
+		this.sendSmsProcessor = SendSmsProcessorFactory.build(this.channel);
 		//放入 结束任务队列
 		this.closeQueue = closeQueue;
 	}

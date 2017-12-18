@@ -49,4 +49,6 @@ public enum ZhangYouErrorEnum implements CodeEnum<String> {
         this.code = code;
         this.message = message;
     }
+
+
 }

@@ -2,6 +2,7 @@ package com.zuma.sms.entity;
 
 import com.zuma.sms.api.ConcurrentManager;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -78,7 +79,7 @@ public class Channel {
     /**
      * 是否是cmpp
      */
-    private Boolean isCMPP;
+    private Integer isCMPP = IntToBoolEnum.FALSE.getCode();
 
     /**
      * 连接用的字符若干

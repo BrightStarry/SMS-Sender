@@ -39,7 +39,7 @@ public interface QunZhengAPI {
 		//    @XmlElement(name = "sms",type = QunZhengSendSmsAsyncResponseChild.class)
 		private List<AsyncResponseChild> sms;//每条报告实体类
 
-		private AsyncResponseChild uniqueSms;//特例，用来给service方法循环调用
+		private AsyncResponseChild thisSms;//特例，用来给循环调用,以便解析每条数据
 
 	}
 

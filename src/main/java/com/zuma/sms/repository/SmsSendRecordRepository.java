@@ -10,4 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 短信发送记录
  */
 public interface SmsSendRecordRepository extends JpaRepository<SmsSendRecord,Long> {
+
+	/**
+	 * 根据otherId查询单挑记录
+	 */
+	SmsSendRecord findByOtherId(String otherId);
 }

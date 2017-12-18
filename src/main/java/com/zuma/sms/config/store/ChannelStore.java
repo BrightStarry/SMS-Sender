@@ -3,7 +3,9 @@ package com.zuma.sms.config.store;
 import com.zuma.sms.api.ConcurrentManager;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.entity.Channel;
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.repository.ChannelRepository;
+import com.zuma.sms.util.EnumUtil;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
@@ -56,7 +58,7 @@ public class ChannelStore {
 			channel.setConcurrentManager(concurrentManagers[channel.getType()]);
 
 			//如果是cmpp类型,加载 CMPP连接管理器
-			if (channel.getIsCMPP()) {
+			if (EnumUtil.equals(channel.getIsCMPP(), IntToBoolEnum.TRUE)) {
 				CMPPConnectionManager cmppConnectionManager = new CMPPConnectionManager(channel);
 				cmppConnectionManager.openConnection();
 				channel.setCmppConnectionManager(cmppConnectionManager);

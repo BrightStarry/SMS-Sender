@@ -114,26 +114,10 @@ public class CMPPConnectionManager {
 	 * 发送短信,逐条发送
 	 * 返回流水号sequenceId
 	 */
-	public Integer sendSms(String msg,String phone) throws IOException {
-
-		//流水号
-		Integer sequenceId = CMPPUtil.getSequenceId();
-		//消息内容
-		byte[] msgContent= msg.getBytes("gb2312");
-		//信息长度
-		byte msgLength = (byte)msgContent.length;
-
-		//构建对象
-		CMPPSubmitAPI.Request request = new CMPPSubmitAPI.Request()
-				.setMsgSrc(channel.getAKey())//信息内容来源(SP_Id)
-				.setDestTerminalId(phone)//手机号
-				.setMsgContent(msgContent)
-				.setMsgLength(msgLength);
-		request.setSequenceId(sequenceId);
-
+	public Integer  sendSms(CMPPSubmitAPI.Request request) throws IOException {
 		log.info("[CMPP连接管理器]通道:{},发送 发送短信 请求:{}",channel.getName(),request);
 		send(request);
-		return sequenceId;
+		return request.getSequenceId();
 	}
 
 	/**

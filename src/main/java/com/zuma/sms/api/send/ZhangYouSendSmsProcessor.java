@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-
 /**
  * author:ZhengXing
  * datetime:2017/12/15 0015 16:18
@@ -28,7 +26,7 @@ import java.util.Date;
  */
 @Component
 @Slf4j
-public class ZYSendSmsProcess extends AbstractSendSmsProcessor<ZhangYouAPI.Request,ZhangYouAPI.Response>{
+public class ZhangYouSendSmsProcessor extends AbstractSendSmsProcessor<ZhangYouAPI.Request,ZhangYouAPI.Response,ZhangYouErrorEnum>{
 
 	@Autowired
 	private HttpClientUtil httpClientUtil;
@@ -36,11 +34,6 @@ public class ZYSendSmsProcess extends AbstractSendSmsProcessor<ZhangYouAPI.Reque
 	@Autowired
 	private ConfigStore configStore;
 
-	@Autowired
-	@Override
-	protected void init(SmsSendRecordService smsSendRecordService) {
-		super.init(smsSendRecordService);
-	}
 
 	@Override
 	protected ZhangYouAPI.Request toRequestObject(Channel channel, String phones, String message) {
@@ -68,31 +61,11 @@ public class ZYSendSmsProcess extends AbstractSendSmsProcessor<ZhangYouAPI.Reque
 	}
 
 	@Override
-	protected SmsSendRecord updateRecord(ZhangYouAPI.Response response, SmsSendRecord record) {
-		try {
-			record.setSyncTime(new Date())
-					.setSyncResultBody(CodeUtil.objectToJsonString(response))
-					.setOtherId(response.getId() != null ? response.getId() : "");
-			//如果成功
-			if(EnumUtil.equals(response.getCode(),ZhangYouErrorEnum.SUCCESS)){
-				record.setStatus(SmsSendRecordStatusEnum.SYNC_SUCCESS.getCode());
-			}else{
-				//如果不成功
-				//根据掌游异常码获取异常枚举
-				ZhangYouErrorEnum errorEnum = EnumUtil.getByCode(response.getCode(), ZhangYouErrorEnum.class);
-				record.setStatus(SmsSendRecordStatusEnum.SYNC_FAILED.getCode())
-						.setErrorInfo(errorEnum == null ?  "未知异常" : errorEnum.getMessage());
-			}
-			//保存并返回
-			return smsSendRecordService.save(record);
-		} catch (Exception e) {
-			log.error("[短信发送过程]响应对象保存到记录失败");
-			record.setSyncTime(new Date())
-					.setSyncResultBody(CodeUtil.objectToJsonString(response))
-					.setErrorInfo("响应对象保存到记录失败");
-			return smsSendRecordService.save(record);
-		}
+	protected UpdateRecordInfo<ZhangYouErrorEnum> getUpdateRecordInfo(ZhangYouAPI.Response response) {
+		return new UpdateRecordInfo<>(response.getId(),response.getCode(),
+				ZhangYouErrorEnum.class,ZhangYouErrorEnum.SUCCESS);
 	}
+
 
 	@Override
 	protected String send(ZhangYouAPI.Request requestObject) {

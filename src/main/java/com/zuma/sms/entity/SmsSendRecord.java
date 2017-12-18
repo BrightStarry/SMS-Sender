@@ -32,7 +32,6 @@ public class SmsSendRecord {
     /**
      * 平台id,当接口调用发送时
      */
-    @Column(name = "platform_id")
     private Long platformId;
 
     /**
@@ -121,5 +120,12 @@ public class SmsSendRecord {
         this.channelName = channelName;
         this.phones = phones;
         this.requestBody = requestBody;
+    }
+
+    /**
+     * 是否是定时任务发送记录
+     */
+    public boolean isTaskRecord() {
+        return sendTaskId != null;
     }
 }

@@ -19,7 +19,7 @@ CREATE TABLE channel(
   name VARCHAR(32) DEFAULT '' COMMENT '通道名',
   sort TINYINT DEFAULT 0 COMMENT '排序,优先级,0-255',
   cache_name VARCHAR(32) DEFAULT '' COMMENT '缓存key,用于缓存',
-  key_ame VARCHAR(32) DEFAULT '' COMMENT 'key,用于spring容器',
+  key_name VARCHAR(32) DEFAULT '' COMMENT 'key,用于spring容器,',
   type TINYINT NOT NULL COMMENT '通道类型,对同一个ip的接口调用为同一类型',
   support_operator TINYINT DEFAULT 0 COMMENT '支持的运营商. 0:未知;1:移动;2:联通;3.电信',
   max_group_number SMALLINT DEFAULT 1 COMMENT '最大群发数(每次最多发送号码数).如果不支持,则为1',
@@ -39,15 +39,15 @@ CREATE TABLE channel(
   KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信通道信息表';
 
-INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_ame, cache_name,support_operator,a_key,b_key,c_cey)
+INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name, cache_name,support_operator,a_key,b_key,c_key)
     VALUES
-      ('掌游_移动',0,1,100,1,0,'ZhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
-      ('宽信_移动',0,1,100,2,1,'KuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_联通',0,1,100,4,1,'KuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_CMPP',1,1,200,5,2,'CMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
-      ('群正_移动',0,1,100,6,3,'QunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
-      ('筑望CMPP_移动',1,1,300,7,4,'CMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
-      ('畅想_移动',0,1,100,8,5,'ChangXiang','changXiangYD',1,'zmkj','zmkj','');
+      ('掌游_移动',0,1,100,1,0,'zhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
+      ('宽信_移动',0,1,100,2,1,'kuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('宽信_联通',0,1,100,4,1,'kuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
+      ('宽信_CMPP',1,1,200,5,2,'cMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
+      ('群正_移动',0,1,100,6,3,'qunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
+      ('筑望CMPP_移动',1,1,300,7,4,'cMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
+      ('畅想_移动',0,1,100,8,5,'changXiang','changXiangYD',1,'zmkj','zmkj','');
 
 
 /*系统用户表*/

@@ -40,4 +40,11 @@ public class SmsSendRecordService {
 	public SmsSendRecord save(SmsSendRecord smsSendRecord) {
 		return smsSendRecordRepository.save(smsSendRecord);
 	}
+
+	/**
+	 * 根据otherId查询单挑记录
+	 */
+	public SmsSendRecord findOneByOtherId(String otherId) {
+		return smsSendRecordRepository.findByOtherId(otherId);
+	}
 }

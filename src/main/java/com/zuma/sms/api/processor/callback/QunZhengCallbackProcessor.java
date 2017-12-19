@@ -1,12 +1,10 @@
-package com.zuma.sms.api.callback;
+package com.zuma.sms.api.processor.callback;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
-import com.zuma.sms.dto.api.KuanXinAPI;
 import com.zuma.sms.dto.api.QunZhengAPI;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.ResultDTOTypeEnum;
-import com.zuma.sms.enums.error.KuanXinErrorEnum;
 import com.zuma.sms.enums.error.QunZhengErrorEnum;
 import com.zuma.sms.util.EnumUtil;
 import org.apache.commons.lang3.StringUtils;

@@ -4,6 +4,8 @@ import com.zuma.sms.api.ConcurrentManager;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.db.IntToBoolEnum;
+import com.zuma.sms.enums.system.ChannelEnum;
+import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.repository.ChannelRepository;
 import com.zuma.sms.util.EnumUtil;
 import lombok.Setter;
@@ -30,6 +32,17 @@ public class ChannelStore {
 	 */
 	public List<Channel> getAll() {
 		return  new ArrayList<>(this.channels.values());
+	}
+
+	/**
+	 * 根据ChannelEnum获取通道
+	 */
+	public Channel get(ChannelEnum channelEnum) {
+		for (Map.Entry<Long,Channel> item : channels.entrySet()) {
+			if (EnumUtil.equals(item.getValue().getKeyName(),channelEnum))
+				return item.getValue();
+		}
+		throw new SmsSenderException("系统bug.通道枚举和数据库通道不对应");
 	}
 
 	//根据id获取帐号

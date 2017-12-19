@@ -66,6 +66,17 @@ public class ConfigStore {
 	public String qunzhengSendSmsUrl = "http://sms.uninets.com.cn/Modules/Interface/http/IservicesBSJY.aspx";
 	//畅想发送短信url
 	public String changxiangSendSmsUrl = "http://api.cxton.com:8080/eums/utf8/send_strong.do";
+	//创蓝url前缀
+	public String chuanglanUrlPre = "http://smssh1.253.com";
+	//创蓝发送短信url
+	public String chuanglanSendSmsUrl = chuanglanUrlPre + "/msg/send/json";
+	//创蓝发送变量短信url
+	public String chuanglanVariateSendSmsUrl = chuanglanUrlPre + "/msg/variable/json";
+	//铭锋url前缀
+	public String mingfengUrlPre = "http://121.196.208.240";
+	//铭锋发送短信url
+	public String mingfengSendSmsUrl = mingfengUrlPre + "/smsJson.aspx";
+
 
 
 

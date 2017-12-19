@@ -1,4 +1,4 @@
-package com.zuma.sms.api.send;
+package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.dto.ErrorData;
@@ -9,12 +9,9 @@ import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.error.CMPPSubmitErrorEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
-import com.zuma.sms.service.SmsSendRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * author:ZhengXing
@@ -49,7 +46,7 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 	 */
 	@Override
 	protected ResultDTO<ErrorData> getResult(CMPPSubmitAPI.Request requestObject, SmsSendRecord record, Channel channel) {
-		Integer sequenceId = null;
+		Integer sequenceId;
 		try {
 			//发送并返回序列号
 			sequenceId = channel.getCmppConnectionManager().sendSms(requestObject);

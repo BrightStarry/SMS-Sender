@@ -1,4 +1,4 @@
-package com.zuma.sms.api.send;
+package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
@@ -39,9 +39,9 @@ public abstract class AbstractSendSmsProcessor<R,P,E extends CodeEnum> implement
 	 * 给短信平台的发送任务调用
 	 */
 	public ResultDTO<ErrorData> process(Channel channel, String phones, String message, Long taskId) {
-//		return process(channel, phones, message, taskId, null);
-		log.info("[短信发送过程]发送............");
-		return ResultDTO.success();
+		return process(channel, phones, message, taskId, null);
+//		log.info("[短信发送过程]发送............");
+//		return ResultDTO.success();
 	}
 
 	/**
@@ -119,7 +119,16 @@ public abstract class AbstractSendSmsProcessor<R,P,E extends CodeEnum> implement
 	 * @param response
 	 * @return
 	 */
-	protected abstract ResultDTO<ErrorData> buildResult(P response,SmsSendRecord record);
+	protected ResultDTO<ErrorData> buildResult(P response, SmsSendRecord record) {
+		//成功
+		if(EnumUtil.equals(record.getStatus(),SmsSendRecordStatusEnum.SYNC_SUCCESS))
+			return ResultDTO.success();
+		//失败
+		return ResultDTO.error(
+				ErrorEnum.OTHER_ERROR.getCode(),
+				record.getErrorInfo(),
+				new ErrorData(record.getPhones(),record.getMessage()));
+	}
 
 	/**
 	 * 将同步响应更新到发送记录

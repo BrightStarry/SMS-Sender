@@ -1,9 +1,10 @@
 package com.zuma.sms.api.socket.handler.chain;
 
+import com.zuma.sms.api.processor.callback.CMPPAsyncCallbackProcessor;
 import com.zuma.sms.dto.api.cmpp.CMPPDeliverAPI;
-import com.zuma.sms.dto.api.cmpp.CMPPSubmitAPI;
 import com.zuma.sms.enums.error.CMPPSubmitErrorEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,6 +15,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class CMPPDeliverHandler extends AbstractCustomChannelHandler{
+
+	@Autowired
+	private CMPPAsyncCallbackProcessor cmppAsyncCallbackProcessor;
+
 	@Override
 	public boolean handler(HandleObject handleObject)  throws Exception{
 		if(!(handleObject.getMsg() instanceof CMPPDeliverAPI.Request))
@@ -29,6 +34,7 @@ public class CMPPDeliverHandler extends AbstractCustomChannelHandler{
 		//TODO 根据类型不同处理
 		//如果是状态推送,也就是发送短信的异步回调,
 		if(request.getRegisteredDeliver() == 1){
+			cmppAsyncCallbackProcessor.process(request, handleObject.getChannel());
 		}else{
 			//否则就是短信上行处理
 		}

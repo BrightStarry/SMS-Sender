@@ -1,8 +1,9 @@
 package com.zuma.sms.api.socket.handler.chain;
 
-import com.zuma.sms.dto.api.cmpp.CMPPConnectAPI;
+import com.zuma.sms.api.processor.callback.CMPPCallbackProcessor;
 import com.zuma.sms.dto.api.cmpp.CMPPSubmitAPI;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +14,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class CMPPSubmitHandler extends AbstractCustomChannelHandler{
+
+	@Autowired
+	private CMPPCallbackProcessor cmppCallbackProcessor;
+
 	@Override
 	public boolean handler(HandleObject handleObject)  throws Exception{
 		if(!(handleObject.getMsg() instanceof CMPPSubmitAPI.Response))
@@ -21,8 +26,6 @@ public class CMPPSubmitHandler extends AbstractCustomChannelHandler{
 		CMPPSubmitAPI.Response response = (CMPPSubmitAPI.Response) handleObject.getMsg();
 		log.info("[CMPP发送短信响应]通道:{},消息:{}", response,handleObject.getChannel().getName());
 
-		// TODO 处理该回调
-
-		return true;
+		return cmppCallbackProcessor.process(response, handleObject.getChannel());
 	}
 }

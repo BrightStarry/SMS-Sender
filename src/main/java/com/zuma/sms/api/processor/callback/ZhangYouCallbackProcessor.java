@@ -1,8 +1,7 @@
-package com.zuma.sms.api.callback;
+package com.zuma.sms.api.processor.callback;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
-import com.zuma.sms.dto.api.KuanXinAPI;
 import com.zuma.sms.dto.api.ZhangYouAPI;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.ResultDTOTypeEnum;

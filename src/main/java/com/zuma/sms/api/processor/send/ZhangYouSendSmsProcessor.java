@@ -1,18 +1,12 @@
-package com.zuma.sms.api.send;
+package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.config.store.ConfigStore;
-import com.zuma.sms.dto.ErrorData;
-import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.dto.api.ZhangYouAPI;
 import com.zuma.sms.entity.Channel;
-import com.zuma.sms.entity.SmsSendRecord;
-import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
 import com.zuma.sms.enums.error.ZhangYouErrorEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
-import com.zuma.sms.service.SmsSendRecordService;
 import com.zuma.sms.util.CodeUtil;
-import com.zuma.sms.util.EnumUtil;
 import com.zuma.sms.util.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,17 +42,7 @@ public class ZhangYouSendSmsProcessor extends AbstractSendSmsProcessor<ZhangYouA
 				.setMsg(CodeUtil.stringToUrlEncode(CodeUtil.stringToBase64(message)));
 	}
 
-	@Override
-	protected ResultDTO<ErrorData> buildResult(ZhangYouAPI.Response response, SmsSendRecord record) {
-		//成功
-		if(EnumUtil.equals(record.getStatus(),SmsSendRecordStatusEnum.SYNC_SUCCESS))
-			return ResultDTO.success();
-		//失败
-		return ResultDTO.error(
-				ErrorEnum.OTHER_ERROR.getCode(),
-				record.getErrorInfo(),
-				new ErrorData(record.getPhones(),record.getMessage()));
-	}
+
 
 	@Override
 	protected UpdateRecordInfo<ZhangYouErrorEnum> getUpdateRecordInfo(ZhangYouAPI.Response response) {

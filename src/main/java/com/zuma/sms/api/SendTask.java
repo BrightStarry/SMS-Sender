@@ -1,7 +1,9 @@
 package com.zuma.sms.api;
 
-import com.zuma.sms.api.send.SendSmsProcessor;
-import com.zuma.sms.api.send.SendSmsProcessorFactory;
+import com.zuma.sms.api.resolver.MessageResolver;
+import com.zuma.sms.api.resolver.MessageResolverFactory;
+import com.zuma.sms.api.processor.send.SendSmsProcessor;
+import com.zuma.sms.api.processor.CustomProcessorFactory;
 import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
@@ -9,7 +11,6 @@ import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.SendTaskRecord;
 import com.zuma.sms.enums.SendTaskStatusEnum;
 import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
-import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.service.ChannelService;
 import com.zuma.sms.service.SendTaskRecordService;
 import com.zuma.sms.util.CodeUtil;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -66,7 +68,7 @@ public class SendTask implements Delayed {
 	//闭锁-等待所有线程执行完毕
 	private CountDownLatch latch;
 	//是否中断 - 操作时不关心其当前值,无需加锁,直接用volatile
-	private volatile Boolean isInterrupt = false;
+	private volatile boolean isInterrupt = false;
 
 	//数量
 	//成功数-异步响应成功
@@ -83,6 +85,15 @@ public class SendTask implements Delayed {
 	private Channel channel;
 	//短信发送器
 	private SendSmsProcessor sendSmsProcessor;
+	//消息解析器
+	private MessageResolver messageResolver;
+
+	//任务是否暂停
+	private volatile boolean isPause;
+	//任务暂停锁
+	private ReentrantLock pauseLock;
+	//任务暂停condition
+	private Condition pauseCondition;
 
 	/**
 	 * 重写toString()
@@ -116,7 +127,7 @@ public class SendTask implements Delayed {
 				this.isInterrupt = true;
 				shutdown(false);
 			}
-			//此处不做查询,任务一旦开始后,不允许修改任务记录
+			//此处不做查询直接修改,任务一旦开始后,不允许修改任务记录
 			sendTaskRecord
 					.setRealStartTime(new Date(this.realStartTime))
 					.setRealEndTime(new Date(this.realEndTime))
@@ -235,6 +246,15 @@ public class SendTask implements Delayed {
 							//检测到中断信号,停止
 							if(isInterrupt)
 								break;
+							//检测到暂停信号,暂停
+							if(isPause){
+								try {
+									pauseLock.lock();
+									pauseCondition.await();
+								} finally {
+									pauseLock.unlock();
+								}
+							}
 							//循环,获取 和最大群发数相同的手机号
 							for (int i = 0; i < phoneNum; i++) {
 								//取出下一个手机号
@@ -252,6 +272,10 @@ public class SendTask implements Delayed {
 							TimeUnit.SECONDS.sleep(1);
 							//截取逗号
 							phones.deleteCharAt(0);
+
+							//TODO 根据手机号修改短信消息内容
+
+
 							//总操作数+
 							usedNum.addAndGet(thisSendPhoneNum);
 							//发送
@@ -314,8 +338,11 @@ public class SendTask implements Delayed {
 		//构造线程池
 		this.executor = Executors.newFixedThreadPool(sendTaskRecord.getThreadCount());
 		//构造锁
-		lock = new ReentrantLock();
-		latch = new CountDownLatch(sendTaskRecord.getThreadCount());
+		this.lock = new ReentrantLock();
+		this.latch = new CountDownLatch(sendTaskRecord.getThreadCount());
+		//构造暂停锁
+		this.pauseLock = new ReentrantLock();
+		this.pauseCondition = this.pauseLock.newCondition();
 		//其他
 		this.successNum = new AtomicInteger();
 		this.failedNum = new AtomicInteger();
@@ -324,7 +351,9 @@ public class SendTask implements Delayed {
 		//查询通道
 		this.channel = channelStore.get(sendTaskRecord.getChannelId());
 		//匹配短信发送器
-		this.sendSmsProcessor = SendSmsProcessorFactory.build(this.channel);
+		this.sendSmsProcessor = CustomProcessorFactory.buildSendSmsProcessor(this.channel);
+		//消息解析器
+		this.messageResolver = MessageResolverFactory.build(channel);
 		//放入 结束任务队列
 		this.closeQueue = closeQueue;
 	}

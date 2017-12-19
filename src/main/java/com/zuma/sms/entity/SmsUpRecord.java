@@ -27,7 +27,7 @@ public class SmsUpRecord {
     /**
      * 通道id
      */
-    private Integer channelId;
+    private Long channelId;
 
     /**
      * 通道名
@@ -47,20 +47,29 @@ public class SmsUpRecord {
     /**
      * 请求对象json字符
      */
-    @Column(name = "request_body")
     private String requestBody;
 
     /**
-     * 创建时间,也是上行时间
+     * 上行时间
      */
-    @Column(name = "create_time")
+    private Date upTime;
+
+    /**
+     * 创建时间
+     */
     private Date createTime;
 
     /**
      * 修改时间
      */
-    @Column(name = "update_time")
     private Date updateTime;
 
-
+    public SmsUpRecord(Long channelId, String channelName, String phone, String content, String requestBody, Date upTime) {
+        this.channelId = channelId;
+        this.channelName = channelName;
+        this.phone = phone;
+        this.content = content;
+        this.requestBody = requestBody;
+        this.upTime = upTime;
+    }
 }

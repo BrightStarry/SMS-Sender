@@ -1,4 +1,4 @@
-package com.zuma.sms.api.callback;
+package com.zuma.sms.api.processor.callback;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
@@ -8,12 +8,16 @@ import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.ResultDTOTypeEnum;
 import com.zuma.sms.enums.error.CMPPSubmitErrorEnum;
 import com.zuma.sms.util.EnumUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 /**
  * author:ZhengXing
  * datetime:2017/12/18 0018 17:20
  * cmpp 同步回调(算是) 短信发送过程
  */
+@Component
+@Slf4j
 public class CMPPCallbackProcessor extends SendSmsCallbackProcessor<CMPPSubmitAPI.Response> {
 
 
@@ -50,7 +54,6 @@ public class CMPPCallbackProcessor extends SendSmsCallbackProcessor<CMPPSubmitAP
 		//找到失败码对应枚举
 		CMPPSubmitErrorEnum errorEnum = EnumUtil.getByCode((int) response.getResult(), CMPPSubmitErrorEnum.class);
 		//返回失败信息
-		//计算手机号个数
 		return ResultDTO.errorOfInteger(errorEnum,new ErrorData(getPhoneLen(record.getPhones()),record.getPhones(),record.getMessage()));
 	}
 }

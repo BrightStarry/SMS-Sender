@@ -46,8 +46,11 @@ INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name
       ('宽信_联通',0,1,100,4,1,'kuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
       ('宽信_CMPP',1,1,200,5,2,'cMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
       ('群正_移动',0,1,100,6,3,'qunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
-      ('筑望CMPP_移动',1,1,300,7,4,'cMPP','zhuWangYD',1,'944027','944027','SVPOUXJLYD'),
-      ('畅想_移动',0,1,100,8,5,'changXiang','changXiangYD',1,'zmkj','zmkj','');
+      ('筑望_CMPP',1,1,300,7,4,'cMPP','zhuWangCMPP',1,'944027','944027','SVPOUXJLYD'),
+      ('畅想_移动',0,1,100,8,5,'changXiang','changXiangYD',1,'zmkj','zmkj',''),
+      ('创蓝_移动',0,1,100,9,6,'chuangLan','chuangLanYD',1,'M8671404','vHEZ1bywo',''),
+      ('铭锋_移动',0,1,100,10,7,'mingFeng','mingFengYD',1,'zmkjhy','zmkjhy01','')
+      ;
 
 
 /*系统用户表*/
@@ -112,12 +115,13 @@ INSERT INTO dict(remark,module, type, name, value)
 /*短信上行记录表*/
 CREATE TABLE sms_up_record(
   id BIGINT AUTO_INCREMENT COMMENT '记录id',
-  channel_id INT DEFAULT 0 COMMENT '通道id',
+  channel_id BIGINT DEFAULT 0 COMMENT '通道id',
   channel_name VARCHAR(16) DEFAULT '' COMMENT '通道名',
   phone CHAR(11)  DEFAULT '' COMMENT '手机号',
   content VARCHAR(255) DEFAULT '' COMMENT '短信内容',
   request_body VARCHAR(512) DEFAULT '' COMMENT '请求对象json字符',
-  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间,也是上行时间',
+  up_time DATETIME DEFAULT 0 COMMENT '上行时间',
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 
   PRIMARY KEY(id),

@@ -1,4 +1,4 @@
-package com.zuma.sms.api.callback;
+package com.zuma.sms.api.processor.callback;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
@@ -34,6 +34,7 @@ public abstract class SendSmsCallbackProcessor<T> {
 	 * 处理方法
 	 */
 	public boolean process(T response, Channel channel) {
+		log.info("[发送短信回调处理]response:{},channelL{}",response,channel);
 		//根据返回中携带的流水号,通过记录中的other_id,查询出数据库记录
 		SmsSendRecord record = smsSendRecordService.findOneByOtherId(getOtherId(response));
 		//根据数据拼接出 返回对象

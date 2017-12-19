@@ -1,17 +1,11 @@
-package com.zuma.sms.api.send;
+package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.config.store.ConfigStore;
-import com.zuma.sms.dto.ErrorData;
-import com.zuma.sms.dto.ResultDTO;
-import com.zuma.sms.dto.api.ChangXiangSendSmsAPI;
-import com.zuma.sms.dto.api.ChangXiangSendSmsAPI;
+import com.zuma.sms.dto.api.ChangXiangAPI;
 import com.zuma.sms.entity.Channel;
-import com.zuma.sms.entity.SmsSendRecord;
-import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
 import com.zuma.sms.enums.error.ChangXiangErrorEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
-import com.zuma.sms.service.SmsSendRecordService;
 import com.zuma.sms.util.CodeUtil;
 import com.zuma.sms.util.DateUtil;
 import com.zuma.sms.util.EnumUtil;
@@ -30,7 +24,7 @@ import java.util.Date;
  */
 @Component
 @Slf4j
-public class ChangXiangSendSmsProcessor extends AbstractSendSmsProcessor<ChangXiangSendSmsAPI.Request,ChangXiangSendSmsAPI.Response,ChangXiangErrorEnum>{
+public class ChangXiangSendSmsProcessor extends AbstractSendSmsProcessor<ChangXiangAPI.Request,ChangXiangAPI.Response,ChangXiangErrorEnum>{
 
 	@Autowired
 	private HttpClientUtil httpClientUtil;
@@ -41,12 +35,12 @@ public class ChangXiangSendSmsProcessor extends AbstractSendSmsProcessor<ChangXi
 
 
 	@Override
-	protected ChangXiangSendSmsAPI.Request toRequestObject(Channel channel, String phones, String message) {
+	protected ChangXiangAPI.Request toRequestObject(Channel channel, String phones, String message) {
 		//时间戳
 		String dateStr = DateUtil.dateToString(new Date(),DateUtil.FORMAT_A);
 		//签名
 		String sign = CodeUtil.stringToMd5(CodeUtil.stringToMd5(channel.getBKey()) + dateStr);
-		return ChangXiangSendSmsAPI.Request.builder()
+		return ChangXiangAPI.Request.builder()
 				.name(channel.getAKey())
 				.seed(dateStr)
 				.key(sign)
@@ -55,22 +49,10 @@ public class ChangXiangSendSmsProcessor extends AbstractSendSmsProcessor<ChangXi
 				.build();
 	}
 
-	@Override
-	protected ResultDTO<ErrorData> buildResult(ChangXiangSendSmsAPI.Response response, SmsSendRecord record) {
-		//成功
-		if(EnumUtil.equals(record.getStatus(),SmsSendRecordStatusEnum.SYNC_SUCCESS))
-			return ResultDTO.success();
-		//失败
-		return ResultDTO.error(
-				ErrorEnum.OTHER_ERROR.getCode(),
-				record.getErrorInfo(),
-				new ErrorData(record.getPhones(),record.getMessage()));
-	}
-
 
 	//该平台因为返回数据不同,需要处理下
 	@Override
-	protected UpdateRecordInfo<ChangXiangErrorEnum> getUpdateRecordInfo(ChangXiangSendSmsAPI.Response response) {
+	protected UpdateRecordInfo<ChangXiangErrorEnum> getUpdateRecordInfo(ChangXiangAPI.Response response) {
 		UpdateRecordInfo<ChangXiangErrorEnum> info = new UpdateRecordInfo<ChangXiangErrorEnum>()
 				.setEClass(ChangXiangErrorEnum.class)
 				.setSuccessEnum(ChangXiangErrorEnum.SUCCESS)
@@ -87,7 +69,7 @@ public class ChangXiangSendSmsProcessor extends AbstractSendSmsProcessor<ChangXi
 	}
 
 	@Override
-	protected String send(ChangXiangSendSmsAPI.Request requestObject) {
+	protected String send(ChangXiangAPI.Request requestObject) {
 		try {
 			return httpClientUtil.doPostForString(configStore.changxiangSendSmsUrl, requestObject);
 		} catch (Exception e) {
@@ -97,10 +79,10 @@ public class ChangXiangSendSmsProcessor extends AbstractSendSmsProcessor<ChangXi
 	}
 
 	@Override
-	ChangXiangSendSmsAPI.Response stringToResponseObject(String result) {
+	ChangXiangAPI.Response stringToResponseObject(String result) {
 		try {
 			String[] temp = StringUtils.split(result, ":");
-			return ChangXiangSendSmsAPI.Response.builder()
+			return ChangXiangAPI.Response.builder()
 					.isSuccessStr(temp[0])
 					.idOrCode(temp[1])
 					.build();

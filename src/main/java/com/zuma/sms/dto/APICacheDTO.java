@@ -1,5 +1,7 @@
 package com.zuma.sms.dto;
 
+import com.zuma.sms.dto.api.MingFengAPI;
+import com.zuma.sms.util.CodeUtil;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,4 +19,5 @@ public class APICacheDTO {
     private String phones;//该次调用的手机号
     private String smsMessage;//该次调用的短信消息
     private Long recordId;//该次短信发送记录id
+
 }

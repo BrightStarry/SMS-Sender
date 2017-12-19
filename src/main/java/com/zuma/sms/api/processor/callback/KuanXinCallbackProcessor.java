@@ -1,4 +1,4 @@
-package com.zuma.sms.api.callback;
+package com.zuma.sms.api.processor.callback;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
@@ -31,7 +31,7 @@ public class KuanXinCallbackProcessor extends SendSmsCallbackProcessor<KuanXinAP
 			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
 		}
 
-		//失败--宽信接口似乎只会将成功返回，此处应该不会执行到
+		//失败
 		//找到失败码对应枚举
 		KuanXinErrorEnum errorEnum = EnumUtil.getByCode(response.getCode(), KuanXinErrorEnum.class);
 

@@ -1,16 +1,12 @@
-package com.zuma.sms.api.callback;
+package com.zuma.sms.api.processor.callback;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
-import com.zuma.sms.dto.api.ChangXiangSendSmsAPI;
-import com.zuma.sms.dto.api.ZhangYouAPI;
+import com.zuma.sms.dto.api.ChangXiangAPI;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.ResultDTOTypeEnum;
 import com.zuma.sms.enums.error.ChangXiangErrorEnum;
-import com.zuma.sms.enums.error.KuanXinErrorEnum;
-import com.zuma.sms.enums.error.ZhangYouErrorEnum;
 import com.zuma.sms.util.EnumUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,16 +15,16 @@ import org.springframework.stereotype.Component;
  * 畅想 异步回调 处理器
  */
 @Component
-public class ChangXiangCallbackProcessor extends SendSmsCallbackProcessor<ChangXiangSendSmsAPI.AsyncResponseChild> {
+public class ChangXiangCallbackProcessor extends SendSmsCallbackProcessor<ChangXiangAPI.AsyncResponseChild> {
 
 
 	@Override
-	protected String getOtherId(ChangXiangSendSmsAPI.AsyncResponseChild response) {
+	protected String getOtherId(ChangXiangAPI.AsyncResponseChild response) {
 		return response.getId();
 	}
 
 	@Override
-	protected ResultDTO<ErrorData> getResultDTO(ChangXiangSendSmsAPI.AsyncResponseChild response,SmsSendRecord record) {
+	protected ResultDTO<ErrorData> getResultDTO(ChangXiangAPI.AsyncResponseChild response, SmsSendRecord record) {
 		//如果成功 TODO 具体对象不明
 		if(EnumUtil.equals(response.getCode(), ChangXiangErrorEnum.SUCCESS)){
 			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());

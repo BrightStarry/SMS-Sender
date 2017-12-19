@@ -1,11 +1,13 @@
 package com.zuma.sms.dto.api;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.zuma.sms.enums.error.ZhangYouErrorEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -58,7 +60,7 @@ public interface ZhangYouAPI {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@XmlRootElement(name = "MsgDataReportResp")
-	class AsyncResponseRerurn {
+	class AsyncResponseReturn {
 		@XmlElement(name = "ResultCode")
 		private String code;
 
@@ -68,11 +70,12 @@ public interface ZhangYouAPI {
 		@XmlElement(name = "Timestamp")
 		private String date;
 
-		public AsyncResponseRerurn(ZhangYouErrorEnum errorEnum, Date date) {
+		public AsyncResponseReturn(ZhangYouErrorEnum errorEnum, Date date) {
 			this.code = errorEnum.getCode();
 			this.message = errorEnum.getMessage();
 			this.date = new SimpleDateFormat("yyyyMMddHHmmss").format(date);//可用@JsonFormat注解
 		}
+
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.zuma.sms.api.send;
+package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;

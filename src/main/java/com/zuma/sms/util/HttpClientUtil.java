@@ -1,23 +1,25 @@
 package com.zuma.sms.util;
 
+import com.sun.xml.internal.fastinfoset.Encoder;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.http.Consts;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -79,8 +81,24 @@ public class HttpClientUtil {
             //关闭
             closeResponseAndIn(null,response);
         }
+        return result;
+    }
 
-
+    /**
+     * 发送post请求,使用json数据,返回string
+     */
+    public <T> String doPostForString(String url, String jsonString){
+        CloseableHttpResponse response = null;
+        String result;
+        try {
+            //发送请求返回response
+            response = doPost(url, jsonString);
+            //response 转 string
+            result = responseToString(response);
+        } finally {
+            //关闭
+            closeResponseAndIn(null,response);
+        }
         return result;
     }
 
@@ -105,9 +123,29 @@ public class HttpClientUtil {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setEntity(new UrlEncodedFormEntity(params, Consts.UTF_8));
 
+        return execute(httpPost);
+    }
+
+    /**
+     * 发起post请求,json格式
+     */
+    public CloseableHttpResponse doPost(String url, String jsonString) {
+        //放入请求参数中
+        HttpPost httpPost = new HttpPost(url);
+        StringEntity stringEntity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
+        stringEntity.setContentEncoding(Encoder.UTF_8);
+        httpPost.setEntity(stringEntity);
+
+        return execute(httpPost);
+    }
+
+    /**
+     * 执行请求并返回响应
+     */
+    private CloseableHttpResponse execute(HttpUriRequest request) {
         CloseableHttpResponse response;
         try {
-            response = getHttpClient().execute(httpPost);
+            response = getHttpClient().execute(request);
         } catch (Exception e) {
             log.error("【httpClient】发送请求失败.Exception={}", e.getMessage(), e);
             throw new SmsSenderException(ErrorEnum.HTTP_ERROR);
@@ -169,11 +207,15 @@ public class HttpClientUtil {
      * 获取HttpClient
      */
     public CloseableHttpClient getHttpClient() {
+//        List<Header> l = new ArrayList<>();
+//        l.add(new BasicHeader("User-Agent", "baidu"));
         return HttpClients.custom()
                 //设置连接池
                 .setConnectionManager(pool)
                 //请求配置
                 .setDefaultRequestConfig(requestConfig)
+                //
+//                .setDefaultHeaders(l)
                 .build();
     }
 

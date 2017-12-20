@@ -40,13 +40,23 @@ public class CMPPConnectionManager {
 
 
 
-
-
 	/**
 	 * 轮询获取一个连接通道
 	 */
 	public io.netty.channel.Channel getChannelFair() {
-		return connections.get(getCount() % getSize()).getChannelHandlerContext().channel();
+		for (int i = 0; i < getSize(); i++) {
+			try {
+				//尝试直接获取,如果失败,会抛出异常
+				return connections.get(getCount() % getSize()).getChannelHandlerContext().channel();
+			} catch (SmsSenderException e){
+				log.error("[CMPP连接管理器]轮询获取通道失败.自定义异常.message:{}",e.getMessage());
+			}catch (Exception e) {
+				log.error("[CMPP连接管理器]轮询获取通道失败.error:{}",e.getMessage(),e);
+			}
+		}
+		//此处还未获取到.表示失败
+		throw new SmsSenderException("该通道暂不可用");
+
 	}
 
 	/**
@@ -121,26 +131,14 @@ public class CMPPConnectionManager {
 	}
 
 	/**
-	 * 发送连接请求
+	 * 发送连接请求,指定Netty channel
 	 */
-	public void sendConnectRequest() throws IOException {
-
-		String serviceId = channel.getAKey();
-		String timestamp = DateUtil.dateToString(new Date(), DateUtil.FORMAT_C);
-		CMPPConnectAPI.Request request = CMPPConnectAPI.Request.builder()
-				.sourceAddr(serviceId)
-				.authenticatorSource(CodeUtil.byteToMd5(
-						(serviceId + "\0\0\0\0\0\0\0\0\0" + channel.getCKey() + timestamp).getBytes()))
-				.version((byte)32)
-				.timestamp(Integer.parseInt(timestamp))
-				.build();
-		request.setCommandId(CMPPCommandIdEnum.CMPP_CONNECT.getCode());
-		request.setSequenceId(CMPPUtil.getSequenceId());
-
-		log.info("[CMPP连接管理器]通道:{},发送 发送连接 请求:{}",channel.getName(),request);
-
-		send(request);
+	public void sendConnectRequest(io.netty.channel.Channel nettyChannel,CMPPConnectAPI.Request request) throws IOException {
+		log.info("[CMPP连接管理器]通道:{},发送 请求连接 请求:{}",channel.getName(),request);
+		send1(request,0,nettyChannel);
 	}
+
+
 
 	/**
 	 * 发送短信推送响应
@@ -160,8 +158,9 @@ public class CMPPConnectionManager {
 	/**
 	 * 发送心跳检测(空) 或 发送心跳检测响应(非空)
 	 * 因为响应需要匹配其请求的sequenceId
+	 * @param nettyChannel 指定对应的连接对象的通道
 	 */
-	public void sendActiveTest(Integer sequenceId) throws IOException {
+	public void sendActiveTest(io.netty.channel.Channel nettyChannel,Integer sequenceId) throws IOException {
 		CMPPActiveTestAPI.Request request =
 				new CMPPActiveTestAPI.Request(
 						sequenceId == null ?
@@ -169,8 +168,10 @@ public class CMPPConnectionManager {
 								CMPPCommandIdEnum.CMPP_ACTIVE_TEST_RESP,
 						sequenceId);
 		log.info("[CMPP连接管理器]通道:{},发送 心跳检测{}:{}",channel.getName(),sequenceId == null ? "" : "响应",request);
-		send(request);
+		send1(request,0,nettyChannel);
 	}
+
+
 
 	/**
 	 * 发送断开连接请求 或发送响应,指定连接通道
@@ -206,7 +207,8 @@ public class CMPPConnectionManager {
 		try {
 			//信号量递增
 			channel.getConcurrentManager().increment();
-			//
+			//判断连接是否已经开启
+			//是否使用指定通道
 			if(nettyChannel == null)
 				//轮询获取netty通道,将字节数组转为ByteBuf,并发送
 				getChannelFair().writeAndFlush(Unpooled.copiedBuffer(data.toByteArray()));

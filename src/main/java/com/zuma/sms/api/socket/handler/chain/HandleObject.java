@@ -1,5 +1,6 @@
 package com.zuma.sms.api.socket.handler.chain;
 
+import com.zuma.sms.api.socket.CMPPConnection;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.entity.Channel;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,7 @@ public class HandleObject {
 
 	//通道
 	private Channel channel;
+
+	//当前连接
+	private CMPPConnection cmppConnection;
 }

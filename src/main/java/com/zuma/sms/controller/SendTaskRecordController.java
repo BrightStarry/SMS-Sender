@@ -1,7 +1,6 @@
 package com.zuma.sms.controller;
 
 import com.zuma.sms.config.store.ChannelStore;
-import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.controller.base.BaseController;
 import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.dto.ResultDTO;
@@ -25,7 +24,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -43,6 +44,16 @@ public class SendTaskRecordController extends BaseController{
 
 	@Autowired
 	private ChannelStore channelStore;
+
+	/**
+	 * 异常文件下载
+	 */
+	@GetMapping("/download/{id:\\d+}")
+	public void download(@PathVariable Long id, HttpServletResponse response) throws IOException {
+		sendTaskRecordService.findOne(id);
+
+		commonDownload(id, response,sendTaskRecordService.getInputStream(id));
+	}
 
 	/**
 	 * 获取所有通道

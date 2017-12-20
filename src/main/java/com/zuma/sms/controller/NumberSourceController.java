@@ -1,7 +1,7 @@
 package com.zuma.sms.controller;
 
 import com.zuma.sms.form.NumberSourceForm;
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.controller.base.BaseController;
 import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.dto.ResultDTO;
@@ -120,6 +120,7 @@ public class NumberSourceController extends BaseController {
 		commonDownload(id, response,numberSourceService.getInputStream(id));
 	}
 
+
 	/**
 	 * 导入号码文件
 	 */
@@ -129,17 +130,16 @@ public class NumberSourceController extends BaseController {
 		List<MultipartFile> files = multipartRequest.getFiles("file");
 		if (CollectionUtils.isEmpty(files))
 			throw new SmsSenderException(ErrorEnum.UPLOAD_FILE_EMPTY);
-		String[] names = null;
-		String[] remarks = null;
-		//如果是多个号码源已通过导入,需要名称和备注也有对应个数
-		if (files.size() > 1) {
-			names = StringUtils.split(name, "|");
-			remarks = StringUtils.split(remark, "|");
-			if (files.size() != names.length || files.size() != remarks.length)
-				throw new SmsSenderException(ErrorEnum.UPLOAD_MULTI_FORMAT_ERROR);
-		}
 		//参数不能为空
 		notEmptyOfString(name,remark);
+
+		String[] names = StringUtils.split(name, "|");
+		String[] remarks = StringUtils.split(remark, "|");
+		//如果是多个号码源已通过导入,需要名称和备注也有对应个数
+		if (files.size() > 1 && (files.size() != names.length || files.size() != remarks.length)) {
+			throw new SmsSenderException(ErrorEnum.UPLOAD_MULTI_FORMAT_ERROR);
+		}
+
 
 		numberSourceService.add(files,names,remarks);
 

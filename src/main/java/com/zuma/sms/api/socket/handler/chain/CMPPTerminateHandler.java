@@ -21,7 +21,7 @@ public class CMPPTerminateHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPDeliverAPI.Request request = (CMPPDeliverAPI.Request) handleObject.getMsg();
-		log.info("[CMPP中断连接请求]通道:{},消息:{}", request,handleObject.getChannel().getName());
+		log.info("[CMPP中断连接请求]通道:{},消息:{}", handleObject.getChannel().getName(),request);
 
 		//响应对方服务器
 		handleObject.getCmppConnectionManager().sendTerminate(request.getSequenceId());

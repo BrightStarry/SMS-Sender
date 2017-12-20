@@ -1,7 +1,7 @@
 package com.zuma.sms.controller.base;
 
 import com.zuma.sms.factory.PageRequestFactory;
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import lombok.extern.slf4j.Slf4j;

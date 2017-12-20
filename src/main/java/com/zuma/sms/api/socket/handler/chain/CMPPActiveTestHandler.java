@@ -22,10 +22,11 @@ public class CMPPActiveTestHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPActiveTestAPI.Request request = (CMPPActiveTestAPI.Request) handleObject.getMsg();
-		log.info("[CMPP链路检测请求]通道:{},消息:{}", request,handleObject.getChannel().getName());
+		log.info("[CMPP链路检测请求]通道:{},消息:{}", handleObject.getChannel().getName(),request);
 
 		//发送响应
-		handleObject.getCmppConnectionManager().sendActiveTest(request.getSequenceId());
+		handleObject.getCmppConnectionManager().sendActiveTest(
+				handleObject.getCmppConnection().getChannelHandlerContext().channel(),request.getSequenceId());
 
 
 		return true;

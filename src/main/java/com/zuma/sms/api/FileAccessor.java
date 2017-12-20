@@ -1,7 +1,7 @@
 package com.zuma.sms.api;
 
 import com.google.common.base.Charsets;
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -11,9 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**

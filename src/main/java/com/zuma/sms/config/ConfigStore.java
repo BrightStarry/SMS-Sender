@@ -1,14 +1,16 @@
-package com.zuma.sms.config.store;
+package com.zuma.sms.config;
 
 import com.zuma.sms.api.socket.IPPortPair;
 import com.zuma.sms.entity.Dict;
 import com.zuma.sms.enums.system.ConfigModuleEnum;
 import com.zuma.sms.repository.DictRepository;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,9 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * 配置常量
  */
 @Component
-@ConfigurationProperties(prefix = "smsSender.config")
 @Slf4j
+@ConfigurationProperties(prefix = "smsSender.config")
+@Data
 public class ConfigStore {
+
+	//是否开启CMPP连接
+	public Boolean isOpenCMPPConnection = true;
 
 
 	//异常页面
@@ -52,12 +58,12 @@ public class ConfigStore {
 	public Long cmppActiveTestSecond = 180L;
 
 	//cmpp类型的通道的ip和端口,以通道id为key.
-	public Map<Long,IPPortPair> cmppIpPortMap;
+	public Map<String,IPPortPair> cmppIpPortMap = new HashMap<>();
 
 
 	//url
 	//掌游发送短信url
-	public  String zhangyouSendSmsUrl = "http://ysms.game2palm.com:8899/smsAccept";
+	public  String zhangyouSendSmsUrl = "http://ysms.game2palm.com:8899/smsAccept/sendSms.action";
 	//宽信url前缀
 	public String kuanxinUrlPre = "http://114.55.90.98:8808/api";
 	//宽信发送短信url
@@ -142,6 +148,7 @@ public class ConfigStore {
 			map.put(item.getCode(), childMap);
 		}
 		setConfig(map);
+		log.info("[configStore]加载配置属性完成.");
 	}
 
 	/**
@@ -153,3 +160,6 @@ public class ConfigStore {
 		log.info("[配置类]属性修改成功.dict:{},currentValue:{}",dict,childMap.get(dict.getName()));
 	}
 }
+
+
+

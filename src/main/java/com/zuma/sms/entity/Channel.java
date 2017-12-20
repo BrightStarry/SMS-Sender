@@ -1,7 +1,9 @@
 package com.zuma.sms.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zuma.sms.api.ConcurrentManager;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
+import com.zuma.sms.api.socket.IPPortPair;
 import com.zuma.sms.enums.db.IntToBoolEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +21,6 @@ import java.util.Date;
 @DynamicUpdate
 @Entity
 @Data
-@Builder
 @Accessors(chain = true)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -79,7 +80,7 @@ public class Channel {
     /**
      * 是否是cmpp
      */
-    private Integer isCMPP = IntToBoolEnum.FALSE.getCode();
+    private Integer isCmpp = IntToBoolEnum.FALSE.getCode();
 
     /**
      * 连接用的字符若干
@@ -103,14 +104,23 @@ public class Channel {
     /**
      * 并发管理器 非DB字段
      */
+    @JsonIgnore
     @Transient
     private ConcurrentManager concurrentManager;
 
     /**
      * CMPP连接管理器 非DB字段
      */
+    @JsonIgnore
     @Transient
     private CMPPConnectionManager cmppConnectionManager;
+
+    /**
+     * cmpp ip port 非DB字段
+     */
+    @JsonIgnore
+    @Transient
+    private IPPortPair ipPortPair;
 
 
 

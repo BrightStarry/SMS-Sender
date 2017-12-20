@@ -24,7 +24,7 @@ public class CMPPSubmitHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPSubmitAPI.Response response = (CMPPSubmitAPI.Response) handleObject.getMsg();
-		log.info("[CMPP发送短信响应]通道:{},消息:{}", response,handleObject.getChannel().getName());
+		log.info("[CMPP发送短信响应]通道:{},消息:{}", handleObject.getChannel().getName(),response);
 
 		return cmppCallbackProcessor.process(response, handleObject.getChannel());
 	}

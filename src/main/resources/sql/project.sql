@@ -39,17 +39,17 @@ CREATE TABLE channel(
   KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信通道信息表';
 
-INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name, cache_name,support_operator,a_key,b_key,c_key)
+INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name, cache_name,support_operator,a_key,b_key,c_key,d_key)
     VALUES
-      ('掌游_移动',0,1,100,1,0,'zhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh'),
-      ('宽信_移动',0,1,100,2,1,'kuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_联通',0,1,100,4,1,'kuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197',''),
-      ('宽信_CMPP',1,1,200,5,2,'cMPP','kuanXinCMPP',1,'387843','387843','zuma#387843'),
-      ('群正_移动',0,1,100,6,3,'qunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501',''),
-      ('筑望_CMPP',1,1,300,7,4,'cMPP','zhuWangCMPP',1,'944027','944027','SVPOUXJLYD'),
-      ('畅想_移动',0,1,100,8,5,'changXiang','changXiangYD',1,'zmkj','zmkj',''),
-      ('创蓝_移动',0,1,100,9,6,'chuangLan','chuangLanYD',1,'M8671404','vHEZ1bywo',''),
-      ('铭锋_移动',0,1,100,10,7,'mingFeng','mingFengYD',1,'zmkjhy','zmkjhy01','')
+      ('掌游_移动',0,1,100,1,0,'zhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh',''),
+      ('宽信_移动',0,1,100,2,1,'kuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197','',''),
+      ('宽信_联通',0,1,100,4,1,'kuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197','',''),
+      ('宽信_CMPP',1,1,200,5,2,'CMPP','kuanXinCMPP',1,'387843','387843','zuma#387843','10689082'),
+      ('群正_移动',0,1,100,6,3,'qunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501','',''),
+      ('筑望_CMPP',1,1,300,7,4,'CMPP','zhuWangCMPP',1,'944027','944027','SVPOUXJLYD','1069026427'),
+      ('畅想_移动',0,1,100,8,5,'changXiang','changXiangYD',1,'zmkj','zmkj','',''),
+      ('创蓝_移动',0,1,100,9,6,'chuangLan','chuangLanYD',1,'M8671404','vHEZ1bywo','',''),
+      ('铭锋_移动',0,1,100,10,7,'mingFeng','mingFengYD',1,'zmkjhy','zmkjhy01','','')
       ;
 
 
@@ -175,6 +175,7 @@ CREATE TABLE send_task_record(
   sms_content_name VARCHAR(32) NOT NULL COMMENT '短信内容名',
   content VARCHAR(256) NOT NULL COMMENT '发送内容',
   thread_count TINYINT DEFAULT 2 COMMENT '开启线程数',
+  isShard TINYINT COMMENT '是否分片处理,每小时处理一部分',
 
   expect_start_time TIMESTAMP DEFAULT current_timestamp COMMENT '期望发送时间',
   expect_end_time TIMESTAMP NOT NULL DEFAULT 0 COMMENT '期望结束时间',

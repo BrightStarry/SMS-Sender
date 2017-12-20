@@ -44,6 +44,10 @@ public class SendTaskRecordAddForm {
 	private Integer threadCount;
 
 
+	@Range(min = 1,message = "是否分段值不正确")
+	private Integer isShard;
+
+
 	/**
 	 * 开始时间.需要小于结束时间;
 	 * 如果小于当前时间,则表示马上开始;

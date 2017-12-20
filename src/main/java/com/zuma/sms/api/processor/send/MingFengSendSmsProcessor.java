@@ -1,9 +1,9 @@
 package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.config.ConfigStore;
-import com.zuma.sms.dto.api.ChuangLanAPI;
+import com.zuma.sms.dto.api.MingFengAPI;
 import com.zuma.sms.entity.Channel;
-import com.zuma.sms.enums.error.ChuangLanErrorEnum;
+import com.zuma.sms.enums.error.MingFengErrorEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.util.CodeUtil;
@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 /**
  * author:ZhengXing
  * datetime:2017/12/15 0015 16:18
- * 创蓝 短信发送
+ * 畅想 短信发送
  */
 @Component
 @Slf4j
-public class ChuangLanVariateSendSmsProcessor extends AbstractSendSmsProcessor<ChuangLanAPI.VariateRequest,ChuangLanAPI.VariateResponse,ChuangLanErrorEnum>{
+public class MingFengSendSmsProcessor extends AbstractSendSmsProcessor<MingFengAPI.Request,MingFengAPI.Response,MingFengErrorEnum>{
 
 	@Autowired
 	private HttpClientUtil httpClientUtil;
@@ -30,23 +30,22 @@ public class ChuangLanVariateSendSmsProcessor extends AbstractSendSmsProcessor<C
 
 
 	@Override
-	protected ChuangLanAPI.VariateRequest toRequestObject(Channel channel, String phones, String message) {
-
-		return new ChuangLanAPI.VariateRequest(channel.getAKey(), channel.getBKey(), message, phones);
+	protected MingFengAPI.Request toRequestObject(Channel channel, String phones, String message) {
+		return new MingFengAPI.Request(channel.getAKey(), channel.getAKey(), channel.getBKey(), phones, message);
 	}
 
 
-
+	//该平台因为返回数据不同,需要处理下
 	@Override
-	protected UpdateRecordInfo<ChuangLanErrorEnum> getUpdateRecordInfo(ChuangLanAPI.VariateResponse response) {
-		return new UpdateRecordInfo<>(response.getMsgId(),response.getCode(),
-				ChuangLanErrorEnum.class,ChuangLanErrorEnum.SUCCESS);
+	protected UpdateRecordInfo<MingFengErrorEnum> getUpdateRecordInfo(MingFengAPI.Response response) {
+		return new UpdateRecordInfo<>(response.getTaskID(),response.getReturnStatus(),
+				MingFengErrorEnum.class,MingFengErrorEnum.SUCCESS,response.getMessage());
 	}
 
 	@Override
-	protected String send(ChuangLanAPI.VariateRequest requestObject) {
+	protected String send(MingFengAPI.Request requestObject) {
 		try {
-			return httpClientUtil.doPostForString(configStore.chuanglanVariateSendSmsUrl, CodeUtil.objectToJsonString(requestObject));
+			return httpClientUtil.doPostForString(configStore.mingfengSendSmsUrl, requestObject);
 		} catch (Exception e) {
 			log.error("[短信发送过程]短信发送http失败.e:{}",e.getMessage(),e);
 			throw new SmsSenderException(ErrorEnum.HTTP_ERROR);
@@ -54,9 +53,9 @@ public class ChuangLanVariateSendSmsProcessor extends AbstractSendSmsProcessor<C
 	}
 
 	@Override
-	ChuangLanAPI.VariateResponse stringToResponseObject(String result) {
+	MingFengAPI.Response stringToResponseObject(String result) {
 		try {
-			return CodeUtil.jsonStringToObject(result,ChuangLanAPI.VariateResponse.class);
+			return CodeUtil.jsonStringToObject(result, MingFengAPI.Response.class);
 		} catch (Exception e) {
 			log.error("[短信发送过程]返回的string转为response对象失败.resultString={},error={}", result, e.getMessage(), e);
 			throw new SmsSenderException(ErrorEnum.STRING_TO_RESPONSE_ERROR);

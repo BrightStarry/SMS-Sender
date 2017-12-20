@@ -1,10 +1,9 @@
 package com.zuma.sms.service;
 
 import com.zuma.sms.entity.SendTaskRecord;
-import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
 import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.form.SmsContentForm;
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
 import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.entity.SmsContent;
@@ -13,8 +12,6 @@ import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.repository.SendTaskRecordRepository;
 import com.zuma.sms.repository.SmsContentRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;

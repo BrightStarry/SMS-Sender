@@ -1,12 +1,11 @@
 package com.zuma.sms.service;
 
 import com.zuma.sms.api.SendTaskManager;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.config.store.ChannelStore;
-import com.zuma.sms.config.store.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
 import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.entity.NumberGroup;
-import com.zuma.sms.entity.NumberSource;
 import com.zuma.sms.entity.SendTaskRecord;
 import com.zuma.sms.entity.SmsContent;
 import com.zuma.sms.enums.db.IntToBoolEnum;
@@ -24,14 +23,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 /**
@@ -55,6 +54,29 @@ public class SendTaskRecordService {
 
 	@Autowired
 	private SendTaskManager sendTaskManager;
+
+	@Autowired
+	private ConfigStore configStore;
+
+	/**
+	 * 根据id获取号码文件输入流
+	 * 需要自行校验id是否存在
+	 */
+	public BufferedInputStream getInputStream(Long id) {
+		try {
+			return new BufferedInputStream(new FileInputStream(getFile(id)));
+		} catch (FileNotFoundException e) {
+			log.error("[numberSource]发送任务异常文件不存在.id:{}",id);
+			throw new SmsSenderException(ErrorEnum.NUMBER_SOURCE_FILE_NOT_EXIST);
+		}
+	}
+
+	/**
+	 * 根据id获取号码文件file
+	 */
+	public File getFile(Long id) {
+		return new File(configStore.sendTaskErrorInfoPre + id + ".txt");
+	}
 
 	/**
 	 * 模糊查询

@@ -2,6 +2,8 @@ package com.zuma.sms.config.store;
 
 import com.zuma.sms.api.ConcurrentManager;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
+import com.zuma.sms.api.socket.IPPortPair;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.system.ChannelEnum;
@@ -9,6 +11,8 @@ import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.repository.ChannelRepository;
 import com.zuma.sms.util.EnumUtil;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,7 +27,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 @Setter
+@Slf4j
 public class ChannelStore {
+	@Autowired
+	private ConfigStore configStore;
+
 	//存储所有帐号,启动时加载
 	private Map<Long, Channel> channels;
 
@@ -39,7 +47,7 @@ public class ChannelStore {
 	 */
 	public Channel get(ChannelEnum channelEnum) {
 		for (Map.Entry<Long,Channel> item : channels.entrySet()) {
-			if (EnumUtil.equals(item.getValue().getKeyName(),channelEnum))
+			if (EnumUtil.equals(item.getValue().getCacheName(),channelEnum))
 				return item.getValue();
 		}
 		throw new SmsSenderException("系统bug.通道枚举和数据库通道不对应");
@@ -71,13 +79,32 @@ public class ChannelStore {
 			channel.setConcurrentManager(concurrentManagers[channel.getType()]);
 
 			//如果是cmpp类型,加载 CMPP连接管理器
-			if (EnumUtil.equals(channel.getIsCMPP(), IntToBoolEnum.TRUE)) {
+			//只有是否开启为true,才开启
+			if (EnumUtil.equals(channel.getIsCmpp(), IntToBoolEnum.TRUE)) {
+
+				//从配置中加载每个通道各自的CMPP ip和port
+				channel.setIpPortPair(configStore.cmppIpPortMap.get(channel.getCacheName()));
+
+				//创建cmpp连接管理器
 				CMPPConnectionManager cmppConnectionManager = new CMPPConnectionManager(channel);
-				cmppConnectionManager.openConnection();
+
+				//将连接管理器放入对应的CMPP短信通道
 				channel.setCmppConnectionManager(cmppConnectionManager);
+
+				if(configStore.isOpenCMPPConnection)
+					//打开一个默认的CMPP连接
+					openCMPPConnection(channel);
 			}
 		}
 		setChannels(map);
+		log.info("[channelStore]加载所有通道完成.");
+	}
+
+	//开启某个短信通道对应CMPP连接操作
+	private void openCMPPConnection(Channel channel) {
+		//TODO 宽信蹦了
+		if(!channel.getCacheName().equalsIgnoreCase("kuanXinCMPP"))
+			channel.getCmppConnectionManager().openConnection();
 	}
 
 }

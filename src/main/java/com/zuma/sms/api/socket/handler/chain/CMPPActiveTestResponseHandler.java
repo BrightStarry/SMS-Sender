@@ -18,7 +18,7 @@ public class CMPPActiveTestResponseHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPActiveTestAPI.Response response = (CMPPActiveTestAPI.Response) handleObject.getMsg();
-		log.info("[CMPP链路检测响应]通道:{},收到对方链路检测响应.", response,handleObject.getChannel().getName());
+		log.info("[CMPP链路检测响应]通道:{},收到对方链路检测响应.",handleObject.getChannel().getName());
 		return true;
 	}
 }

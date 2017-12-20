@@ -103,6 +103,12 @@
                             <input type="text" name="threadCount" placeholder="线程数" >
                         </fieldset>
 
+                        <div class="am-checkbox">
+                            <label>
+                                <input type="checkbox" name="isShard" value="1" > 是否分段发送
+                            </label>
+                        </div>
+
                         <div class="am-input-group date" id="startTime"  data-date-format="yyyy-mm-dd hh:ii:ss">
                             <input size="16" name="expectStartTime" type="text"  class="am-form-field" placeholder="开始时间" readonly    >
                             <span class="am-input-group-label add-on"><i class="icon-th am-icon-calendar"></i></span>
@@ -111,7 +117,6 @@
                             <input size="16" name="expectEndTime" type="text"  class="am-form-field" placeholder="结束时间" readonly    >
                             <span class="am-input-group-label add-on"><i class="icon-th am-icon-calendar"></i></span>
                         </div>
-
 
                         <fieldset class="am-form-set">
                             <select  name="channelId"
@@ -160,6 +165,12 @@
                             <input type="text" name="threadCount" placeholder="线程数" >
                         </fieldset>
 
+                        <div class="am-checkbox">
+                            <label>
+                                <input type="checkbox" name="isShard" value="1" > 是否分段发送
+                            </label>
+                        </div>
+
                         <div class="am-input-group date" id="updateStartTime"  data-date-format="yyyy-mm-dd hh:ii:ss">
                             <input size="16" name="expectStartTime" type="text"  class="am-form-field" placeholder="开始时间" readonly     >
                             <span class="am-input-group-label add-on"><i class="icon-th am-icon-calendar"></i></span>
@@ -168,7 +179,6 @@
                             <input size="16" name="expectEndTime" type="text"  class="am-form-field" placeholder="结束时间" readonly    >
                             <span class="am-input-group-label add-on"><i class="icon-th am-icon-calendar"></i></span>
                         </div>
-
 
                         <fieldset class="am-form-set">
                             <select  name="channelId"
@@ -224,12 +234,9 @@
         </div>
     </div>
 </div>
-
-
 <#include "../common/js.html"/>
 <script src="/js/custom/sendTaskRecord.js"></script>
 <script src="/js/amazeui.datetimepicker.min.js"></script>
 <script src="/js/amazeui.datetimepicker.zh-CN.js"></script>
 </body>
-
 </html>

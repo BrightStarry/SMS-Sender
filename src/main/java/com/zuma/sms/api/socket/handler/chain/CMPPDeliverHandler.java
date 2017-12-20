@@ -25,7 +25,7 @@ public class CMPPDeliverHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPDeliverAPI.Request request = (CMPPDeliverAPI.Request) handleObject.getMsg();
-		log.info("[CMPP状态报告或短信上行]通道:{},消息:{}", request,handleObject.getChannel().getName());
+		log.info("[CMPP状态报告或短信上行]通道:{},消息:{}",handleObject.getChannel().getName(), request);
 
 		//响应对方服务器
 		handleObject.getCmppConnectionManager().sendDeliverResponse(request, CMPPSubmitErrorEnum.SUCCESS);

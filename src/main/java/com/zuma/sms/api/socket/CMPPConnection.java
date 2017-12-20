@@ -1,7 +1,8 @@
 package com.zuma.sms.api.socket;
 
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.entity.Channel;
+import com.zuma.sms.exception.SmsSenderException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * author:ZhengXing
@@ -49,7 +52,13 @@ public class CMPPConnection {
 	private ChannelHandler channelHandler;
 	//当前连接成功的通道持有上下文
 	private ChannelHandlerContext channelHandlerContext;
-	//是否停止
+	//锁
+	private ReentrantLock lock = new ReentrantLock(true);
+	//启动锁条件
+	private Condition runCondition = lock.newCondition();
+	//是否启动
+	private volatile Boolean isRun = false;
+	//是否中断
 	private volatile Boolean isInterrupt = false;
 
 
@@ -59,6 +68,48 @@ public class CMPPConnection {
 		this.channelHandler = new CMPPHandler(connectionManager, this, channel);
 		log.info("[CMPP连接器]通道:{},id:{},连接器被创建,准备启动连接.",channel.getName(),id);
 		start();
+	}
+
+	/**
+	 * 获取 通道上下文 表示需要发送了
+	 * @return
+	 */
+	public ChannelHandlerContext getChannelHandlerContext() {
+		//如果停止
+		if(isInterrupt)
+			throw new SmsSenderException("CMPP连接停止.");
+		//启动,直接返回
+		if(isRun)
+			return channelHandlerContext;
+		//还未启动
+		try {
+			lock.lock();
+			//等待3s,
+			runCondition.await(5,TimeUnit.SECONDS);
+			//如果还没启动
+			if(isRun)
+				throw new SmsSenderException("CMPP连接未启动成功.");
+			return channelHandlerContext;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally {
+			lock.unlock();
+		}
+		throw new SmsSenderException("CMPP连接未启动成功.");
+	}
+
+	/**
+	 * 设为启动
+	 * 修改标志,然后唤醒所有等待线程
+	 */
+	public void setRun(){
+		try {
+			lock.lock();
+			this.isRun = true;
+			runCondition.signalAll();
+		} finally {
+
+		}
 	}
 
 	/**
@@ -156,7 +207,7 @@ public class CMPPConnection {
 									.addLast(channelHandler);
 						}
 					});
-			IPPortPair ipPortPair = configStore.cmppIpPortMap.get(channel.getId());
+			IPPortPair ipPortPair = channel.getIpPortPair();
 			//链接到服务端
 			ChannelFuture channelFuture = bootstrap.connect(ipPortPair.getIp(),ipPortPair.getPort()).sync();
 			log.info("[CMPP连接器]通道:{},id:{},socket连接启动成功.",channel.getName(),id);

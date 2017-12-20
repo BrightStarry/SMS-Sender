@@ -10,7 +10,7 @@ import lombok.Getter;
  */
 @Getter
 public class SmsSenderException extends RuntimeException {
-    private String code;
+    private String code = ErrorEnum.UNKNOWN_ERROR.getCode();
 
     /**
      * 根据异常枚举构造自定义异常

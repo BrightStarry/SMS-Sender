@@ -1,7 +1,10 @@
 package com.zuma.sms.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.db.IsDeleteEnum;
 import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
+import com.zuma.sms.util.EnumUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 发送任务
@@ -149,6 +153,12 @@ public class SendTaskRecord implements Cloneable{
      */
     private Integer unResponse;
 
+    /**
+     * 是否分片处理
+     * 默认否
+     */
+    private Integer isShard = IntToBoolEnum.FALSE.getCode();
+
 
     /**
      * 已操作总数(可能被中断导致后续号码未操作)
@@ -179,5 +189,39 @@ public class SendTaskRecord implements Cloneable{
      * 修改时间
      */
     private Date updateTime;
+
+
+    /**
+     * 当前任务的DateHourPair 非DB
+     */
+    @Transient
+    @JsonIgnore
+    private List<DateHourPair> dateHourPairs;
+
+    /**
+     * 当前任务是否是分时任务
+     */
+    public boolean isShard(){
+        return EnumUtil.equals(this.isShard, IntToBoolEnum.TRUE);
+    }
+
+
+    /**
+     * 时间小时对
+     * 将开始时间-结束时间转换
+     * 例如 2017-11-11 12:32:21 - 2017-11-11 15:02:34
+     * 转换为一个list:
+     * 2017-11-11 12:32:21 - 2017-11-11 13:00:00
+     * 2017-11-11 13:00:00 - 2017-11-11 14:00:00
+     * 2017-11-11 14:00:00 - 2017-11-11 15:00:00
+     * 2017-11-11 15:00:00 - 2017-11-11 15:02:34
+     */
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DateHourPair{
+        private Date startTime;
+        private Date endTime;
+    }
 
 }

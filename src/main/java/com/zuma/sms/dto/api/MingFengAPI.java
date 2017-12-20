@@ -1,9 +1,13 @@
 package com.zuma.sms.dto.api;
 
+import com.zuma.sms.util.DateUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -73,14 +77,50 @@ public interface MingFengAPI {
 
 	//短信发送异步回调
 	@Data
-	@XmlRootElement(name = "returnsms")
-	class AsyncResponse {
+	@XmlRootElement(name="returnsms")
+	class AsyncResponse{
+		private List<AsyncResponseChild> childs;
+
+		@XmlElement(name = "statusbox")
+		public List<AsyncResponseChild> getChilds() {
+			return childs;
+		}
+	}
+
+
+	//短信发送异步回调子对象
+	@Data
+	class AsyncResponseChild {
 		private String mobile;//手机号
 		private String taskid;//任务id
 		private String status;//状态 10:发送成功; 20:发送失败
 		private String receivetime;//接收时间 YYYY-MM-dd HH:mm:ss
 		private String errorcode;//异常码....上级网关返回值，不同网关返回值不同，仅作为参考
 		private String extno;//自定义扩展号
+	}
+
+
+	//短信上行
+	@Data
+	@XmlRootElement(name="returnsms")
+	class SmsUpResponse{
+		private List<SmsUpResponseChild> childs;
+
+		@XmlElement(name = "callbox")
+		public List<SmsUpResponseChild> getChilds() {
+			return childs;
+		}
+	}
+
+	//短信上行子对象
+	@Data
+	class SmsUpResponseChild {
+		private String mobile;//手机号
+		private String content;//内容
+		private String receivetime;//接收时间
+		private String extno;//扩展号
+
+
 	}
 
 

@@ -3,7 +3,7 @@ package com.zuma.sms.service;
 import com.zuma.sms.entity.NumberGroup;
 import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.form.NumberGroupTypeForm;
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
 import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.entity.NumberGroupType;

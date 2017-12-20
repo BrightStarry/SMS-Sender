@@ -16,6 +16,7 @@
                     <th class="table-title">短信名</th>
                     <th class="table-title">短信内容</th>
                     <th class="table-title">开启线程数</th>
+                    <th class="table-title">是否分段</th>
                     <th class="table-date">发送时间</th>
                     <th class="table-date">结束时间</th>
                     <th class="table-title">总用时</th>
@@ -43,6 +44,13 @@
                         <td>${item.smsContentName}</td>
                         <td>${item.content}</td>
                         <td>${item.threadCount}</td>
+                        <td class="am-hide-sm-only">
+                            <#if item.isShard == 1>
+                                <span class="am-icon-check"></span>
+                                <#else/>
+                                <span class="am-icon-remove"></span>
+                            </#if>
+                        </td>
                         <td>${item.expectStartTime}</td>
                         <td>${item.expectEndTime}</td>
                         <td>${item.totalTime!}</td>

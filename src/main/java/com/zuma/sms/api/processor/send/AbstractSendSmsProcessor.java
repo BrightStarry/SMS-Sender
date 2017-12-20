@@ -151,8 +151,15 @@ public abstract class AbstractSendSmsProcessor<R,P,E extends CodeEnum> implement
 				//如果不成功
 				//根据异常码获取异常枚举
 				E errorEnum = (E)EnumUtil.getByCode(updateRecordInfo.getCode(),updateRecordInfo.getEClass());
-				record.setStatus(SmsSendRecordStatusEnum.SYNC_FAILED.getCode())
-						.setErrorInfo(errorEnum == null ?  ErrorEnum.UNKNOWN_ERROR.getMessage() : errorEnum.getMessage());
+				//如果异常枚举找不到,并且返回对象中自身携带了异常信息,就直接用该信息
+				if(errorEnum == null){
+					if(updateRecordInfo.getMessage() != null)
+						record.setErrorInfo(updateRecordInfo.getMessage());
+				}
+				else {
+					record.setErrorInfo(errorEnum.getMessage());
+				}
+				record.setStatus(SmsSendRecordStatusEnum.SYNC_FAILED.getCode());
 			}
 			//保存并返回
 			return smsSendRecordService.save(record);

@@ -7,7 +7,9 @@ import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.ResultDTOTypeEnum;
 import com.zuma.sms.enums.error.KuanXinErrorEnum;
 import com.zuma.sms.enums.error.ZhangYouErrorEnum;
+import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.util.EnumUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -17,11 +19,16 @@ import org.springframework.stereotype.Component;
  * 掌游 异步回调 处理器
  */
 @Component
+@Slf4j
 public class ZhangYouCallbackProcessor extends SendSmsCallbackProcessor<ZhangYouAPI.AsyncResponse> {
 
 
 	@Override
 	protected String getOtherId(ZhangYouAPI.AsyncResponse response) {
+		if (response.getTaskId() == null) {
+			log.error("[异步回调处理]返回对象id为空");
+			throw new SmsSenderException("返回对象id为空");
+		}
 		return response.getTaskId();
 	}
 

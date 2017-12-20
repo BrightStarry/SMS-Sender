@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.List;
 
 import static com.zuma.sms.api.processor.CustomProcessorFactory.*;
 
@@ -27,6 +28,14 @@ public class CallbackController {
 	@Autowired
 	private ChannelStore channelStore;
 
+
+	/**
+	 * 铭锋异步回调
+	 */
+	@RequestMapping("/mingfeng/callback")
+	public void mingfengCallback(@RequestBody MingFengAPI.AsyncResponse response) {
+		System.out.println(response);
+	}
 
 	/**
 	 * 创蓝异步回调
@@ -54,7 +63,7 @@ public class CallbackController {
 	 * 掌游平台异步回调
 	 */
 	@RequestMapping("/zhangyou/callback")
-	public ZhangYouAPI.AsyncResponseReturn zhangyouCallback(ZhangYouAPI.AsyncResponse response) {
+	public ZhangYouAPI.AsyncResponseReturn zhangyouCallback(@RequestBody ZhangYouAPI.AsyncResponse response) {
 
 		Channel channel = channelStore.get(ChannelEnum.ZHANGYOU_YD);
 		//如果为下行结果报告
@@ -83,7 +92,7 @@ public class CallbackController {
 	 * 群正平台发送短信异步回调,该回调可能会合并多个平台的数据
 	 */
 	@RequestMapping("/qunzheng/callback")
-	public void qunzhengSendSmsCallback(QunZhengAPI.AsyncResponse response) {
+	public void qunzhengSendSmsCallback(@RequestBody QunZhengAPI.AsyncResponse response) {
 		//循环调用
 		Channel channel = channelStore.get(ChannelEnum.QUNZHENG_YD);
 		for (QunZhengAPI.AsyncResponseChild asyncResponseChild : response.getSms()) {
@@ -131,4 +140,16 @@ public class CallbackController {
 		Channel channel = channelStore.get(ChannelEnum.CHUANGLAN_YD);
 		buildSmsUpProcessor(channel).process(response,channel);
 	}
+
+	/**
+	 * 铭锋短信上行
+	 */
+	@RequestMapping("/mingfeng/smsup")
+	public String mingfengSmsUp(@RequestBody MingFengAPI.SmsUpResponse response) {
+
+		//返回1表示成功
+		return "1";
+	}
+
+
 }

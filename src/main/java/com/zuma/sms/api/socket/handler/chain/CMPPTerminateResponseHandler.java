@@ -19,7 +19,7 @@ public class CMPPTerminateResponseHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPDeliverAPI.Request request = (CMPPDeliverAPI.Request) handleObject.getMsg();
-		log.info("[CMPP中断连接响应]通道:{},收到中断连接响应", request,handleObject.getChannel().getName());
+		log.info("[CMPP中断连接响应]通道:{},收到中断连接响应", handleObject.getChannel().getName());
 		return true;
 	}
 }

@@ -2,6 +2,7 @@ package com.zuma.sms.api.socket;
 
 import com.zuma.sms.api.socket.handler.chain.ChannelHandlerChainManager;
 import com.zuma.sms.api.socket.handler.chain.HandleObject;
+import com.zuma.sms.dto.api.cmpp.CMPPConnectAPI;
 import com.zuma.sms.entity.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
@@ -53,6 +54,8 @@ public class CMPPHandler extends ChannelHandlerAdapter {
 
 		//将通道上下文 保存到 连接中
 		cmppConnection.setChannelHandlerContext(ctx);
+		//发送连接请求
+		channel.getCmppConnectionManager().sendConnectRequest(ctx.channel(),CMPPConnectAPI.Request.build(channel));
 	}
 
 	/**
@@ -61,7 +64,7 @@ public class CMPPHandler extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		//调用处理链处理
-		if (!handlerManager.handler(new HandleObject(msg, connectionManager, channel)))
+		if (!handlerManager.handler(new HandleObject(msg, connectionManager, channel,cmppConnection)))
 			log.error("[CMPP处理器]收到消息,未被任何处理器处理");
 	}
 
@@ -81,7 +84,7 @@ public class CMPPHandler extends ChannelHandlerAdapter {
 			return;
 
 		//发送链路检测
-		connectionManager.sendActiveTest(null);
+		connectionManager.sendActiveTest(cmppConnection.getChannelHandlerContext().channel(),null);
 
 		//TODO 开启线程等待链路检测结果
 	}

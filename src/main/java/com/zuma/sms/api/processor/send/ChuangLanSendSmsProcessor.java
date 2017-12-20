@@ -1,6 +1,6 @@
 package com.zuma.sms.api.processor.send;
 
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.dto.api.ChuangLanAPI;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.error.ChuangLanErrorEnum;

@@ -1,6 +1,6 @@
 package com.zuma.sms.api.processor.send;
 
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.dto.api.cmpp.CMPPSubmitAPI;
@@ -50,7 +50,10 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 		try {
 			//发送并返回序列号
 			sequenceId = channel.getCmppConnectionManager().sendSms(requestObject);
-		} catch (Exception e) {
+		} catch (SmsSenderException e){
+			log.error("[短信发送过程]发送socket请求失败-自定定义错误.error:{}", e.getMessage());
+			throw new SmsSenderException(e.getMessage());
+		}catch (Exception e) {
 			log.error("[短信发送过程]发送socket请求失败.error:{}", e.getMessage(), e);
 			throw new SmsSenderException(ErrorEnum.SOCKET_REQUEST_ERROR);
 		}

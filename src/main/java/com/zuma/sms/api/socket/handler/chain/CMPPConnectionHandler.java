@@ -1,6 +1,8 @@
 package com.zuma.sms.api.socket.handler.chain;
 
 import com.zuma.sms.dto.api.cmpp.CMPPConnectAPI;
+import com.zuma.sms.enums.error.CMPPConnectErrorEnum;
+import com.zuma.sms.util.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,12 @@ public class CMPPConnectionHandler extends AbstractCustomChannelHandler{
 			return nextHandler(handleObject);
 
 		CMPPConnectAPI.Response response = (CMPPConnectAPI.Response) handleObject.getMsg();
-		log.info("[CMPP连接响应]通道:{},消息:{}", response,handleObject.getChannel().getName());
+		log.info("[CMPP连接响应]通道:{},消息:{}", handleObject.getChannel().getName(),response);
+		//如果成功
+		if(CMPPConnectErrorEnum.SUCCESS.getCode().equals(response.getStatus())){
+			handleObject.getCmppConnection().setRun();
+		}
+
 		return true;
 	}
 }

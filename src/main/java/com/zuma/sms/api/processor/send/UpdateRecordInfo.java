@@ -35,4 +35,12 @@ public class UpdateRecordInfo<E extends CodeEnum> {
 		this.eClass = eClass;
 		this.successEnum = successEnum;
 	}
+
+	public UpdateRecordInfo(String id, String code, Class<E> eClass, E successEnum , String message) {
+		this.id = id;
+		this.code = code;
+		this.message = message;
+		this.eClass = eClass;
+		this.successEnum = successEnum;
+	}
 }

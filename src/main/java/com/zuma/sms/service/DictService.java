@@ -1,6 +1,6 @@
 package com.zuma.sms.service;
 
-import com.zuma.sms.config.store.ConfigStore;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
 import com.zuma.sms.dto.PageVO;
 import com.zuma.sms.entity.Dict;

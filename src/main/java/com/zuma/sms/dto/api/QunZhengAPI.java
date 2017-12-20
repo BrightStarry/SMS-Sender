@@ -27,23 +27,21 @@ public interface QunZhengAPI {
 	@Builder
 	class Response {
 		String code;//返回码
-		String id;//本次请求id
+		String id;//本次请求id 失败时,为异常消息
 	}
 
 	@Data
 	@XmlRootElement(name = "result")
 	class AsyncResponse {
-		//    @XmlElement(name = "response")
+		//    @XmlElement(name = "response")如果名字不同,就将注解加到get方法上
 		private Integer response;//本次返回的状态报告条数
 
-		//    @XmlElement(name = "sms",type = QunZhengSendSmsAsyncResponseChild.class)
+		//    @XmlElement(name = "sms")
 		private List<AsyncResponseChild> sms;//每条报告实体类
 
 		private AsyncResponseChild thisSms;//特例，用来给循环调用,以便解析每条数据
 
 	}
-
-	@XmlRootElement(name = "sms")
 	@Data
 	class AsyncResponseChild {
 		//    @XmlElement(name = "phone")
@@ -64,7 +62,6 @@ public interface QunZhengAPI {
 		private SmsUpResponseChild uniqueSms;//特例属性，方便service循环调用
 	}
 
-	@XmlRootElement(name = "sms")
 	@Data
 	class SmsUpResponseChild {
 		private String phone;//手机号

@@ -45,10 +45,12 @@ smsSender:
     likeSearchMaxNum: 20
     cmppActiveTestSecond: 180
     cmppIpPortMap:
-      1004:
+      kuanXinCMPP:
         ip: 118.178.35.191
         port: 7892
-      1006:
+      zhuWangCMPP:
         ip: 115.231.73.206
         port: 8855
     allowIp: 127.0.0.1
+    isOpenCMPPConnection: true
+

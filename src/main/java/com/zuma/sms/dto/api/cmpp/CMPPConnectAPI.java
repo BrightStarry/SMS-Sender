@@ -1,11 +1,16 @@
 package com.zuma.sms.dto.api.cmpp;
 
+import com.zuma.sms.entity.Channel;
+import com.zuma.sms.enums.CMPPCommandIdEnum;
 import com.zuma.sms.enums.error.CMPPConnectErrorEnum;
 import com.zuma.sms.util.CMPPUtil;
+import com.zuma.sms.util.CodeUtil;
+import com.zuma.sms.util.DateUtil;
 import com.zuma.sms.util.EnumUtil;
 import lombok.*;
 
 import java.io.*;
+import java.util.Date;
 
 /**
  * author:ZhengXing
@@ -60,6 +65,26 @@ public interface CMPPConnectAPI {
             dataOutputStream.writeByte(this.version);
             dataOutputStream.writeInt(this.timestamp);
             return byteArrayOutputStream.toByteArray();
+        }
+
+        /**
+         * 根据短信通道 构建连接请求
+         * @param channel
+         * @return
+         */
+        public static CMPPConnectAPI.Request build(Channel channel) {
+            String serviceId = channel.getAKey();
+            String timestamp = DateUtil.dateToString(new Date(), DateUtil.FORMAT_C);
+            CMPPConnectAPI.Request request = CMPPConnectAPI.Request.builder()
+                    .sourceAddr(serviceId)
+                    .authenticatorSource(CodeUtil.byteToMd5(
+                            (serviceId + "\0\0\0\0\0\0\0\0\0" + channel.getCKey() + timestamp).getBytes()))
+                    .version((byte)32)
+                    .timestamp(Integer.parseInt(timestamp))
+                    .build();
+            request.setCommandId(CMPPCommandIdEnum.CMPP_CONNECT.getCode());
+            request.setSequenceId(CMPPUtil.getSequenceId());
+            return request;
         }
     }
 

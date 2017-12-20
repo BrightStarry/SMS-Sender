@@ -129,6 +129,8 @@ public class SendTaskManager {
 				}
 			}
 		});
+
+		log.info("[SendTaskManager]发送任务管理器-各线程启动完成");
 	}
 
 	/**

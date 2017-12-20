@@ -80,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 				.and()
 				.authorizeRequests()//进行验证配置
 				.antMatchers("/user/view/login",
-						"/user/login")//匹配这些路径
+						"/user/login","/api/**")//匹配这些路径
 				.permitAll()//全部允许
 				.anyRequest()//任何请求
 				.authenticated();//都需验证

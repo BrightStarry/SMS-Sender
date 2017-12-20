@@ -190,8 +190,7 @@ public interface CMPPSubmitAPI {
          * 根据  短信通道  手机号  消息 构建对象
          */
         public static Request build(Channel channel,String phone,String msg) throws IOException {
-            //流水号
-            Integer sequenceId = CMPPUtil.getSequenceId();
+
             //消息内容
             byte[] msgContent= msg.getBytes("gb2312");
             //信息长度
@@ -199,11 +198,13 @@ public interface CMPPSubmitAPI {
 
             //构建对象
             CMPPSubmitAPI.Request request = new CMPPSubmitAPI.Request()
+                    .setServiceId(channel.getDKey())
+                    .setSrcId(channel.getDKey())
                     .setMsgSrc(channel.getAKey())//信息内容来源(SP_Id)
                     .setDestTerminalId(phone)//手机号
                     .setMsgContent(msgContent)
                     .setMsgLength(msgLength);
-            request.setSequenceId(sequenceId);
+            request.setSequenceId(CMPPUtil.getSequenceId());//流水号 id
 
             return request;
         }

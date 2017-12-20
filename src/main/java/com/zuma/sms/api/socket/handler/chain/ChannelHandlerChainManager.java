@@ -1,5 +1,6 @@
 package com.zuma.sms.api.socket.handler.chain;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Map;
  * netty通道处理器链 管理器
  */
 @Component
+@Slf4j
 public class ChannelHandlerChainManager {
 	//第一个处理器
 	private CustomChannelHandler first;
@@ -44,6 +46,7 @@ public class ChannelHandlerChainManager {
 		for (Map.Entry<String, CustomChannelHandler> item : handlerMap.entrySet()) {
 			registerHandler(item.getValue());
 		}
+		log.info("[ChannelHandlerChainManager]Netty通道处理器链注入完毕");
 	}
 
 }

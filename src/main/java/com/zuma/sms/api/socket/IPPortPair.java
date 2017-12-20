@@ -3,6 +3,7 @@ package com.zuma.sms.api.socket;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * author:ZhengXing
@@ -15,4 +16,5 @@ import lombok.NoArgsConstructor;
 public class IPPortPair {
 	private String ip;
 	private Integer port;
+
 }

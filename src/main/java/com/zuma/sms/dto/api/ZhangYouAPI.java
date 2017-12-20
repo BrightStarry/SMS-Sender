@@ -46,6 +46,7 @@ public interface ZhangYouAPI {
 	@Data
 	@XmlRootElement(name = "MsgDataReport")
 	class AsyncResponse {
+
 		private String msgType;//消息类型
 		private String msgCode;//消息代码
 		private String msgContent;//消息内容
@@ -53,6 +54,34 @@ public interface ZhangYouAPI {
 		private String timestamp;//时间戳
 		private String spCode;//用户上行端口
 		private String taskId;//对应下行任务编号,MsgType取值为report时，该节点有效，时间戳(17位)+3位随机数
+		@XmlElement(name = "MsgType")
+		public String getMsgType() {
+			return msgType;
+		}
+		@XmlElement(name = "MsgCode")
+		public String getMsgCode() {
+			return msgCode;
+		}
+		@XmlElement(name = "MsgContent")
+		public String getMsgContent() {
+			return msgContent;
+		}
+		@XmlElement(name = "MobileSource")
+		public String getMobileSource() {
+			return mobileSource;
+		}
+		@XmlElement(name = "Timestamp")
+		public String getTimestamp() {
+			return timestamp;
+		}
+		@XmlElement(name = "SpCode")
+		public String getSpCode() {
+			return spCode;
+		}
+		@XmlElement(name = "TaskId")
+		public String getTaskId() {
+			return taskId;
+		}
 	}
 
 	@Data

@@ -234,6 +234,8 @@ var sendTaskRecordList = {
                 $('#updateForm :input[name="name"]').val(result1.data.name);
                 $('#updateForm :input[name="remark"]').val(result1.data.remark);
                 $('#updateForm :input[name="threadCount"]').val(result1.data.threadCount);
+                if(result1.data.isShard == 1)
+                    $('#updateForm :input[name="isShard"]').attr('checked','true');
 
                 $('#updateStartTime').datetimepicker({language: 'zh-CN',initialDate:new Date(result1.data.expectEndTime), autoclose: true, minuteStep: 3});
                 $('#updateStartTime').datetimepicker('update', new Date(result1.data.expectStartTime));

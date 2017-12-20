@@ -1,5 +1,6 @@
 package com.zuma.sms.api;
 
+import com.zuma.sms.PhoneMessagePair;
 import com.zuma.sms.api.resolver.MessageResolver;
 import com.zuma.sms.api.resolver.MessageResolverFactory;
 import com.zuma.sms.api.processor.send.SendSmsProcessor;
@@ -10,10 +11,12 @@ import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.SendTaskRecord;
 import com.zuma.sms.enums.SendTaskStatusEnum;
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
 import com.zuma.sms.service.ChannelService;
 import com.zuma.sms.service.SendTaskRecordService;
 import com.zuma.sms.util.CodeUtil;
+import com.zuma.sms.util.DateUtil;
 import com.zuma.sms.util.EnumUtil;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -75,11 +78,16 @@ public class SendTask implements Delayed {
 	private AtomicInteger successNum;
 	//失败数-总失败数
 	private AtomicInteger failedNum;
-
 	//未响应数
 	private AtomicInteger unResponse;
 	//已操作数
 	private AtomicInteger usedNum;
+	//每段数量 -- 分组操作的任务
+	private Integer shardNum;
+	//当前是第几段操作 默认为1
+	private volatile Integer shardNo = 1;
+	//分段监听线程
+	private Thread shardThread;
 
 	//通道实体类
 	private Channel channel;
@@ -107,6 +115,19 @@ public class SendTask implements Delayed {
 				+ ",successNum:" + successNum + ",failedNum:" + failedNum + ",unResponse:" + unResponse
 				+ ",usedNum:" + usedNum + ",channel:" + (channel == null ? "" : channel.getName()) + "}";
 	}
+
+	/**
+	 * 如果是分段操作的,启动监听线程
+	 */
+	public void startShardThread() {
+		shardThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				
+			}
+		});
+	}
+
 
 	/**
 	 * 任务结束处理
@@ -274,12 +295,12 @@ public class SendTask implements Delayed {
 							phones.deleteCharAt(0);
 
 							//TODO 根据手机号修改短信消息内容
-
+							PhoneMessagePair phoneMessagePair = messageResolver.resolve(phones.toString(), message);
 
 							//总操作数+
 							usedNum.addAndGet(thisSendPhoneNum);
 							//发送
-							ResultDTO<ErrorData> result = sendSmsProcessor.process(channel, phones.toString(), message, taskId);
+							ResultDTO<ErrorData> result = sendSmsProcessor.process(channel, phoneMessagePair.getPhones(), phoneMessagePair.getMessage(), taskId);
 
 							//处理返回对象
 							//如果成功
@@ -354,9 +375,20 @@ public class SendTask implements Delayed {
 		this.sendSmsProcessor = CustomProcessorFactory.buildSendSmsProcessor(this.channel);
 		//消息解析器
 		this.messageResolver = MessageResolverFactory.build(channel);
-		//放入 结束任务队列
+		//如果是分时任务,
+		if (sendTaskRecord.isShard()) {
+			//计算出日期小时分段数据
+			sendTaskRecord.setDateHourPairs(
+					DateUtil.customParseDate(sendTaskRecord.getExpectStartTime(), sendTaskRecord.getExpectEndTime()));
+			//计算每小时的发送数目
+			shardNum = sendTaskRecord.getNumberNum() / sendTaskRecord.getDateHourPairs().size();
+
+		}
+		//放入 结束任务队列,以便
 		this.closeQueue = closeQueue;
 	}
+
+
 
 
 	/**

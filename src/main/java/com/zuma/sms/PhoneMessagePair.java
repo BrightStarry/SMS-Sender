@@ -1,6 +1,8 @@
 package com.zuma.sms;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * author:ZhengXing
@@ -8,6 +10,8 @@ import lombok.Data;
  * 手机号和消息对 用于任务发送时的发送消息解析返回
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class PhoneMessagePair {
 	private String phones;
 	private String Message;

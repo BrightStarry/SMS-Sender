@@ -64,7 +64,7 @@ public class PlatformController extends BaseController{
 	@PostMapping("/update")
 	@ResponseBody
 	public ResultDTO update(@Valid PlatformUpdateForm form, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		platformService.update(form);
 		return ResultDTO.success();
 	}
@@ -75,7 +75,7 @@ public class PlatformController extends BaseController{
 	@PostMapping("/add")
 	@ResponseBody
 	public ResultDTO<?> add(@Valid PlatformAddForm form, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		platformService.save(form);
 		return ResultDTO.success();
 	}

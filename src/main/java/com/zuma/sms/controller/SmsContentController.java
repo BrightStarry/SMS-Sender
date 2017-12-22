@@ -63,7 +63,7 @@ public class SmsContentController extends BaseController {
 	@PostMapping("/add")
 	@ResponseBody
 	public ResultDTO<?> add(@Valid SmsContentForm smsContentForm, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		smsContentService.save(smsContentForm);
 		return ResultDTO.success();
 	}
@@ -74,7 +74,7 @@ public class SmsContentController extends BaseController {
 	@PostMapping("/update")
 	@ResponseBody
 	public ResultDTO<?> update(@Valid SmsContentForm smsContentForm,BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		smsContentService.update(smsContentForm);
 		return ResultDTO.success();
 	}

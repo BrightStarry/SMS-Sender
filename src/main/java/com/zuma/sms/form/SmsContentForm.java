@@ -17,7 +17,7 @@ public class SmsContentForm {
 	@Length(min = 1, max = 32, message = "名称长度不正确（1-32）")
 	private String name;
 	@NotBlank(message = "内容为空")
-	@Length(min = 1, max = 32, message = "内容长度不正确（1-256）")
+	@Length(min = 1, max = 256, message = "内容长度不正确（1-256）")
 	private String content;
 
 	private String remark;

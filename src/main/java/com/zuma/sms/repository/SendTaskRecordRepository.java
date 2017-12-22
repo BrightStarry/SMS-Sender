@@ -17,6 +17,12 @@ import java.util.List;
  */
 public interface SendTaskRecordRepository extends JpaRepository<SendTaskRecord,Long> {
 
+
+	/**
+	 * 查询 in 状态的所有记录
+	 */
+	List<SendTaskRecord> findAllByStatusIn(Integer[] statusIn);
+
 	/**
 	 * 分页查询
 	 */
@@ -50,4 +56,12 @@ public interface SendTaskRecordRepository extends JpaRepository<SendTaskRecord,L
 	void updateNumberGroupNameByNumberGroupId(@Param("numberGroupName") String numberGroupName,
 											  @Param("numberGroupId") Long numberGroupId);
 
+	/**
+	 * 修改 累加 成功数 和 失败数
+	 */
+	@Modifying
+	@Query("update SendTaskRecord " +
+			" set successNum = successNum + :successNum , failedNum = failedNum + :failedNum " +
+			"where id = :taskId ")
+	SendTaskRecord updateSuccessAndFailedNum(Integer successNum, Integer failedNum, Long taskId);
 }

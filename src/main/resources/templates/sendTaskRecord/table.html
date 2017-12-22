@@ -1,7 +1,7 @@
 <div class="am-u-sm-12 ">
     <form class="am-form">
         <div class="am-scrollable-horizontal">
-            <table class="am-table am-table-striped am-table-hover table-main am-text-nowrap">
+            <table class="am-table  am-table-hover table-main am-text-nowrap">
                 <!--am-text-nowrap 不分行样式-->
                 <thead>
                 <tr>
@@ -33,7 +33,23 @@
                 </thead>
                 <tbody>
                 <#list page.list as item>
-                    <tr>
+                    <tr
+                    <#if item.status == 0>
+
+                        <#elseif item.status == 1>
+                            class="am-active"
+                            <#elseif item.status == 2>
+                                class="am-success"
+                                <#elseif item.status == 3>
+                                    class="am-primary"
+                                    <#elseif item.status == -1>
+                                        class="am-danger"
+                                        <#elseif item.status == -2>
+                                            class="am-warning"
+                    </#if>
+
+
+                    >
                         <td><input type="checkbox" value="${item.id?c}" id="list${item.id?c}" name="list"/></td>
                         <td><label for="list${item.id?c}">${item.id?c}</label></td>
                         <td><a href="/sendTaskRecord/download/${item.id?c}">${item.name}</a></td>
@@ -45,9 +61,9 @@
                         <td>${item.content}</td>
                         <td>${item.threadCount}</td>
                         <td class="am-hide-sm-only">
-                            <#if item.isShard == 1>
+                            <#if item.isShard! == 1>
                                 <span class="am-icon-check"></span>
-                                <#else/>
+                                <#else>
                                 <span class="am-icon-remove"></span>
                             </#if>
                         </td>
@@ -61,6 +77,8 @@
                                 运行
                             <#elseif item.status == 2>
                                 成功
+                            <#elseif item.status == 3>
+                                暂停
                             <#elseif item.status == -1>
                                 失败
                             <#elseif item.status == -2>

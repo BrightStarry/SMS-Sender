@@ -175,7 +175,7 @@ CREATE TABLE send_task_record(
   sms_content_name VARCHAR(32) NOT NULL COMMENT '短信内容名',
   content VARCHAR(256) NOT NULL COMMENT '发送内容',
   thread_count TINYINT DEFAULT 2 COMMENT '开启线程数',
-  isShard TINYINT COMMENT '是否分片处理,每小时处理一部分',
+  is_shard TINYINT DEFAULT 0 COMMENT '是否分片处理,每小时处理一部分',
 
   expect_start_time TIMESTAMP DEFAULT current_timestamp COMMENT '期望发送时间',
   expect_end_time TIMESTAMP NOT NULL DEFAULT 0 COMMENT '期望结束时间',

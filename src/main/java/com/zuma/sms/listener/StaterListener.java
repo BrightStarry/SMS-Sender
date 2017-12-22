@@ -7,7 +7,7 @@ import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.repository.ChannelRepository;
 import com.zuma.sms.repository.DictRepository;
-import com.zuma.sms.util.HttpClientUtil;
+import com.zuma.sms.service.SendTaskRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -47,7 +47,7 @@ public class StaterListener implements ApplicationListener<ContextRefreshedEvent
 	private ChannelHandlerChainManager channelHandlerChainManager;
 
 	@Autowired
-	private HttpClientUtil httpClientUtil;
+	private SendTaskRecordService sendTaskRecordService;
 
 	/**
 	 * 容器加载完成操作
@@ -60,6 +60,12 @@ public class StaterListener implements ApplicationListener<ContextRefreshedEvent
 		configStore.loadConfig(dictRepository);
 		//加载netty处理器
 		channelHandlerChainManager.registerHandler(customChannelHandlerMap);
+
+		//检查是否有还在运行的异常任务
+		sendTaskRecordService.cleanFailedTask();
+		//将还在等待的任务加入任务队列
+		sendTaskRecordService.addTaskWhenStart();
+
 		//运行发送任务管理器
 		sendTaskManager.run();
 	}

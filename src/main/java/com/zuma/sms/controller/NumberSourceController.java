@@ -80,7 +80,7 @@ public class NumberSourceController extends BaseController {
 	@PostMapping("/update")
 	@ResponseBody
 	public ResultDTO<?> update(@Valid NumberSourceForm numberSourceForm, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		numberSourceService.updateOne(numberSourceForm);
 		return ResultDTO.success();
 	}

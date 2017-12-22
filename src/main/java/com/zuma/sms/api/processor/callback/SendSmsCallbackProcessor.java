@@ -1,16 +1,21 @@
 package com.zuma.sms.api.processor.callback;
 
+import com.zuma.sms.api.SendTaskManager;
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.Platform;
+import com.zuma.sms.entity.SendTaskRecord;
 import com.zuma.sms.entity.SmsSendRecord;
+import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
 import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.service.PlatformService;
+import com.zuma.sms.service.SendTaskRecordService;
 import com.zuma.sms.service.SmsSendRecordService;
 import com.zuma.sms.util.CodeUtil;
 import com.zuma.sms.util.CommonUtil;
+import com.zuma.sms.util.EnumUtil;
 import com.zuma.sms.util.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -96,7 +101,7 @@ public abstract class SendSmsCallbackProcessor<T> {
 	 * @param channel   短信通道
 	 */
 	protected void taskHandle(ResultDTO<ErrorData> resultDTO, SmsSendRecord record, Channel channel) {
-		//TODO 任务操作
+		sendTaskManager.asyncStatusIncrement(record.getSendTaskId(),ResultDTO.isSuccess(resultDTO));
 	}
 
 
@@ -154,12 +159,16 @@ public abstract class SendSmsCallbackProcessor<T> {
 	//spring bean init............
 	protected static PlatformService platformService;
 	protected static SmsSendRecordService smsSendRecordService;
+	protected static SendTaskRecordService sendTaskRecordService;
 	protected static HttpClientUtil httpClientUtil;
+	protected static SendTaskManager sendTaskManager;
 
 	@Autowired
 	public void init(PlatformService platformService,
 					 SmsSendRecordService smsSendRecordService,
-					 HttpClientUtil httpClientUtil) {
+					 HttpClientUtil httpClientUtil,
+					 SendTaskRecordService sendTaskRecordService,
+					 SendTaskManager sendTaskManager) {
 		SendSmsCallbackProcessor.platformService = platformService;
 		SendSmsCallbackProcessor.smsSendRecordService = smsSendRecordService;
 		SendSmsCallbackProcessor.httpClientUtil = httpClientUtil;

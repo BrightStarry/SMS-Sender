@@ -28,13 +28,8 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 
 
 	@Override
-	protected CMPPSubmitAPI.Request toRequestObject(Channel channel, String phones, String message) {
-		try {
-			return CMPPSubmitAPI.Request.build(channel, phones, message);
-		} catch (Exception e) {
-			log.error("[短信发送过程]生成请求对象失败.error:{}",e.getMessage(),e);
-			throw new SmsSenderException("生成请求对象失败");
-		}
+	protected CMPPSubmitAPI.Request toRequestObject(Channel channel, String phones, String message)  throws Exception{
+		return CMPPSubmitAPI.Request.build(channel, phones, message);
 	}
 
 	/**

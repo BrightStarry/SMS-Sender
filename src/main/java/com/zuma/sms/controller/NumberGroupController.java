@@ -72,7 +72,7 @@ public class NumberGroupController extends BaseController{
 	@PostMapping("/update")
 	@ResponseBody
 	public ResultDTO update(@Valid NumberGroupUpdateForm form, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		numberGroupService.update(form);
 		return ResultDTO.success();
 	}
@@ -94,7 +94,7 @@ public class NumberGroupController extends BaseController{
 	@PostMapping("/add")
 	@ResponseBody
 	public ResultDTO<?> add(@Valid NumberGroupAddForm form, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		numberGroupService.save(form);
 		return ResultDTO.success();
 	}

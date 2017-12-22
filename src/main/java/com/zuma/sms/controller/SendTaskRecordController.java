@@ -9,8 +9,10 @@ import com.zuma.sms.entity.SendTaskRecord;
 import com.zuma.sms.enums.db.IsDeleteEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
+import com.zuma.sms.form.PauseTaskForm;
 import com.zuma.sms.form.SendTaskRecordAddForm;
 import com.zuma.sms.form.SendTaskRecordUpdateForm;
+import com.zuma.sms.form.WarnByDateRangeForm;
 import com.zuma.sms.security.CustomUser;
 import com.zuma.sms.service.SendTaskRecordService;
 import com.zuma.sms.util.EnumUtil;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,8 +29,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.xml.transform.Result;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * author:ZhengXing
@@ -44,6 +50,38 @@ public class SendTaskRecordController extends BaseController{
 
 	@Autowired
 	private ChannelStore channelStore;
+
+	/**
+	 * 判断指定时间段的任务是否超过限定值
+	 */
+	@PostMapping("/warn")
+	@ResponseBody
+	public ResultDTO<Boolean> warnByDateRange(@Valid WarnByDateRangeForm form, BindingResult bindingResult) {
+		isValid(bindingResult);
+		return ResultDTO.success(sendTaskRecordService.warnByDateRange(form));
+	}
+
+
+	/**
+	 * 恢复启动任务
+	 */
+	@PostMapping("/rerunTask")
+	public ResultDTO rerunTask(Long id){
+		notZeroOfLong(id);
+		sendTaskRecordService.rerunTask(id);
+		return ResultDTO.success();
+	}
+
+	/**
+	 * 暂停任务
+	 *
+	 */
+	@PostMapping("/pauseTask")
+	public ResultDTO pauseTask(@Valid PauseTaskForm form, BindingResult bindingResult) {
+		isValid(bindingResult);
+		sendTaskRecordService.pauseTask(form.getId(), TimeUnit.MILLISECONDS.convert(form.getTime(),TimeUnit.SECONDS));
+		return ResultDTO.success();
+	}
 
 	/**
 	 * 异常文件下载
@@ -91,7 +129,7 @@ public class SendTaskRecordController extends BaseController{
 	@PostMapping("/update")
 	@ResponseBody
 	public ResultDTO<?> update(@Valid SendTaskRecordUpdateForm form, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		//开始时间不能小于结束时间
 		if(form.getExpectStartTime().after(form.getExpectEndTime())){
 			log.error("[发送任务]开始时间小于当前时间.");
@@ -108,7 +146,7 @@ public class SendTaskRecordController extends BaseController{
 	@ResponseBody
 	public ResultDTO<?> addTask(@Valid SendTaskRecordAddForm form, BindingResult bindingResult,
 								@AuthenticationPrincipal CustomUser user) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 //		开始时间不能小于结束时间
 		if(form.getExpectStartTime().after(form.getExpectEndTime())){
 			log.error("[发送任务]开始时间小于当前时间.");

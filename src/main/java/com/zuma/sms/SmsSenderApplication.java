@@ -9,9 +9,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.ErrorPage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableConfigurationProperties(ConfigStore.class)
+@EnableScheduling
 public class SmsSenderApplication {
 	@Bean
 	public EmbeddedServletContainerCustomizer containerCustomizer(){

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -32,12 +33,45 @@ public class SendTaskManager {
 	private BlockingQueue<SendTask> runQueue = new DelayQueue<>();
 	//结束任务 队列 非延时阻塞队列
 	private BlockingQueue<SendTask> closeQueue = new LinkedBlockingQueue<>();
-
 	//等待队列锁, 主要用于迭代器-此处必须使用公平锁,防止删除方法一直被循环任务阻塞
 	private ReentrantLock waitLock = new ReentrantLock(true);
 
+	//异步回调后,保存到此处
+	private Map<Long, SendTaskAsyncStatus> sendTaskAsyncStatusMap = new ConcurrentHashMap<>();
+	//存储目前已有map中的key
+	private BlockingQueue<Long> sendTaskAsyncStatusKeyQueue = new LinkedBlockingDeque<>();
+	//回调锁
+	private ReentrantLock sendTaskAsyncStatusLock = new ReentrantLock();
+
+
+
 	@Autowired
 	private SendTaskRecordService sendTaskRecordService;
+
+
+	/**
+	 * 将指定任务id的异步成功或失败状态增加
+	 * 此处必须加锁,防止刚取A出来,循环线程就把A删除处理了.
+	 * @param taskId 任务id
+	 * @param isSuccessNum true:增加成功数; false:增加失败数
+	 */
+	public void asyncStatusIncrement(long taskId, boolean isSuccessNum) {
+		try {
+			sendTaskAsyncStatusLock.lock();
+			//尝试从map中获取指定id的异步状态对象
+			SendTaskAsyncStatus sendTaskAsyncStatus = sendTaskAsyncStatusMap.get(taskId);
+			//如果没有则新建,
+			if (sendTaskAsyncStatus == null) {
+				sendTaskAsyncStatus = new SendTaskAsyncStatus();
+				sendTaskAsyncStatusMap.put(taskId,sendTaskAsyncStatus);
+				sendTaskAsyncStatusKeyQueue.offer(taskId);
+			}
+			//累加数量
+			sendTaskAsyncStatus.increment(isSuccessNum);
+		} finally {
+			sendTaskAsyncStatusLock.unlock();
+		}
+	}
 
 
 	/**
@@ -68,16 +102,17 @@ public class SendTaskManager {
 						//任务开始
 						task.run();
 					} catch (Exception e) {
+						log.error("[任务管理器]开始任务失败.e:{}", e.getMessage(), e);
 						//发生异常后,如果已经取出任务,将任务状态改为全部失败
 						if (task != null) {
 							//构建异常对象
 							ResultDTO<?> error = ResultDTO.error(String.valueOf(SendTaskRecordStatusEnum.FAILED.getCode()),
 									ErrorEnum.TASK_START_ERROR.getMessage());
 							//更新记录状态以及异常信息
-							sendTaskRecordService.updateStatus(task.getSendTaskRecord().getId(),
+							sendTaskRecordService.updateStatus(task.getId(),
 									SendTaskRecordStatusEnum.FAILED, CodeUtil.objectToJsonString(error));
 						}
-						log.error("[任务管理器]开始任务失败.e:{}", e.getMessage(), e);
+
 					}finally {
 						waitLock.unlock();
 					}
@@ -130,25 +165,88 @@ public class SendTaskManager {
 			}
 		});
 
+		//定时从map中获取异步回调,累加到已经完成的任务上
+		Executors.newSingleThreadExecutor().execute(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					Long taskId;
+					try {
+						sendTaskAsyncStatusLock.lock();
+						//返回特殊值的获取方式 返回null
+						taskId = sendTaskAsyncStatusKeyQueue.poll();
+						if(taskId != null){
+							//删除并获取
+							SendTaskAsyncStatus sendTaskAsyncStatus = sendTaskAsyncStatusMap.remove(taskId);
+							log.info("[任务管理器]处理任务异步回调.获取到任务:{},status:{}",taskId,sendTaskAsyncStatus);
+							//累加
+							sendTaskRecordService.incrementSuccessAndFailedNumById(sendTaskAsyncStatus.getSuccessNum().get(),
+									sendTaskAsyncStatus.getFailedNum().get(), taskId);
+						}
+						//每次等待 30s
+						sendTaskAsyncStatusLock.newCondition().await(30, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						log.error("[任务管理器]处理任务异步回调.失败.e:{}", e.getMessage(), e);
+					}finally {
+						sendTaskAsyncStatusLock.unlock();
+					}
+				}
+			}
+		});
+
 		log.info("[SendTaskManager]发送任务管理器-各线程启动完成");
 	}
 
+
+
+
+	/**
+	 * 恢复启动任务
+	 */
+	public void rerunTask(long sendTaskRecordId) {
+		for (SendTask sendTask : runQueue) {
+			if (sendTask.getId().equals(sendTaskRecordId)) {
+				sendTask.pauseToRun();
+				return;
+			}
+		}
+		throw new SmsSenderException("任务已经停止.");
+	}
+
+
+	/**
+	 * 暂停任务 , 指定暂停毫秒数
+	 * 不加锁
+	 */
+	public void pauseTask(long sendTaskRecordId,Long time) {
+		for (SendTask sendTask : runQueue) {
+			if(sendTask.getId().equals(sendTaskRecordId)){
+				sendTask.pause(time);
+				return;
+			}
+		}
+		throw new SmsSenderException("任务在运行队列不存在,删除失败");
+	}
+
+
 	/**
 	 * 中断任务
+	 * 此处暂不加锁,任务即使在中断过程中结束,也没什么关系
 	 */
-	public void interruptTask(Long id) {
+	public void interruptTask(Long sendTaskRecordId) {
+		//此处不增删元素,直接使用增强for
 		for (SendTask sendTask : runQueue) {
-			if (sendTask.getSendTaskRecord().getId().equals(id)) {
+			if (sendTask.getId().equals(sendTaskRecordId)) {
 				log.info("[任务管理器]任务中断成功.sendTask:{}",sendTask);
 				sendTask.interrupt();
 				return;
 			}
 		}
-		throw new SmsSenderException("任务不存在运行队列,删除失败");
+		throw new SmsSenderException("任务在运行队列不存在,中断失败");
 	}
 
 	/**
-	 * 根据 发送任务记录 删除任务,如果它还在等待队列
+	 * 删除任务,如果它还在等待队列
 	 * 该迭代器为弱一致性,自行加锁,使其在元素的减少上变为强一致性,此处不处理等待任务的新增
 	 */
 	public void removeTask(Long sendTaskRecordId) {
@@ -160,7 +258,7 @@ public class SendTaskManager {
 			SendTask item;
 			while (iterator.hasNext()) {
 				item = iterator.next();
-				if (item.getSendTaskRecord().getId().equals(sendTaskRecordId)) {
+				if (item.getId().equals(sendTaskRecordId)) {
 					iterator.remove();
 					return;
 				}

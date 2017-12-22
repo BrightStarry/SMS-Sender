@@ -39,6 +39,19 @@ public class CMPPCallbackProcessor extends SendSmsCallbackProcessor<CMPPSubmitAP
 		return true;
 	}
 
+	/**
+	 * TODO 该类需要重写该方法
+	 * @param resultDTO 返回对象
+	 * @param record    记录
+	 * @param channel   短信通道
+	 */
+	@Override
+	protected void taskHandle(ResultDTO<ErrorData> resultDTO, SmsSendRecord record, Channel channel) {
+		//该处理类,成功时,不累加,因为之前全都直接返回成功了,失败,才累加
+		if(!ResultDTO.isSuccess(resultDTO))
+			sendTaskManager.asyncStatusIncrement(record.getSendTaskId(),false);
+	}
+
 	@Override
 	protected String getOtherId(CMPPSubmitAPI.Response response) {
 		return String.valueOf(response.getSequenceId());

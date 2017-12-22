@@ -19,14 +19,15 @@ public class MessageResolverFactory {
 			return new MessageResolver() {
 				@Override
 				public PhoneMessagePair resolve(String phone, String message) {
-					return null;
+					return new PhoneMessagePair(phone,message);
 				}
 			};
 		}
+		//其他通道解析器
 		return new MessageResolver() {
 			@Override
 			public PhoneMessagePair resolve(String phone, String message) {
-				return  null;
+				return  new PhoneMessagePair(phone,message);
 			}
 		};
 	}

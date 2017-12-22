@@ -10,8 +10,149 @@ var url = {
     numberGroupAll: '/numberGroup/list/all-group',//所有号码组
     smsContentAll: '/smsContent/list/all',//所有话术
     stop: '/stop',//中断
+    pause: '/pauseTask',//暂停
+    rerun: '/rerunTask',//恢复启动
+    warn: '/warn',//发送任务预警
 };
 var sendTaskRecordList = {
+
+
+    /**
+     * 初始化方法
+     */
+    init : function() {
+        sendTaskRecordList.page();
+        sendTaskRecordList.likeSearchByName();
+        sendTaskRecordList.channelSelect();
+        sendTaskRecordList.numberGroupSelect();
+        sendTaskRecordList.smsContentSelect();
+
+        //选中分段后,限制只能选择到小时
+        $('#addForm :input[name="isShard"]').change(function () {
+            var time = common.getDateByMinute(-3);
+            if($(this).prop('checked')){
+                $('#startTime').datetimepicker('remove');
+                $('#endTime').datetimepicker('remove');
+                $('#startTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minView:1,format:"yyyy-mm-dd hh:00:00"});
+                $('#endTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minView:1,format:"yyyy-mm-dd hh:00:00"});
+            }
+            else{
+                $('#startTime').datetimepicker('remove');
+                $('#endTime').datetimepicker('remove');
+                $('#startTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3});
+                $('#endTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3});
+            }
+        });
+        //选中分段后,限制只能选择到小时
+        $('#updateForm :input[name="isShard"]').change(function () {
+            var time = common.getDateByMinute(-3);
+            if($(this).prop('checked')){
+                $('#updateStartTime').datetimepicker('remove');
+                $('#updateEndTime').datetimepicker('remove');
+                $('#updateStartTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minView:1,format:"yyyy-mm-dd hh:00:00"});
+                $('#updateEndTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minView:1,format:"yyyy-mm-dd hh:00:00"});
+            }
+            else{
+                $('#updateStartTime').datetimepicker('remove');
+                $('#updateEndTime').datetimepicker('remove');
+                $('#updateStartTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3});
+                $('#updateEndTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3});
+            }
+        });
+        //填写完结束时间
+
+        $('#updateEndTime').change(function () {
+            sendTaskRecordList.warn($('#startTime').attr('data-value'),$('#endTime').attr('data-value'));
+        });
+    },
+    //填写完时间后,执行的预警操作
+    warn : function (x,y) {
+        if(x && y){
+            $.post(url.commonPre + url.warn,{startTime:Number(x),endTime:Number(y)},function(result){
+                if (common.isSuccess(result) && result.data){
+                    $('#addWarn').show();
+                    $('#updateWarn').show();
+                }else
+                {
+                    $('#addWarn').hide();
+                    $('#updateWarn').hide();
+                }
+            });
+        }
+    },
+
+
+
+    //暂停
+    pause : function() {
+        var ids = common.getCheckedArray();
+        if (ids == false) {
+            common.showMessage("请选择记录");
+            return;
+        } else if (ids.length > 1) {
+            common.showMessage("请选择单条记录");
+            //取消全选
+            common.checkboxAll(false);
+            return;
+        }
+        common.checkboxAll(false);
+
+        $('#pauseModal').modal({
+            relatedTarget: this,
+            onConfirm: function(e) {
+                $.post(url.commonPre + url.pause,{id:ids[0],time:e.data},function(result){
+                    //执行处理方法,如果未执行,表示成功
+                    if (!common.errorHandle(result)) {
+                        sendTaskRecordList.page();
+                        common.successHandle();
+                        //取消全选
+                        common.checkboxAll(false);
+                    }
+                });
+            },
+            onCancel: function(e) {
+            }
+        });
+    },
+
+
+
+    //恢复启动
+    rerun : function() {
+        var ids = common.getCheckedArray();
+        if (ids == false) {
+            common.showMessage("请选择记录");
+            return;
+        } else if (ids.length > 1) {
+            common.showMessage("请选择单条记录");
+            //取消全选
+            common.checkboxAll(false);
+            return;
+        }
+        common.checkboxAll(false);
+
+        //确认框
+        $('#confirmModal').modal({
+            relatedTarget: this,
+            onConfirm: function (options) {
+                $.post(url.commonPre + url.rerun,{id:ids[0]},function (result) {
+                    //执行处理方法,如果未执行,表示成功
+                    if (!common.errorHandle(result)) {
+                        sendTaskRecordList.page();
+                        common.successHandle();
+                        //取消全选
+                        common.checkboxAll(false);
+                    }
+                });
+
+            },
+            // closeOnConfirm: false,
+            onCancel: function () {
+            }
+        });
+    },
+
+
     //停止
     stop : function() {
         var ids = common.getCheckedArray();
@@ -45,8 +186,6 @@ var sendTaskRecordList = {
             onCancel: function () {
             }
         });
-
-
     },
 
 
@@ -137,11 +276,20 @@ var sendTaskRecordList = {
     openAddModal: function () {
         common.closeModal($('#addForm')[0], null);
         var time = common.getDateByMinute(-3);
-        $('#startTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3});
-        $('#endTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3});
+        $('#startTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3})
+            .on('changeDate', function(ev){
+                $('#startTime').attr('data-value',ev.date.valueOf());
+                sendTaskRecordList.warn($('#startTime').attr('data-value'),$('#endTime').attr('data-value'));
+            });
+        $('#endTime').datetimepicker({language: 'zh-CN', startDate: time, autoclose: true, minuteStep: 3})
+            .on('changeDate', function(ev){
+                $('#endTime').attr('data-value',ev.date.valueOf());
+                sendTaskRecordList.warn($('#startTime').attr('data-value'),$('#endTime').attr('data-value'));
+            });
+        $('#addWarn').hide();
         $('#addModal').modal();
-    },
-
+    }
+    ,
     //新增
     add: function () {
         $.post(url.commonPre + url.add, $('#addForm').serialize(), function (result) {
@@ -208,7 +356,7 @@ var sendTaskRecordList = {
         input.val("");
         //如果之前是有内容的，就重新加载第一页
         if (tempStr)
-            numberGroupList.page(1);
+            sendTaskRecordList.page(1);
     },
 
     //弹出修改模态框
@@ -225,11 +373,9 @@ var sendTaskRecordList = {
         }
         common.checkboxAll(false);
 
-
-
-
         $.post(url.commonPre + url.query, {id: ids[0]}, function (result1) {
             if (!common.errorHandle(result1)) {
+                $('#updateWarn').hide();
                 $('#updateForm :input[name="id"]').val(result1.data.id);
                 $('#updateForm :input[name="name"]').val(result1.data.name);
                 $('#updateForm :input[name="remark"]').val(result1.data.remark);
@@ -238,9 +384,11 @@ var sendTaskRecordList = {
                     $('#updateForm :input[name="isShard"]').attr('checked','true');
 
                 $('#updateStartTime').datetimepicker({language: 'zh-CN',initialDate:new Date(result1.data.expectEndTime), autoclose: true, minuteStep: 3});
-                $('#updateStartTime').datetimepicker('update', new Date(result1.data.expectStartTime));
                 $('#updateEndTime').datetimepicker({language: 'zh-CN',initialDate:new Date(result1.data.expectEndTime), autoclose: true, minuteStep: 3});
+                $('#updateStartTime').datetimepicker('update', new Date(result1.data.expectStartTime));
                 $('#updateEndTime').datetimepicker('update', new Date(result1.data.expectEndTime));
+
+
 
                 //下拉框
                 var $select1 = $('#updateChannelSelect');
@@ -323,12 +471,5 @@ var sendTaskRecordList = {
 
 };
 $(function () {
-    sendTaskRecordList.page();
-    sendTaskRecordList.likeSearchByName();
-    sendTaskRecordList.channelSelect();
-    sendTaskRecordList.numberGroupSelect();
-    sendTaskRecordList.smsContentSelect();
-
-
-
+    sendTaskRecordList.init();
 });

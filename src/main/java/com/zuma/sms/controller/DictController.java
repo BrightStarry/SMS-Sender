@@ -49,7 +49,7 @@ public class DictController extends BaseController{
 	@PostMapping("/update")
 	@ResponseBody
 	public ResultDTO update(@Valid DictUpdateForm form, BindingResult bindingResult) {
-		isValid(bindingResult,log,"");
+		isValid(bindingResult);
 		dictService.update(form);
 		return ResultDTO.success();
 	}

@@ -26,6 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Data
 public class ConfigStore {
 
+	//发送任务 号码数 预警 阈值 - 20W
+	public Integer sendTaskWarnOfPhoneNum = 0;
+	//发送任务 线程数 预警 阈值 - 100
+	public Integer sendTaskWarnOfThreadNum = 0;
+
 	//是否开启CMPP连接
 	public Boolean isOpenCMPPConnection = true;
 

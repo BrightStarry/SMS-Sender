@@ -25,7 +25,7 @@ public class ChangXiangCallbackProcessor extends SendSmsCallbackProcessor<ChangX
 
 	@Override
 	protected ResultDTO<ErrorData> getResultDTO(ChangXiangAPI.AsyncResponseChild response, SmsSendRecord record) {
-		//如果成功 TODO 具体对象不明
+		//如果成功
 		if(EnumUtil.equals(response.getCode(), ChangXiangErrorEnum.SUCCESS)){
 			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
 		}

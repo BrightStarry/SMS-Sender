@@ -1,5 +1,6 @@
 package com.zuma.sms.form;
 
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
@@ -9,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.Date;
 
 /**
@@ -36,6 +38,7 @@ public class SendTaskRecordAddForm {
 	@Range(min = 1000,message = "号码组id范围错误")
 	private Long numberGroupId;
 
+	@NotNull(message = "话术id为空")
 	@NotEmpty(message = "话术id为空")
 	private Long[] smsContentId;
 
@@ -44,8 +47,7 @@ public class SendTaskRecordAddForm {
 	private Integer threadCount;
 
 
-	@Range(min = 1,message = "是否分段值不正确")
-	private Integer isShard;
+	private Integer isShard = IntToBoolEnum.FALSE.getCode();
 
 
 	/**

@@ -12,6 +12,7 @@ import lombok.Getter;
 public enum SendTaskRecordStatusEnum implements CodeEnum<Integer> {
 	WAIT(0,"等待中"),
 	RUN(1,"运行中"),
+	PAUSE(3,"暂停中"),
 	SUCCESS(2,"成功"),
 	FAILED(-1,"失败"),
 	INTERRUPT(-2, "中断"),

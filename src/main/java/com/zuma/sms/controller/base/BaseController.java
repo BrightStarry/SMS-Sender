@@ -52,8 +52,17 @@ public class BaseController {
         }
     }
 
+	/**
+	 * 表单验证
+	 */
+	protected  void isValid(BindingResult bindingResult) {
+		isValid(bindingResult,null,null);
+	}
 
-    /**
+
+
+
+	/**
      * String 非空验证
      */
     protected void notEmptyOfString(String... param) {

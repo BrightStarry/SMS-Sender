@@ -20,12 +20,12 @@ public abstract class SmsUpProcessor<T> {
 		SmsUpRecord smsUpRecord = responseToSmsUpRecord(response,channel);
 		//保存数据
 		smsUpRecord = smsUpRecordService.save(smsUpRecord);
-		//TODO 暂留.其他操作
+		//暂留.其他操作
 		return commonProcess(smsUpRecord,channel);
 	}
 
 	private boolean commonProcess(SmsUpRecord smsUpRecord,Channel channel) {
-		return false;
+		return true;
 	}
 
 	protected abstract SmsUpRecord responseToSmsUpRecord(T response,Channel channel);

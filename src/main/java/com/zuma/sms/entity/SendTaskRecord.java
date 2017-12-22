@@ -6,12 +6,10 @@ import com.zuma.sms.enums.db.IsDeleteEnum;
 import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
 import com.zuma.sms.util.EnumUtil;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -21,11 +19,11 @@ import java.util.List;
  * 发送任务
  */
 @Entity
-@Data
 @Accessors(chain = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
+@Data
 public class SendTaskRecord implements Cloneable{
 
     /**
@@ -160,7 +158,7 @@ public class SendTaskRecord implements Cloneable{
     private Integer isShard = IntToBoolEnum.FALSE.getCode();
 
 
-    /**
+    /**2
      * 已操作总数(可能被中断导致后续号码未操作)
      */
     private Integer usedNum;
@@ -198,12 +196,7 @@ public class SendTaskRecord implements Cloneable{
     @JsonIgnore
     private List<DateHourPair> dateHourPairs;
 
-    /**
-     * 当前任务是否是分时任务
-     */
-    public boolean isShard(){
-        return EnumUtil.equals(this.isShard, IntToBoolEnum.TRUE);
-    }
+
 
 
     /**
@@ -222,6 +215,25 @@ public class SendTaskRecord implements Cloneable{
     public static class DateHourPair{
         private Date startTime;
         private Date endTime;
+
+
+        /**
+         * 计算指定时间是否在该区间内
+         * -1: 小于startTime
+         * 0: 在范围内
+         * 1: 大于endTime
+         */
+        public int compareRange(Date time) {
+            //如果早于开始时间
+            if(time.before(startTime))
+                return -1;
+            //如果晚于结束时间
+            if(time.after(endTime))
+                return 1;
+            //否则就是在范围内
+            return 0;
+        }
+
     }
 
 }

@@ -26,7 +26,24 @@ import java.util.concurrent.ConcurrentHashMap;
 @Data
 public class ConfigStore {
 
-	//发送任务 号码数 预警 阈值 - 20W
+
+
+	//短信发送任务
+	//运行时拉取任务,每次默认拉取记录数
+	public Integer recordPullOnRunNum = 1000;
+	//预创建每次默认拉取手机号字符数
+	public Integer phoneStrNum = 60000;
+	//发送任务中的主队列,最多暂存多少条记录
+	public Integer mainQueueLen = 1000;
+
+
+	//平台调用发送
+	//最大发送手机号数
+	public Integer maxSendPhoneNum = 100;
+	//短信消息分隔符
+	public String smsMessageSeparator = "!&";
+
+	//发送任务 号码数 预警 阈值 - 20W TODO 修改回原值
 	public Integer sendTaskWarnOfPhoneNum = 0;
 	//发送任务 线程数 预警 阈值 - 100
 	public Integer sendTaskWarnOfThreadNum = 0;
@@ -54,6 +71,9 @@ public class ConfigStore {
 	//发送任务异常信息前缀(前缀+id)
 	public String sendTaskErrorInfoPre = allPathPre + "sendTaskErrorInfo" + File.separator;
 
+	//批处理异常数据文件路径
+	public String batchErrorFilePath = allPathPre + "batchErrorData" + ".txt";
+
 
 	//Common模块配置map,从数据库中读取
 	public Map<String, Map<String, String>> config = new ConcurrentHashMap<>();
@@ -64,6 +84,7 @@ public class ConfigStore {
 
 	//cmpp类型的通道的ip和端口,以通道id为key.
 	public Map<String,IPPortPair> cmppIpPortMap = new HashMap<>();
+
 
 
 	//url

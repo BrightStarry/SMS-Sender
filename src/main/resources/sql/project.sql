@@ -138,6 +138,8 @@ CREATE TABLE sms_send_record(
   channel_id BIGINT DEFAULT 0 COMMENT '通道id',
   channel_name VARCHAR(16) DEFAULT 0 COMMENT '通道名',
   phones VARCHAR(4096) NOT NULL COMMENT '发送手机号',
+  phone_count SMALLINT NOT NULL COMMENT '发送手机号数',
+  message VARCHAR(4096) NOT NULL COMMENT '短信消息',
 
   request_body VARCHAR(1024) DEFAULT '' COMMENT '调用者请求对象json字符',
   other_id VARCHAR(32) DEFAULT '' COMMENT '其他id,一般为接口返回的该次调用唯一标识',
@@ -200,7 +202,8 @@ CREATE TABLE send_task_record(
 
   PRIMARY KEY (id),
   KEY idx_user_id(user_id),
-  KEY idx_number_group_id(number_group_id)
+  KEY idx_number_group_id(number_group_id),
+  KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '发送任务表';
 
 /*号码源数据表*/
@@ -216,7 +219,8 @@ CREATE TABLE number_source (
   create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  KEY idx_name(name)
 
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '号码源数据表';
 
@@ -238,7 +242,8 @@ CREATE TABLE number_group (
 
   PRIMARY KEY (id),
   KEY idx_type_id(type_id),
-  KEY idx_number_source_id(number_source_id)
+  KEY idx_number_source_id(number_source_id),
+  KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '号码组数据表';
 
 
@@ -250,7 +255,8 @@ CREATE TABLE number_group_type(
 
   create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '号码组类别表';
 
 /*短信内容表*/
@@ -262,8 +268,25 @@ CREATE TABLE sms_content(
 
   create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  KEY idx_name(name)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信内容表';
+
+/*平台调用发送短信记录表*/
+CREATE TABLE platform_send_sms_record(
+  id BIGINT AUTO_INCREMENT COMMENT 'id',
+  platform_id BIGINT NOT NULL COMMENT '平台id',
+  phone VARCHAR(4096) NOT NULL COMMENT '发送的手机号',
+  sms_message VARCHAR(4096) NOT NULL COMMENT '发送的消息',
+  result VARCHAR(4096) COMMENT '发送返回结果json串',
+  status TINYINT COMMENT '状态: -1:失败; 0:等待; 1:成功',
+
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+
+  PRIMARY KEY (id),
+  KEY idx_name(platform_id)
+)ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '平台调用发送短信记录表(每次其他平台调用接口发送短信记录)';
 
 /*spring security 记住我功能表格*/
 create table persistent_logins (username varchar(64) not null, series varchar(64) primary key, token varchar(64) not null, last_used timestamp not null);

@@ -70,6 +70,7 @@ public class SendTaskRecordService {
 	/**
 	 * 累加指定id的 成功号码数和失败号码数
 	 */
+	@Transactional
 	public SendTaskRecord incrementSuccessAndFailedNumById(int successNum, int failedNum,long taskId) {
 		return sendTaskRecordRepository.updateSuccessAndFailedNum(successNum,failedNum,taskId);
 	}

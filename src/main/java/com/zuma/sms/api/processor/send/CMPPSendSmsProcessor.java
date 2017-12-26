@@ -3,6 +3,7 @@ package com.zuma.sms.api.processor.send;
 import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
+import com.zuma.sms.dto.SendResult;
 import com.zuma.sms.dto.api.cmpp.CMPPSubmitAPI;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.SmsSendRecord;
@@ -40,7 +41,7 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 	 * @return
 	 */
 	@Override
-	protected ResultDTO<ErrorData> getResult(CMPPSubmitAPI.Request requestObject, SmsSendRecord record, Channel channel) {
+	protected ResultDTO<SendResult> getResult(CMPPSubmitAPI.Request requestObject, SmsSendRecord record, Channel channel) {
 		Integer sequenceId;
 		try {
 			//发送并返回序列号
@@ -60,7 +61,7 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 
 
 	@Override
-	protected ResultDTO<ErrorData> buildResult(Integer response, SmsSendRecord record) {
+	protected ResultDTO<SendResult> buildResult(Integer response, SmsSendRecord record) {
 		return ResultDTO.success();
 	}
 

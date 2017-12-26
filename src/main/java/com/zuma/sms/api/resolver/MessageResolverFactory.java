@@ -1,6 +1,6 @@
 package com.zuma.sms.api.resolver;
 
-import com.zuma.sms.PhoneMessagePair;
+import com.zuma.sms.dto.PhoneMessagePair;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.system.ChannelEnum;
 import com.zuma.sms.util.EnumUtil;

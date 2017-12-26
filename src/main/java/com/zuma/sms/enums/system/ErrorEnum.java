@@ -13,12 +13,12 @@ public enum ErrorEnum implements CodeEnum<String> {
     UNKNOWN_ERROR("0001","未知异常"),
     HTTP_ERROR("0002","http请求失败"),
 
-    PLATFORM_EMPTY("0004","平台不存在"),
-    CHANNEL_EMPTY("0005","通道不存在"),
+//    PLATFORM_EMPTY("0004","平台不存在"),
+//    CHANNEL_EMPTY("0005","通道不存在"),
     PHONE_UNKNOWN("0006","存在无法识别手机号"),
-    PHONE_NUMBER_OVER("0007","手机号数目超限"),
-    SMS_LEN_AND_PHONE_LEN_MISMATCH("0008","短信数和手机号数不匹配，必须为一对一或一对多或多对多且数目相同"),
-    UNSUPPORTED_OPERATOR("0009","包含指定通道不支持的运营商"),
+//    PHONE_NUMBER_OVER("0007","手机号数目超限"),
+//    SMS_LEN_AND_PHONE_LEN_MISMATCH("0008","短信数和手机号数不匹配，必须为一对一或一对多或多对多且数目相同"),
+//    UNSUPPORTED_OPERATOR("0009","包含指定通道不支持的运营商"),
     HTTP_RESPONSE_IO_ERROR("0010","http请求response对象，转换时io异常"),
     HTTP_STATUS_CODE_ERROR("0011","http请求状态码非200"),
 //    STRING_TO_RESPONSE_ERROR("0012","短信API返回参数有误"),
@@ -27,7 +27,7 @@ public enum ErrorEnum implements CodeEnum<String> {
 //    IP_UNALLOW("0015","IP非法"),
     CACHE_EXPIRE("0016","缓存过期,无法解析发送短信接口异步回调信息"),
 //    SEND_CALLBACK_TO_PLATFORM_ERROR("0017", "发送回调请求到平台失败"),
-    SIGN_NOT_MATCH_ERROR("0018","签名不匹配"),
+//    SIGN_NOT_MATCH_ERROR("0018","签名不匹配"),
     POOL_ERROR("0019","对象池异常"),
     ZHUWANG_CONNECT_ERROR("0020", "连接筑望服务器失败"),
     MD5_SIGN_ERROR("0021", "MD5签名异常"),
@@ -81,6 +81,15 @@ public enum ErrorEnum implements CodeEnum<String> {
 	//http api
 	STRING_TO_RESPONSE_ERROR("7001","短信API返回参数有误"),
     SEND_CALLBACK_TO_PLATFORM_ERROR("7002", "发送回调请求到平台失败"),
+
+
+    //其他平台调用api的异常(此处的异常码才重要)
+    SIGN_NOT_MATCH_ERROR("0001","签名不匹配"),
+    PLATFORM_NOT_EXIST("0002","平台不存在"),
+    CHANNEL_NOT_EXIST("0003","通道不存在"),
+    PHONE_NUMBER_OVER("0004","手机号数目超限"),
+    SMS_LEN_AND_PHONE_LEN_MISMATCH("0005", "短信数和手机号数不匹配，必须为一对一或一对多或多对多且数目相同"),
+    UNSUPPORTED_OPERATOR("0006","包含指定通道不支持的运营商手机号"),
 
     OTHER_ERROR("9999", "其他异常(消息自定义)"),
 

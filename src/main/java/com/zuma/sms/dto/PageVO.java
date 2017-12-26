@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,14 +27,17 @@ public class PageVO<T> {
     private Integer totalPage;
     /**数据*/
     private List<T> list;
+    /**当前记录数*/
+    private Integer currentSize;
     /**当前id*/
     private Long id;
 
-    public PageVO(Integer pageNo, Integer pageSize, Long totalElement, Integer totalPage, List<T> list) {
+    public PageVO(Integer pageNo, Integer pageSize, Long totalElement, Integer totalPage, List<T> list,Integer currentSize) {
         this.pageNo = pageNo;
         this.pageSize = pageSize;
         this.totalElement = totalElement;
         this.totalPage = totalPage;
         this.list = list;
+        this.currentSize = currentSize;
     }
 }

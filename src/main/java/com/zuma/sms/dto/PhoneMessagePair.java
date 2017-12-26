@@ -1,4 +1,4 @@
-package com.zuma.sms;
+package com.zuma.sms.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

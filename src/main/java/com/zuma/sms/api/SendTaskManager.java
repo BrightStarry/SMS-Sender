@@ -58,6 +58,7 @@ public class SendTaskManager {
 	public void asyncStatusIncrement(long taskId, boolean isSuccessNum) {
 		try {
 			sendTaskAsyncStatusLock.lock();
+			log.info("[任务管理器]异步状态累加.收到.taskId:{},isSuccessNum",taskId,isSuccessNum);
 			//尝试从map中获取指定id的异步状态对象
 			SendTaskAsyncStatus sendTaskAsyncStatus = sendTaskAsyncStatusMap.get(taskId);
 			//如果没有则新建,
@@ -100,14 +101,16 @@ public class SendTaskManager {
 						put(task);
 
 						//任务开始
-						task.run();
+						task.start();
 					} catch (Exception e) {
 						log.error("[任务管理器]开始任务失败.e:{}", e.getMessage(), e);
 						//发生异常后,如果已经取出任务,将任务状态改为全部失败
 						if (task != null) {
+							//无论如何.先设为中断再说.
+							task.interrupt();
 							//构建异常对象
 							ResultDTO<?> error = ResultDTO.error(String.valueOf(SendTaskRecordStatusEnum.FAILED.getCode()),
-									ErrorEnum.TASK_START_ERROR.getMessage());
+									ErrorEnum.TASK_START_ERROR.getMessage() + ":" + e.getMessage());
 							//更新记录状态以及异常信息
 							sendTaskRecordService.updateStatus(task.getId(),
 									SendTaskRecordStatusEnum.FAILED, CodeUtil.objectToJsonString(error));
@@ -136,6 +139,7 @@ public class SendTaskManager {
 							task.interrupt();//中断后任务会在结束后进入处理队列
 						}else
 							log.info("[任务管理器]运行队列-任务出队.任务已经处理.");
+						//防止在下一个循环阻塞时,该对象不GC
 						task = null;
 					} catch (Exception e) {
 						//...此处失败不做处理,
@@ -157,6 +161,7 @@ public class SendTaskManager {
 						log.info("[任务管理器]结束队列-任务出队.task:{}",task);
 						//处理任务
 						task.endHandle();
+						task = null;
 					} catch (Exception e) {
 						//..此处失败不做处理
 						log.error("[任务管理器]取出结束任务失败.e:{}", e.getMessage(), e);

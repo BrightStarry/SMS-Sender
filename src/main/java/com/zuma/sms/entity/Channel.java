@@ -65,7 +65,7 @@ public class Channel {
     /**
      * 支持的运营商. 0:未知;1:移动;2:联通;3.电信
      */
-    private Byte supportOperator;
+    private Integer supportOperator;
 
     /**
      * 最大连接数,针对socket

@@ -1,31 +1,35 @@
 package com.zuma.sms.api;
 
-import com.zuma.sms.PhoneMessagePair;
 import com.zuma.sms.api.resolver.MessageResolver;
 import com.zuma.sms.api.resolver.MessageResolverFactory;
 import com.zuma.sms.api.processor.send.SendSmsProcessor;
 import com.zuma.sms.api.processor.CustomProcessorFactory;
+import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.config.store.ChannelStore;
-import com.zuma.sms.dto.ErrorData;
-import com.zuma.sms.dto.ResultDTO;
+import com.zuma.sms.dto.*;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.SendTaskRecord;
+import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.SendTaskStatusEnum;
 import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
 import com.zuma.sms.exception.SmsSenderException;
+import com.zuma.sms.service.BatchService;
 import com.zuma.sms.service.ChannelService;
 import com.zuma.sms.service.SendTaskRecordService;
-import com.zuma.sms.util.CodeUtil;
+import com.zuma.sms.service.SmsSendRecordService;
 import com.zuma.sms.util.DateUtil;
 import com.zuma.sms.util.EnumUtil;
+import com.zuma.sms.util.NumberFileUtil;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.io.File;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -49,8 +53,8 @@ public class SendTask implements Delayed {
 	private Long id;
 	//数据库中的发送任务记录
 	private volatile SendTaskRecord sendTaskRecord;
-	//号码组并发队列
-	private ConcurrentLinkedQueue<String> phoneQueue;
+	//号码组并发队列 - 阻塞队列,最高存储1000个号码
+	private BlockingQueue<SmsSendRecord> mainQueue;
 	//线程池
 	private ExecutorService executor;
 	//任务开始时间
@@ -69,7 +73,6 @@ public class SendTask implements Delayed {
 	private MessageResolver messageResolver;
 
 
-
 	//结束任务队列-用来结束后将this放入
 	private BlockingQueue<SendTask> closeQueue;
 	//锁-结束处理/任务停止/任务状态/任务暂停
@@ -77,26 +80,26 @@ public class SendTask implements Delayed {
 	//闭锁-等待所有线程执行完毕
 	private CountDownLatch latch;
 	//是否中断 - 操作时不关心其当前值,无需加锁,直接用volatile
-	private volatile Boolean isInterrupt = false;
+	private volatile boolean isInterrupt = false;
+	//任务状态, 等待 运行中 结束 处理完成
+	private volatile Integer status = SendTaskStatusEnum.WAIT.getCode();
 
 	//数量
 	//成功数-异步响应成功
 	private AtomicInteger successNum;
 	//失败数-总失败数
 	private AtomicInteger failedNum;
-	//未响应数
-	private AtomicInteger unResponse;
 	//已操作数
 	private AtomicInteger usedNum;
 
 
 	//分段操作
 	//每段数量 -- 分组操作的任务
-	private Integer shardNum;
+	private int shardNum;
 	//当前任务总段数-需要分成几组发送
-	private Integer shardNoSum;
+	private int shardNoSum;
 	//当前是第几段操作 默认为0
-	private volatile Integer shardNo = 0;
+	private volatile int shardNo = 0;
 	//分段监听线程
 	private Thread shardThread;
 	//获取当前分段的时间范围
@@ -104,89 +107,18 @@ public class SendTask implements Delayed {
 
 	//任务暂停
 	//任务是否暂停
-	private volatile Boolean isPause = false;
+	private volatile boolean isPause = false;
 	//任务暂停condition
 	private Condition pauseCondition;
 	//任务暂停时间
-	private volatile Long pauseTime;
+	private volatile long pauseTime;
 
-	//任务状态, 等待 运行中 结束 处理完成
-	private volatile Integer status = SendTaskStatusEnum.WAIT.getCode();
-
-
-
-
-
-
-
-	/**
-	 * 如果是分段操作的,启动监听线程
-	 */
-	public void startShardThread() {
-		if(!EnumUtil.equals(sendTaskRecord.getIsShard(), IntToBoolEnum.TRUE))
-			return;
-		shardThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				//未结束,一直运行
-				while (!isInterrupt) {
-					try {
-						//如果当前是最后一组 (最后一组直接执行到结束),直接关闭该线程
-						if (shardNo.equals(shardNoSum))
-							break;
-
-						//如果超出当前分段的时间范围,并且不是最后一段分段
-						//此处使用while是防止 开始时间过早.
-						while(dateRange.compareRange(new Date()) == 1){
-							//分段序号+1
-							shardNo++;
-							//获取新的分段时间范围
-							dateRange = sendTaskRecord.getDateHourPairs().get(shardNo);
-						}
-
-
-						log.info("[任务]任务id:{}.分段线程运行中. isPause:{},isInterrupt:{},shardNo:{},usedNum:{}",
-								id, isPause, isInterrupt, shardNo, usedNum);
-
-						//判断当前已操作的号码数,是否大于等于当前分组需要操作的号码数
-						if (usedNum.get() >= shardNum * shardNo) {
-							try {
-								lock.lock();
-								//暂停任务-
-								//如果此时任务已经被手动暂停,直接暂停自身
-								if (isPause) {
-									pauseThis(pauseTime);
-								} else {
-									//任务暂停时间  本次分段结束时间 - 当前时间 = 暂停的时间
-									pauseTime = dateRange.getEndTime().getTime() - System.currentTimeMillis();
-									//DB任务状态
-									sendTaskRecord = sendTaskRecordService.updateStatus(id,SendTaskRecordStatusEnum.PAUSE);
-									pauseThis(pauseTime);
-								}
-							} finally {
-								lock.unlock();
-							}
-						}
-
-						//每次执行完毕.等待3s.
-						try {
-							lock.lock();
-							pauseCondition.await(3000, TimeUnit.MILLISECONDS);
-						} finally {
-							lock.unlock();
-						}
-					} catch (Exception e) {
-						log.error("[任务]任务id:{}.分段线程异常.error:{}", id, e.getMessage(), e);
-					}
-				}
-				log.info("[任务]任务id:{}.分段线程结束. isPause:{},isInterrupt:{},shardNo:{},usedNum:{}",
-						id, isPause, isInterrupt, shardNo, usedNum);
-			}
-		});
-		shardThread.start();
-
-	}
-
+	//解析发送结果线程池
+	private ExecutorService resultHandleExecutor;
+	//结果队列
+	private BlockingQueue<ResultDTO<SendResult>> resultQueue;
+	//结果处理是否完成
+	private volatile boolean isResultHandleDone = false;
 
 
 	/**
@@ -196,15 +128,15 @@ public class SendTask implements Delayed {
 	public void pause(long pauseTime) {
 		try {
 			lock.lock();
-			if(isInterrupt)
+			if (isInterrupt)
 				throw new SmsSenderException("任务已经中断");
-			if(isPause)
+			if (isPause)
 				throw new SmsSenderException("任务已经暂停");
-			log.info("[任务]任务id:{}.准备暂停任务.",id);
+			log.info("[任务]任务id:{}.准备暂停任务.", id);
 			this.pauseTime = pauseTime;
 			isPause = true;
 			//DB任务状态
-			sendTaskRecord = sendTaskRecordService.updateStatus(this.id,SendTaskRecordStatusEnum.PAUSE);
+			sendTaskRecord = sendTaskRecordService.updateStatus(this.id, SendTaskRecordStatusEnum.PAUSE);
 		} finally {
 			lock.unlock();
 		}
@@ -213,11 +145,11 @@ public class SendTask implements Delayed {
 	/**
 	 * 私有- 暂停调用该方法的线程
 	 */
-	private void pauseThis(long pauseTime){
+	private void pauseThis(long pauseTime) {
 		try {
 			lock.lock();
 			//如果任务已经被中断,直接退出,不允许再被暂停
-			if(isInterrupt)
+			if (isInterrupt)
 				return;
 			//暂停任务线程
 			isPause = true;
@@ -225,11 +157,11 @@ public class SendTask implements Delayed {
 			this.status = SendTaskStatusEnum.PAUSE.getCode();
 			log.info("[任务]任务id:{}.任务暂停.暂停时间:{}", id, pauseTime);
 			//暂停
-			pauseCondition.await(pauseTime,TimeUnit.MILLISECONDS);
+			pauseCondition.await(pauseTime, TimeUnit.MILLISECONDS);
 			log.info("[任务]任务id:{}.任务恢复.", id, pauseTime);
 			//DB任务状态
-			if(EnumUtil.equals(sendTaskRecord.getStatus(),SendTaskRecordStatusEnum.PAUSE))
-				sendTaskRecord = sendTaskRecordService.updateStatusCAS(this.id,SendTaskRecordStatusEnum.PAUSE,SendTaskRecordStatusEnum.RUN);
+			if (EnumUtil.equals(sendTaskRecord.getStatus(), SendTaskRecordStatusEnum.PAUSE))
+				sendTaskRecord = sendTaskRecordService.updateStatusCAS(this.id, SendTaskRecordStatusEnum.PAUSE, SendTaskRecordStatusEnum.RUN);
 			//取消暂停标志
 			this.isPause = false;
 			//任务状态
@@ -239,9 +171,9 @@ public class SendTask implements Delayed {
 			//不管哪个被暂停的线程醒来后,唤醒所有线程
 			pauseCondition.signalAll();
 		} catch (InterruptedException e) {
-			log.error("[任务]任务id:{}.暂停被中断.error:{}",id,e.getMessage());
+			log.error("[任务]任务id:{}.暂停被中断.error:{}", id, e.getMessage());
 			throw new SmsSenderException("任务暂停被中断");
-		}finally {
+		} finally {
 			lock.unlock();
 		}
 	}
@@ -252,16 +184,16 @@ public class SendTask implements Delayed {
 	 * 再次判断是否处理过,
 	 */
 	public void endHandle() {
-		try{
-			log.info("[任务]任务id:{}.endHandle()-开始处理任务.task:{}",id,this);
+		try {
+			log.info("[任务]任务id:{}.endHandle()-开始处理任务.task:{}", id, this);
 			lock.lock();
 			//再次判断是否处理过
-			if(isEnd()){
-				log.info("[任务]任务id:{}.endHandle()-该任务已经处理.task:{}",id,this);
+			if (isEnd()) {
+				log.info("[任务]任务id:{}.endHandle()-该任务已经处理.task:{}", id, this);
 				return;
 			}
 			//判断是否仍然在运行,直接关闭
-			if (isRun()){
+			if (isRun()) {
 				//将状态改为中断
 				this.isInterrupt = true;
 				shutdown(false);
@@ -270,15 +202,14 @@ public class SendTask implements Delayed {
 			sendTaskRecord
 					.setRealStartTime(new Date(this.realStartTime))
 					.setRealEndTime(new Date(this.realEndTime))
-					.setTotalTime((int)(TimeUnit.SECONDS.convert((this.realEndTime - this.realStartTime),TimeUnit.MILLISECONDS)))
-					.setUnResponse(this.unResponse.get())
+					.setTotalTime((int) (TimeUnit.SECONDS.convert((this.realEndTime - this.realStartTime), TimeUnit.MILLISECONDS)))
 					.setUsedNum(this.usedNum.get());
-			log.info("[任务]任务id:{}.endHandle()-处理完成.task:{},sendTaskRecord:{}",id,this,sendTaskRecord);
+			log.info("[任务]任务id:{}.endHandle()-处理完成.task:{},sendTaskRecord:{}", id, this, sendTaskRecord);
 			//保存
 			sendTaskRecordService.updateOne(sendTaskRecord);
 			//累加 成功失败数
-			sendTaskRecord = sendTaskRecordService.incrementSuccessAndFailedNumById(successNum.get(),failedNum.get(),id);
-		}finally {
+			sendTaskRecord = sendTaskRecordService.incrementSuccessAndFailedNumById(successNum.get(), failedNum.get(), id);
+		} finally {
 			//修改状态为处理完成
 			setStatus(SendTaskStatusEnum.END.getCode());
 			lock.unlock();
@@ -306,7 +237,7 @@ public class SendTask implements Delayed {
 			isInterrupt = true;
 
 			//判断是否还在运行中
-			if(!isRun())
+			if (!isRun())
 				//已经关闭,则取消
 				return;
 
@@ -315,6 +246,7 @@ public class SendTask implements Delayed {
 
 			//关闭线程池
 			executor.shutdown();
+			resultHandleExecutor.shutdown();
 			//修改数据库任务状态为 中断 或 成功,如果失败,只会是启动失败
 			this.sendTaskRecord = sendTaskRecordService.updateStatus(id,
 					isInterruptCopy ?
@@ -322,17 +254,17 @@ public class SendTask implements Delayed {
 
 			//修改该对象任务状态
 			setStatus(SendTaskStatusEnum.CLOSE.getCode());
-			log.info("[任务]任务id:{}.任务shutdown.task:{}",id,this);
+			log.info("[任务]任务id:{}.任务shutdown.task:{}", id, this);
 			//结束时间
 			this.realEndTime = System.currentTimeMillis();
 			//放入结束任务队列
-			if(isEnqueue)
+			if (isEnqueue)
 				closeQueue.put(this);
 
-		} catch (Exception e){
+		} catch (Exception e) {
 			//..几乎不会发生
-			log.error("[sendTask]任务id:{}.shutdown异常.e:{}",id,e.getMessage(),e);
-		}finally {
+			log.error("[sendTask]任务id:{}.shutdown异常.e:{}", id, e.getMessage(), e);
+		} finally {
 			lock.unlock();
 		}
 
@@ -342,123 +274,240 @@ public class SendTask implements Delayed {
 	/**
 	 * 任务开始.异步
 	 */
-	public void run(){
+	public void start() {
 		Executors.newSingleThreadExecutor().execute(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					run1();
+					run();
 				} catch (Exception e) {
-					log.error("[任务]任务id:{}.任务运行期间异常....几乎不会发生的.e:{}",id,e.getMessage(),e);
+					log.error("[任务]任务id:{}.任务运行期间异常....几乎不会发生的.e:{}", id, e.getMessage(), e);
 
 				}
 			}
 		});
 	}
 
+
 	/**
 	 * 任务开始
 	 */
-	private void run1() throws Exception {
-		//单个线程操作
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					//号码
-					StringBuilder phones;
+	private void run() throws Exception {
+		//启动记录拉取线程
+		startRecordPullThread(1);
 
-					//循环到队列为空
-					threadEnd:
-					while(true){
-						phones = new StringBuilder();
-						//该次方法的手机号数量
-						int thisSendPhoneNum = 0;
-						try {
-							//检测到中断信号,停止
-							if(isInterrupt)
-								break;
-							//检测到暂停信号,暂停
-							if(isPause){
-								pauseThis(pauseTime);
-							}
-							//循环,获取 和最大群发数相同的手机号
-							for (int i = 0; i < channel.getMaxGroupNumber(); i++) {
-								//取出下一个手机号
-								String item = phoneQueue.poll();
-								//如果为空,表示队列中没有元素了
-								if(item == null){
-									//如果该for循环也是第一次,就直接退出多层循环
-									if(thisSendPhoneNum == 0)
-										break threadEnd;
-									else
-										//否则就只是退出这个for循环,将该for循环之前拉取的号码发送出去
-										break;
-								}
-								//该次发送数量
-								thisSendPhoneNum++;
-								//总操作数
-								usedNum.incrementAndGet();
-								log.info("[任务]任务id:{}.任务进行中.",id);
-								//此处逗号加前面,方便下面的截取方法,直接截取索引0
-								phones.append(",").append(item);
-							}
-							//截取逗号
-							phones.deleteCharAt(0);
+		//启动主线程
+		startMainThread(sendTaskRecord.getThreadCount());
 
-
-							PhoneMessagePair phoneMessagePair = messageResolver.resolve(phones.toString(), sendTaskRecord.getContent());
-
-
-							//发送
-//							ResultDTO<ErrorData> result = sendSmsProcessor.process(channel, phoneMessagePair.getPhones(),
-//									phoneMessagePair.getMessage(), id);
-							ResultDTO<ErrorData> result = ResultDTO.success();
-
-							Thread.sleep(40000);
-							//处理返回对象
-							//如果成功
-							if(ResultDTO.isSuccess(result)){
-								//成功总数+
-								successIncrement(thisSendPhoneNum);
-								continue;
-							}
-							//如果失败
-							//取出失败手机号
-							String errorPhone = result.getData().getPhones();
-							//取出失败数
-							Integer errorCount = result.getData().getCount();
-							//失败总数增加
-							failedIncrement(errorCount);
-							//写入失败日志
-							fileAccessor.writeBySendTaskId(id,errorPhone,result.getMessage());
-						} catch (Exception e) {
-							//失败,则发送不可能为成功,累加失败总数(如果进行本次发送数量不为0)
-							if(thisSendPhoneNum != 0)
-								failedIncrement(thisSendPhoneNum);
-							log.error("[sendTask]任务id:{}.sendTaskId:{},单次发送异常.e:{}",id,e.getMessage(),e);
-						}
-					}
-				} finally {
-					//通知主线程,该线程运行完毕
-					latch.countDown();
-				}
-
-			}
-		};
+		//启动返回结果处理线程
+		startResultHandleThread(sendTaskRecord.getThreadCount() / 2 + 1);
 
 		//如果是分组任务,会开启分组线程
 		startShardThread();
 
-		//启动线程
-		for (int i = 0; i < sendTaskRecord.getThreadCount(); i++) {
-			this.executor.execute(runnable);
-		}
 		//自身等待
 		latch.await();
-		log.info("[任务]任务id:{}.任务门闩被释放.准备结束.task:{}",id,this);
+
+		log.info("[任务]任务id:{}.任务门闩被释放.准备结束.task:{}", id, this);
 		//结束
 		shutdown(true);
+	}
+
+	/**
+	 * 开启结果处理线程
+	 *
+	 * @param threadNum
+	 */
+	private void startResultHandleThread(int threadNum) {
+		//处理返回结果线程.不断从结果队列拉取结果,处理
+		Runnable resultHandleThread = new Runnable() {
+			@Override
+			public void run() {
+				ResultDTO<SendResult> result = null;
+				log.info("[任务]任务id:{},处理发送结果线程.启动.");
+				while (true) {
+					try {
+						result = resultQueue.poll(3000, TimeUnit.MILLISECONDS);
+						//如果获取结果为空了,并且被中断了才退出,否则继续运行
+						if (result == null) {
+							if (isInterrupt){
+								//结束前通知
+								isResultHandleDone = true;
+								break;
+							} else
+								continue;
+						}
+						int phoneNum = result.getData().getPhoneNum();
+						if (ResultDTO.isSuccess(result)) {
+							//成功总数+
+							successIncrement(phoneNum);
+						} else {
+							//如果失败
+							//失败总数增加
+							failedIncrement(phoneNum);
+							//写入失败日志
+							fileAccessor.writeBySendTaskId(id, result.getData().getErrorData().getPhones(),
+									result.getData().getErrorData().getMessages());
+						}
+
+					} catch (InterruptedException e) {
+						log.error("[任务]任务id:{},处理发送结果线程.处理异常.result:{},e:{}", id, result, e.getMessage(), e);
+					}
+				}
+				log.info("[任务]任务id:{},处理发送结果线程.结束.");
+			}
+		};
+		for (int i = 0; i < threadNum; i++) {
+			executor.execute(resultHandleThread);
+		}
+	}
+
+	/**
+	 * 开启主线程
+	 */
+	private void startMainThread(int threadNum) {
+		//主任务 - 从记录队列中拉取记录,发送,并将结果放入结果队列
+		final Runnable main = new Runnable() {
+			@Override
+			public void run() {
+				SmsSendRecord smsSendRecord;
+				//循环到队列为空
+				while (!isInterrupt) {
+					try {
+						//检测到暂停信号,暂停
+						if (isPause) {
+							pauseThis(pauseTime);
+						}
+						//超时退出 阻塞的获取记录
+						smsSendRecord = mainQueue.poll(3000, TimeUnit.MILLISECONDS);
+						//如果为空,跳过该次循环
+						if (smsSendRecord == null)
+							continue;
+						//发送-并将结果放入结果队列
+						resultQueue.put(sendSmsProcessor.process(channel, smsSendRecord));
+					} catch (Exception e) {
+						//...此处也基本不可能失败了
+						log.error("[任务]任务id:{}.sendTaskId:{},单次发送异常.e:{}", id, e.getMessage(), e);
+					}
+				}
+				log.info("[任务]任务id:{}.主进程结束.",id);
+				//通知主线程,该线程运行完毕
+				latch.countDown();
+
+			}
+		};
+		for (int i = 0; i < threadNum; i++) {
+			this.executor.execute(main);
+		}
+	}
+
+	/**
+	 * 开启记录拉取线程
+	 */
+	private void startRecordPullThread(int threadNum) {
+		//启动线程.不断从数据库记录中拉取对应的发送记录.
+		Runnable phonePut = new Runnable() {
+			@Override
+			public void run() {
+
+				//当前页数
+				int pageNo = 0;
+				//每次读取到的分页记录
+				PageVO<SmsSendRecord> pageVO;
+				log.info("[任务]任务id:{},手机号码拉取线程.启动.", id);
+				do {
+					try {
+						//读取 1000条记录
+						pageVO = smsSendRecordService.findByTaskIdPage(id, pageNo++, configStore.recordPullOnRunNum);
+						if (pageVO.getCurrentSize() == 0)
+							break;
+						for (SmsSendRecord item : pageVO.getList()) {
+							//不停插入直到成功或者中断- - 此处不做暂停处理,插满后,自动阻塞
+							try {
+								while (!(mainQueue.offer(item, 10000, TimeUnit.MILLISECONDS)) && !isInterrupt) ;
+							} catch (Exception e) {
+								log.error("[任务]任务id:{},任务记录拉取线程.插入记录到阻塞队列异常.e:{}", e.getMessage(), e);
+								//...基本不会出现.不作处理
+							}
+						}
+					} catch (Exception e) {
+						log.error("[任务]任务id:{},任务记录拉取线程.异常.e:{}", id, e.getMessage(), e);
+					}
+				} while (!isInterrupt);
+			}
+		};
+		for (int i = 0; i < threadNum; i++) {
+			executor.execute(phonePut);
+		}
+	}
+
+
+	/**
+	 * 如果是分段操作的,启动监听线程
+	 */
+	public void startShardThread() {
+		if (!EnumUtil.equals(sendTaskRecord.getIsShard(), IntToBoolEnum.TRUE))
+			return;
+		shardThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				//未结束,一直运行
+				while (!isInterrupt) {
+					try {
+						//如果当前是最后一组 (最后一组直接执行到结束),直接关闭该线程
+						if (shardNo == shardNoSum)
+							break;
+
+						//如果超出当前分段的时间范围,并且不是最后一段分段
+						//此处使用while是防止 开始时间过早.
+						while (dateRange.compareRange(new Date()) == 1) {
+							//分段序号+1
+							shardNo++;
+							//获取新的分段时间范围
+							dateRange = sendTaskRecord.getDateHourPairs().get(shardNo);
+						}
+
+
+						log.info("[任务]任务id:{}.分段线程运行中. isPause:{},isInterrupt:{},shardNo:{},usedNum:{}",
+								id, isPause, isInterrupt, shardNo, usedNum);
+
+						//判断当前已操作的号码数,是否大于等于当前分组需要操作的号码数
+						if (usedNum.get() >= shardNum * shardNo) {
+							try {
+								lock.lock();
+								//暂停任务-
+								//如果此时任务已经被手动暂停,直接暂停自身
+								if (isPause) {
+									pauseThis(pauseTime);
+								} else {
+									//任务暂停时间  本次分段结束时间 - 当前时间 = 暂停的时间
+									pauseTime = dateRange.getEndTime().getTime() - System.currentTimeMillis();
+									//DB任务状态
+									sendTaskRecord = sendTaskRecordService.updateStatus(id, SendTaskRecordStatusEnum.PAUSE);
+									pauseThis(pauseTime);
+								}
+							} finally {
+								lock.unlock();
+							}
+						}
+
+						//每次执行完毕.等待3s.
+						try {
+							lock.lock();
+							pauseCondition.await(3000, TimeUnit.MILLISECONDS);
+						} finally {
+							lock.unlock();
+						}
+					} catch (Exception e) {
+						log.error("[任务]任务id:{}.分段线程异常.error:{}", id, e.getMessage(), e);
+					}
+				}
+				log.info("[任务]任务id:{}.分段线程结束. isPause:{},isInterrupt:{},shardNo:{},usedNum:{}",
+						id, isPause, isInterrupt, shardNo, usedNum);
+			}
+		});
+		shardThread.start();
+
 	}
 
 
@@ -475,9 +524,13 @@ public class SendTask implements Delayed {
 		//修改当前任务状态为 运行中
 		this.status = SendTaskStatusEnum.RUN.getCode();
 		//获取到号码集合的并发队列
-		this.phoneQueue = fileAccessor.readBySendTask(sendTaskRecord.getNumberGroupId());
+//		this.phoneQueue = fileAccessor.readBySendTask(sendTaskRecord.getNumberGroupId());
+		this.mainQueue = new LinkedBlockingQueue<>(configStore.mainQueueLen);
 		//构造线程池
 		this.executor = Executors.newFixedThreadPool(sendTaskRecord.getThreadCount());
+		this.resultHandleExecutor = Executors.newFixedThreadPool(sendTaskRecord.getThreadCount() / 2 + 1);
+		//结果队列 - 无界
+		this.resultQueue = new LinkedBlockingQueue<>();
 		//构造锁
 		this.lock = new ReentrantLock();
 		this.latch = new CountDownLatch(sendTaskRecord.getThreadCount());
@@ -486,7 +539,6 @@ public class SendTask implements Delayed {
 		//其他
 		this.successNum = new AtomicInteger();
 		this.failedNum = new AtomicInteger();
-		this.unResponse = new AtomicInteger();
 		this.usedNum = new AtomicInteger();
 		//查询通道
 		this.channel = channelStore.get(sendTaskRecord.getChannelId());
@@ -496,9 +548,66 @@ public class SendTask implements Delayed {
 		this.messageResolver = MessageResolverFactory.build(channel);
 		//放入 结束任务队列,以便
 		this.closeQueue = closeQueue;
+
+		//预先插入所有发送记录
+		preInsertSmsSendRecord();
+
 		//分时任务准备
 		setupShard();
 	}
+
+	/**
+	 * 预先新建所有发送记录
+	 */
+	private void preInsertSmsSendRecord() {
+		File file = NumberFileUtil.getFileByNumberGroupId(sendTaskRecord.getNumberGroupId());
+		//当前偏移量
+		long off = 0;
+		//每次默认拉取字符数
+		int len = configStore.phoneStrNum;
+		String phoneStr;
+		//每次最大发送手机数 * 12(11位+一个逗号,最后一个手机号后可能没有逗号)
+		int maxGroupNumber12 = channel.getMaxGroupNumber() * 12;
+		//每次解析后的手机号和短信
+		PhoneMessagePair phoneMessagePair = null;
+		//每次手机号字符
+		String itemPhone = null;
+		//短信内容
+		String smsMessage = sendTaskRecord.getContent();
+		//每次截取到的手机号字符串总长度
+		int phoneStrLen;
+
+		List<SmsSendRecord> records = new LinkedList<>();
+
+		//第一层循环-分批读取文件中的前x个号码字符串
+		while (StringUtils.isNotBlank((phoneStr = fileAccessor.readString(file, off, len)))) {
+			//偏移量累加
+			off += len;
+			phoneStrLen = phoneStr.length();
+			//第二层循环 - 遍历手机号, 步长为 该通道每次最大发送数*每个手机字符数
+			for (int i = 0; i < phoneStrLen; i += maxGroupNumber12) {
+				try {
+					itemPhone = phoneStr.substring(i, i + maxGroupNumber12 < phoneStrLen ? i + maxGroupNumber12 : phoneStrLen);
+					//如果以逗号结尾,截取逗号
+					itemPhone = StringUtils.removeEnd(itemPhone, ",");
+					//解析号码和短信内容
+					phoneMessagePair = messageResolver.resolve(itemPhone, smsMessage);
+					//加入记录list
+					records.add(new SmsSendRecord(id, channel.getId(), channel.getName(), phoneMessagePair.getPhones(),
+							phoneMessagePair.getPhones().length() / 11, phoneMessagePair.getMessage()));
+				} catch (Exception e) {
+					log.error("[任务]任务id:{},预先插入发送记录,截取单次发送手机号失败." +
+							"phoneStrLen:{},itemPhone:{},phoneMessagePair:{},e:{}", phoneStrLen, itemPhone, phoneMessagePair, e.getMessage(), e);
+					throw new SmsSenderException("预先插入发送记录,截取单次发送手机号失败");
+				}
+			}
+			//调用批量保存方法
+			batchService.batchInsertSmsSendRecord(records);
+			//清空list -- 直接new了.防止引用传参引发的问题
+			records = new LinkedList<>();
+		}
+	}
+
 
 	/**
 	 * 分时任务准备
@@ -539,18 +648,16 @@ public class SendTask implements Delayed {
 	 * 暂停任务恢复启动
 	 */
 	public void pauseToRun() {
-		try{
+		try {
 			lock.lock();
-			if(!isPause())
+			if (!isPause())
 				return;
 			//唤醒所有暂停任务
 			pauseCondition.signalAll();
-		}finally {
+		} finally {
 			lock.unlock();
 		}
 	}
-
-
 
 
 	/**
@@ -567,8 +674,8 @@ public class SendTask implements Delayed {
 	 */
 	private static SendTask build(SendTask sendTask, SendTaskRecord sendTaskRecord) {
 		return sendTask.setSendTaskRecord(sendTaskRecord)
-					.setStartTime(sendTaskRecord.getExpectStartTime().getTime())
-					.setEndTime(sendTaskRecord.getExpectEndTime().getTime());
+				.setStartTime(sendTaskRecord.getExpectStartTime().getTime())
+				.setEndTime(sendTaskRecord.getExpectEndTime().getTime());
 	}
 
 
@@ -601,10 +708,10 @@ public class SendTask implements Delayed {
 	 * 判断任务是否暂停
 	 */
 	public boolean isPause() {
-		try{
+		try {
 			lock.lock();
 			return this.status.equals(SendTaskStatusEnum.PAUSE.getCode());
-		}finally{
+		} finally {
 			lock.unlock();
 		}
 	}
@@ -627,6 +734,7 @@ public class SendTask implements Delayed {
 
 	/**
 	 * 重写toString()
+	 *
 	 * @return
 	 */
 	@Override
@@ -634,10 +742,9 @@ public class SendTask implements Delayed {
 		return "SendTask:{sendTaskRecord:" + sendTaskRecord + ",startTime:" + startTime + ",endTime:" + endTime
 				+ ",realStartTime:" + realStartTime + ",realEndTime:" + realEndTime
 				+ ",status:" + EnumUtil.getByCode(status, SendTaskStatusEnum.class) + ",isInterrupt:" + isInterrupt
-				+ ",successNum:" + successNum + ",failedNum:" + failedNum + ",unResponse:" + unResponse
-				+ ",usedNum:" + usedNum + ",channel:" + (channel == null ? "" : channel.getName()) + "}";
+				+ ",successNum:" + successNum + ",failedNum:" + failedNum + ",usedNum:" + usedNum
+				+ ",channel:" + (channel == null ? "" : channel.getName()) + "}";
 	}
-
 
 
 	/**
@@ -682,12 +789,20 @@ public class SendTask implements Delayed {
 	private static ChannelService channelService;
 	private static FileAccessor fileAccessor;
 	private static ChannelStore channelStore;
+	private static ConfigStore configStore;
+	private static SmsSendRecordService smsSendRecordService;
+	private static BatchService batchService;
 
 	@Autowired
-	private void init(SendTaskRecordService sendTaskRecordService,ChannelService channelService,FileAccessor fileAccessor,ChannelStore channelStore) {
+	private void init(SendTaskRecordService sendTaskRecordService, ChannelService channelService,
+					  FileAccessor fileAccessor, ChannelStore channelStore, ConfigStore configStore,
+					  SmsSendRecordService smsSendRecordService, BatchService batchService) {
+		SendTask.smsSendRecordService = smsSendRecordService;
+		SendTask.batchService = batchService;
 		SendTask.channelService = channelService;
 		SendTask.sendTaskRecordService = sendTaskRecordService;
 		SendTask.fileAccessor = fileAccessor;
 		SendTask.channelStore = channelStore;
+		SendTask.configStore = configStore;
 	}
 }

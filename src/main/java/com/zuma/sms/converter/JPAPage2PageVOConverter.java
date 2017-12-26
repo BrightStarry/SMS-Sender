@@ -22,7 +22,7 @@ public class JPAPage2PageVOConverter {
     public static <T> PageVO<T> convert(Page<T> page) {
         int pageNo = page.getNumber();
 
-        PageVO<T> pageVO = new PageVO<>(++pageNo, page.getSize(), page.getTotalElements(), page.getTotalPages(), page.getContent());
+        PageVO<T> pageVO = new PageVO<>(++pageNo, page.getSize(), page.getTotalElements(), page.getTotalPages(), page.getContent(),page.getNumberOfElements());
         //防止list为空
         if(pageVO.getList() == null)
             pageVO.setList(new ArrayList<T>());

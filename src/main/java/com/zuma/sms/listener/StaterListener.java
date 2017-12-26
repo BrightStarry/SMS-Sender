@@ -3,6 +3,7 @@ package com.zuma.sms.listener;
 import com.zuma.sms.api.SendTaskManager;
 import com.zuma.sms.api.socket.handler.chain.ChannelHandlerChainManager;
 import com.zuma.sms.api.socket.handler.chain.CustomChannelHandler;
+import com.zuma.sms.batch.SmsSendRecordBatchManager;
 import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.repository.ChannelRepository;
@@ -49,6 +50,9 @@ public class StaterListener implements ApplicationListener<ContextRefreshedEvent
 	@Autowired
 	private SendTaskRecordService sendTaskRecordService;
 
+	@Autowired
+	private SmsSendRecordBatchManager smsSendRecordBatchManager;
+
 	/**
 	 * 容器加载完成操作
 	 */
@@ -68,6 +72,9 @@ public class StaterListener implements ApplicationListener<ContextRefreshedEvent
 
 		//运行发送任务管理器
 		sendTaskManager.run();
+
+		//启动批处理定时器
+		smsSendRecordBatchManager.scheduleSaveStart();
 	}
 
 

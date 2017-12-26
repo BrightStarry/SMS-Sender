@@ -74,7 +74,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 					//token仓库配置,用来将token存入数据库
 					.tokenRepository(persistentTokenRepository())
 					//token过期秒数配置
-					.tokenValiditySeconds(3600)
+					.tokenValiditySeconds(86400 * 3)
 					//查询用户信息的service
 					.userDetailsService(customUserDetailsService)
 				.and()

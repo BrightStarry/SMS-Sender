@@ -1,5 +1,6 @@
 package com.zuma.sms.entity;
 
+import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -60,6 +61,12 @@ public class SmsSendRecord {
     private String phones;
 
     /**
+     * 手机号总数
+     */
+    private Integer phoneCount;
+
+
+    /**
      * 发送消息
      */
     private String message;
@@ -102,7 +109,7 @@ public class SmsSendRecord {
     /**
      * 状态. 0:默认;1:同步成功;2:异步成功;-1:同步失败;-2:异步失败
      */
-    private Integer status;
+    private Integer status = SmsSendRecordStatusEnum.DEFAULT.getCode();
 
     /**
      * 创建时间,也是发送时间
@@ -114,12 +121,23 @@ public class SmsSendRecord {
      */
     private Date updateTime;
 
-    public SmsSendRecord(Long sendTaskId, Long channelId, String channelName, String phones,String message, String requestBody) {
+    public SmsSendRecord(Long sendTaskId, Long channelId, String channelName, String phones,Integer phoneCount,String message, String requestBody) {
+        this.phoneCount = phoneCount;
         this.sendTaskId = sendTaskId;
         this.channelId = channelId;
         this.channelName = channelName;
         this.phones = phones;
         this.requestBody = requestBody;
+        this.message = message;
+    }
+
+    public SmsSendRecord(Long sendTaskId, Long channelId, String channelName, String phones, Integer phoneCount, String message) {
+        this.sendTaskId = sendTaskId;
+        this.channelId = channelId;
+        this.channelName = channelName;
+        this.phones = phones;
+        this.phoneCount = phoneCount;
+        this.message = message;
     }
 
     /**

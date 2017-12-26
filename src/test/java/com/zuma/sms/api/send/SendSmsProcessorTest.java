@@ -55,7 +55,7 @@ public class SendSmsProcessorTest {
 //		mingFengSendSmsProcessor.process(channelStore.get(ChannelEnum.MINGFENG_YD), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
 
 		//掌游 业务代码不存在
-		zhangYouSendSmsProcessor.process(channelStore.get(ChannelEnum.ZHANGYOU_YD), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
+//		zhangYouSendSmsProcessor.process(channelStore.get(ChannelEnum.ZHANGYOU_YD), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
 
 		//群正 成功
 //		qunZhengSendSmsProcessor.process(channelStore.get(ChannelEnum.QUNZHENG_YD), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);

@@ -53,10 +53,15 @@ public class ChannelStore {
 		throw new SmsSenderException("系统bug.通道枚举和数据库通道不对应");
 	}
 
-	//根据id获取帐号
+	/**
+	 * 根据通道id获取通道
+	 */
+
 	public Channel get(Long id){
 		return channels.get(id);
 	}
+
+
 
 	/**
 	 * 加载所有短信通道到ChannelStore,并加载对应的

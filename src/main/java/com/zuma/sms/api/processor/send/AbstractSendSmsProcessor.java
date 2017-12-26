@@ -1,10 +1,9 @@
 package com.zuma.sms.api.processor.send;
 
-import com.zuma.sms.dto.ErrorData;
+import com.zuma.sms.batch.SmsSendRecordBatchManager;
 import com.zuma.sms.dto.ResultDTO;
+import com.zuma.sms.dto.SendResult;
 import com.zuma.sms.entity.Channel;
-import com.zuma.sms.entity.Platform;
-import com.zuma.sms.entity.SendTaskRecord;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
 import com.zuma.sms.enums.system.CodeEnum;
@@ -17,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -30,61 +28,53 @@ import java.util.Date;
 public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> implements SendSmsProcessor {
 
 	protected static SmsSendRecordService smsSendRecordService;
+	protected static SmsSendRecordBatchManager smsSendRecordBatchManager;
 
 	@Autowired
-	public void init(SmsSendRecordService smsSendRecordService) {
+	public void init(SmsSendRecordService smsSendRecordService,SmsSendRecordBatchManager smsSendRecordBatchManager) {
 		AbstractSendSmsProcessor.smsSendRecordService = smsSendRecordService;
+		AbstractSendSmsProcessor.smsSendRecordBatchManager = smsSendRecordBatchManager;
 	}
 
 
-	/**
-	 * 处理方法,包装下
-	 * 给短信平台的发送任务调用
-	 */
-	public ResultDTO<ErrorData> process(Channel channel, String phones, String message, Long taskId) {
-		return process(channel, phones, message, taskId, null);
 
-	}
 
-	/**
-	 * 处理方法,包装下
-	 * 给其他平台接口调用
-	 */
-	public ResultDTO<ErrorData> process(Channel channel, String phones, String message, Platform platform) {
-		return process(channel, phones, message, null, platform);
-	}
 
 	/**
 	 * 处理方法,私有
 	 *
 	 * @param channel  通道
-	 * @param phones   手机号s
-	 * @param message  消息
-	 * @param taskId   发送任务id, 二选一
-	 * @param platform 平台   ,二选一
+	 * @param record 短信发送记录
 	 * @return 单次发送结果
 	 */
-	private ResultDTO<ErrorData> process(Channel channel, String phones, String message, Long taskId, Platform platform) {
+	public ResultDTO<SendResult> process(Channel channel, SmsSendRecord record) {
 		try {
 			//将参数转为请求对象
-			R requestObject = null;
+			R requestObject;
 			try {
-				requestObject = toRequestObject(channel, phones, message);
+				requestObject = toRequestObject(channel, record.getPhones(), record.getMessage());
 			} catch (Exception e) {
 				log.error("[短信发送过程]参数转请求对象异常.error:{}", e.getMessage(), e);
 				throw new SmsSenderException("参数转请求对象异常");
 			}
-			//新建发送记录
-			SmsSendRecord record = smsSendRecordService.newRecord(platform, taskId, channel, phones, message, CodeUtil.objectToJsonString(requestObject));
+			//set 请求对象
+			record.setRequestBody(CodeUtil.objectToJsonString(requestObject));
 			//获取信号量并累加
 			channel.getConcurrentManager().increment();
 			//发送并返回ResultDTO
 			return getResult(requestObject, record, channel);
+
 		} catch (SmsSenderException e) {
-			return ResultDTO.error(e.getCode(), e.getMessage(), new ErrorData(phones, message));
+			record.setSyncTime(new Date()).setStatus(SmsSendRecordStatusEnum.ASYNC_FAILED.getCode())
+					.setErrorInfo(e.getMessage());
+			smsSendRecordBatchManager.add(record);
+			return ResultDTO.error(e.getCode(), e.getMessage(), new SendResult(record.getPhones(), record.getMessage(),record.getPhoneCount()));
 		} catch (Exception e) {
 			log.error("[短信发送过程]发生未知异常.e:{}", e.getMessage(), e);
-			return ResultDTO.error(ErrorEnum.UNKNOWN_ERROR, new ErrorData(phones, message));
+			record.setSyncTime(new Date()).setStatus(SmsSendRecordStatusEnum.ASYNC_FAILED.getCode())
+					.setErrorInfo(e.getMessage());
+			smsSendRecordBatchManager.add(record);
+			return ResultDTO.error(ErrorEnum.UNKNOWN_ERROR, new SendResult(record.getPhones(), record.getMessage(),record.getPhoneCount()));
 		}
 	}
 
@@ -105,7 +95,7 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 	 * @param record
 	 * @return
 	 */
-	protected ResultDTO<ErrorData> getResult(R requestObject, SmsSendRecord record, Channel channel) {
+	protected ResultDTO<SendResult> getResult(R requestObject, SmsSendRecord record, Channel channel) {
 		P response = null;
 		//发送并获取结果
 		String result = send(requestObject);
@@ -124,7 +114,7 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 	 * @param response
 	 * @return
 	 */
-	protected ResultDTO<ErrorData> buildResult(P response, SmsSendRecord record) {
+	protected ResultDTO<SendResult> buildResult(P response, SmsSendRecord record) {
 		//成功
 		if (EnumUtil.equals(record.getStatus(), SmsSendRecordStatusEnum.SYNC_SUCCESS))
 			return ResultDTO.success();
@@ -132,7 +122,7 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 		return ResultDTO.error(
 				ErrorEnum.OTHER_ERROR.getCode(),
 				record.getErrorInfo(),
-				new ErrorData(record.getPhones(), record.getMessage()));
+				new SendResult(record.getPhones(), record.getMessage(),record.getPhoneCount()));
 	}
 
 	/**
@@ -172,14 +162,12 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 				}
 				record.setStatus(SmsSendRecordStatusEnum.SYNC_FAILED.getCode());
 			}
-			//保存并返回
-			return smsSendRecordService.save(record);
+			//保存并返回 批处理
+			smsSendRecordBatchManager.add(record);
+			return record;
 		} catch (Exception e) {
 			log.error("[短信发送过程]响应对象保存到记录失败");
-			record.setSyncTime(new Date())
-					.setSyncResultBody(CodeUtil.objectToJsonString(response))
-					.setErrorInfo("响应对象保存到记录失败");
-			return smsSendRecordService.save(record);
+			throw new SmsSenderException("响应对象保存到记录失败");
 		}
 	}
 

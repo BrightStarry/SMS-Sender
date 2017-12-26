@@ -19,6 +19,7 @@ import com.zuma.sms.repository.NumberGroupRepository;
 import com.zuma.sms.repository.NumberSourceRepository;
 import com.zuma.sms.repository.SendTaskRecordRepository;
 import com.zuma.sms.util.EnumUtil;
+import com.zuma.sms.util.NumberFileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -261,7 +262,7 @@ public class NumberGroupService {
 	 * 根据id获取号码文件输入流
 	 * 需要自行校验id是否存在
 	 */
-	public BufferedInputStream getInputStream(Long id) {
+	public BufferedInputStream getInputStream(long id) {
 		try {
 			return new BufferedInputStream(new FileInputStream(getFile(id)));
 		} catch (FileNotFoundException e) {
@@ -273,7 +274,7 @@ public class NumberGroupService {
 	/**
 	 * 根据id获取号码文件file
 	 */
-	public File getFile(Long id) {
-		return new File(configStore.numberGroupPre + id + ".txt");
+	public  File getFile(long id){
+		return NumberFileUtil.getFileByNumberGroupId(id);
 	}
 }

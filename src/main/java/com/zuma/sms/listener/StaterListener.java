@@ -3,6 +3,7 @@ package com.zuma.sms.listener;
 import com.zuma.sms.api.SendTaskManager;
 import com.zuma.sms.api.socket.handler.chain.ChannelHandlerChainManager;
 import com.zuma.sms.api.socket.handler.chain.CustomChannelHandler;
+import com.zuma.sms.batch.SendSmsCallbackProcessStorage;
 import com.zuma.sms.batch.SmsSendRecordBatchManager;
 import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.config.ConfigStore;
@@ -53,8 +54,12 @@ public class StaterListener implements ApplicationListener<ContextRefreshedEvent
 	@Autowired
 	private SmsSendRecordBatchManager smsSendRecordBatchManager;
 
+	@Autowired
+	private SendSmsCallbackProcessStorage sendSmsCallbackProcessStorage;
+
 	/**
 	 * 容器加载完成操作
+	 * 需要注意顺序
 	 */
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -65,16 +70,18 @@ public class StaterListener implements ApplicationListener<ContextRefreshedEvent
 		//加载netty处理器
 		channelHandlerChainManager.registerHandler(customChannelHandlerMap);
 
+		//启动批处理定时器
+		smsSendRecordBatchManager.scheduleSaveStart();
+		//运行发送任务管理器
+		sendTaskManager.run();
+
+		//运行短信回调处理重试线程
+		sendSmsCallbackProcessStorage.startSendSmsCallbackProcessStorageThread();
+
 		//检查是否有还在运行的异常任务
 		sendTaskRecordService.cleanFailedTask();
 		//将还在等待的任务加入任务队列
 		sendTaskRecordService.addTaskWhenStart();
-
-		//运行发送任务管理器
-		sendTaskManager.run();
-
-		//启动批处理定时器
-		smsSendRecordBatchManager.scheduleSaveStart();
 	}
 
 

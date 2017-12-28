@@ -1,8 +1,8 @@
 package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.config.ConfigStore;
-import com.zuma.sms.dto.ErrorData;
 import com.zuma.sms.dto.ResultDTO;
+import com.zuma.sms.dto.SendData;
 import com.zuma.sms.dto.SendResult;
 import com.zuma.sms.dto.api.cmpp.CMPPSubmitAPI;
 import com.zuma.sms.entity.Channel;
@@ -41,7 +41,7 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 	 * @return
 	 */
 	@Override
-	protected ResultDTO<SendResult> getResult(CMPPSubmitAPI.Request requestObject, SmsSendRecord record, Channel channel) {
+	protected ResultDTO<SendData> getResult(CMPPSubmitAPI.Request requestObject, SmsSendRecord record, Channel channel) {
 		Integer sequenceId;
 		try {
 			//发送并返回序列号
@@ -61,8 +61,8 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 
 
 	@Override
-	protected ResultDTO<SendResult> buildResult(Integer response, SmsSendRecord record) {
-		return ResultDTO.success();
+	protected ResultDTO<SendData> buildResult(Integer response, SmsSendRecord record) {
+		return ResultDTO.success(new SendData().setCount(record.getPhoneCount()));
 	}
 
 	/**
@@ -74,7 +74,8 @@ public class CMPPSendSmsProcessor extends AbstractSendSmsProcessor<CMPPSubmitAPI
 	@Override
 	protected SmsSendRecord updateRecord(Integer response, SmsSendRecord record) {
 		//保存流水号并返回
-		return smsSendRecordService.save(record.setOtherId(String.valueOf(response)));
+		smsSendRecordBatchManager.add(record.setOtherId(String.valueOf(response)));
+		return record;
 	}
 
 	//----后面的方法对CMPP无用

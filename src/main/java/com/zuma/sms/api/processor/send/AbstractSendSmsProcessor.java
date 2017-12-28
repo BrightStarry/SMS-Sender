@@ -2,7 +2,7 @@ package com.zuma.sms.api.processor.send;
 
 import com.zuma.sms.batch.SmsSendRecordBatchManager;
 import com.zuma.sms.dto.ResultDTO;
-import com.zuma.sms.dto.SendResult;
+import com.zuma.sms.dto.SendData;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
@@ -47,35 +47,36 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 	 * @param record 短信发送记录
 	 * @return 单次发送结果
 	 */
-	public ResultDTO<SendResult> process(Channel channel, SmsSendRecord record) {
-		try {
-			//将参数转为请求对象
-			R requestObject;
-			try {
-				requestObject = toRequestObject(channel, record.getPhones(), record.getMessage());
-			} catch (Exception e) {
-				log.error("[短信发送过程]参数转请求对象异常.error:{}", e.getMessage(), e);
-				throw new SmsSenderException("参数转请求对象异常");
-			}
-			//set 请求对象
-			record.setRequestBody(CodeUtil.objectToJsonString(requestObject));
-			//获取信号量并累加
-			channel.getConcurrentManager().increment();
-			//发送并返回ResultDTO
-			return getResult(requestObject, record, channel);
-
-		} catch (SmsSenderException e) {
-			record.setSyncTime(new Date()).setStatus(SmsSendRecordStatusEnum.ASYNC_FAILED.getCode())
-					.setErrorInfo(e.getMessage());
-			smsSendRecordBatchManager.add(record);
-			return ResultDTO.error(e.getCode(), e.getMessage(), new SendResult(record.getPhones(), record.getMessage(),record.getPhoneCount()));
-		} catch (Exception e) {
-			log.error("[短信发送过程]发生未知异常.e:{}", e.getMessage(), e);
-			record.setSyncTime(new Date()).setStatus(SmsSendRecordStatusEnum.ASYNC_FAILED.getCode())
-					.setErrorInfo(e.getMessage());
-			smsSendRecordBatchManager.add(record);
-			return ResultDTO.error(ErrorEnum.UNKNOWN_ERROR, new SendResult(record.getPhones(), record.getMessage(),record.getPhoneCount()));
-		}
+	public ResultDTO<SendData> process(Channel channel, SmsSendRecord record) {
+		return ResultDTO.success(new SendData().setCount(record.getPhoneCount()));
+//		try {
+//			//将参数转为请求对象
+//			R requestObject;
+//			try {
+//				requestObject = toRequestObject(channel, record.getPhones(), record.getMessage());
+//			} catch (Exception e) {
+//				log.error("[短信发送过程]参数转请求对象异常.error:{}", e.getMessage(), e);
+//				throw new SmsSenderException("参数转请求对象异常");
+//			}
+//			//set 请求对象json字符
+//			record.setRequestBody(CodeUtil.objectToJsonString(requestObject));
+//			//获取信号量并累加
+//			channel.getConcurrentManager().increment();
+//			//发送并返回ResultDTO
+//			return getResult(requestObject, record, channel);
+//
+//		} catch (SmsSenderException e) {
+//			record.setSyncTime(new Date()).setStatus(SmsSendRecordStatusEnum.ASYNC_FAILED.getCode())
+//					.setErrorInfo(e.getMessage());
+//			smsSendRecordBatchManager.add(record);
+//			return ResultDTO.error(e.getCode(), e.getMessage(), new SendData(record.getPhoneCount(),record.getPhones(), record.getMessage()));
+//		} catch (Exception e) {
+//			log.error("[短信发送过程]发生未知异常.e:{}", e.getMessage(), e);
+//			record.setSyncTime(new Date()).setStatus(SmsSendRecordStatusEnum.ASYNC_FAILED.getCode())
+//					.setErrorInfo(e.getMessage());
+//			smsSendRecordBatchManager.add(record);
+//			return ResultDTO.error(ErrorEnum.UNKNOWN_ERROR, new SendData(record.getPhoneCount(),record.getPhones(), record.getMessage()));
+//		}
 	}
 
 
@@ -95,8 +96,8 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 	 * @param record
 	 * @return
 	 */
-	protected ResultDTO<SendResult> getResult(R requestObject, SmsSendRecord record, Channel channel) {
-		P response = null;
+	protected ResultDTO<SendData> getResult(R requestObject, SmsSendRecord record, Channel channel) {
+		P response;
 		//发送并获取结果
 		String result = send(requestObject);
 		//将string的结果转为响应对象
@@ -114,7 +115,7 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 	 * @param response
 	 * @return
 	 */
-	protected ResultDTO<SendResult> buildResult(P response, SmsSendRecord record) {
+	protected ResultDTO<SendData> buildResult(P response, SmsSendRecord record) {
 		//成功
 		if (EnumUtil.equals(record.getStatus(), SmsSendRecordStatusEnum.SYNC_SUCCESS))
 			return ResultDTO.success();
@@ -122,7 +123,7 @@ public abstract class AbstractSendSmsProcessor<R, P, E extends CodeEnum> impleme
 		return ResultDTO.error(
 				ErrorEnum.OTHER_ERROR.getCode(),
 				record.getErrorInfo(),
-				new SendResult(record.getPhones(), record.getMessage(),record.getPhoneCount()));
+				new SendData(record.getPhoneCount(),record.getPhones(), record.getMessage()));
 	}
 
 	/**

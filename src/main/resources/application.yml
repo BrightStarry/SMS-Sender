@@ -7,7 +7,7 @@ spring:
     name: sms-sender
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/sms-sender?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/sms-sender?useUnicode=true&characterEncoding=UTF-8&useSSL=false&zeroDateTimeBehavior=convertToNull
     username: root
     password: 970389
 #  thymeleaf:
@@ -31,7 +31,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
   http:
     multipart:
       max-file-size: 20Mb

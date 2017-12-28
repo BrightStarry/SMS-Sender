@@ -1,13 +1,11 @@
 package com.zuma.sms.api.send;
 
-import com.zuma.sms.api.processor.CustomProcessorFactory;
+import com.zuma.sms.factory.ProcessorFactory;
 import com.zuma.sms.api.processor.send.*;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.config.store.ChannelStore;
-import com.zuma.sms.dto.api.MingFengAPI;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.system.ChannelEnum;
-import com.zuma.sms.util.CodeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +39,7 @@ public class SendSmsProcessorTest {
 	private QunZhengSendSmsProcessor qunZhengSendSmsProcessor;
 
 	@Autowired
-	private CustomProcessorFactory factory;
+	private ProcessorFactory factory;
 
 	@Autowired
 	private ChannelStore channelStore;

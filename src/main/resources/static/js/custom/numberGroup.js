@@ -96,7 +96,7 @@ var numberGroupList = {
     //弹出新增模态框
     openAddModal: function () {
         common.closeModal($('#addForm')[0], null);
-        $('#addModal').modal();
+        $('#addModal').modal({closeViaDimmer:false});
     },
 
     //新增
@@ -204,7 +204,7 @@ var numberGroupList = {
                             common.showMessage("加载号码组类别失败,请刷新页面重试");
                         }
                 });
-                $('#updateModal').modal();
+                $('#updateModal').modal({closeViaDimmer:false});
             }
 
         });

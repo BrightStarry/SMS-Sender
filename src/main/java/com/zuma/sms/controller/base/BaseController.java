@@ -68,7 +68,7 @@ public class BaseController {
     protected void notEmptyOfString(String... param) {
         for (String temp : param) {
             if (StringUtils.isEmpty(temp)) {
-                throw new SmsSenderException(ErrorEnum.FORM_ERROR);
+                throw new SmsSenderException(ErrorEnum.FORM_ERROR.getCode(),"参数为空");
             }
         }
     }

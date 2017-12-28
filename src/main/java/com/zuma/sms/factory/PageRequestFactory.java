@@ -50,5 +50,11 @@ public class PageRequestFactory {
 		return new Sort(Sort.Direction.DESC, "id");
 	}
 
+	/**
+	 * 构建 某字段 升序的sort
+	 */
+	public Sort buildSortASC(String fieldName) {
+		return new Sort(Sort.Direction.ASC, fieldName);}
+
 
 }

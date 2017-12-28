@@ -11,7 +11,9 @@ import lombok.Getter;
 @Getter
 public enum MingFengErrorEnum implements CodeEnum<String>{
 	SUCCESS1("Success","成功"),
-	SUCCESS("1","操作成功"),
+	SUCCESS2("1","操作成功"),
+	SUCCESS3("10", "成功"),
+	FAILED("20", "失败"),
 	PARAMERROR("1001","参数错误"),
 	USERNAMEEMPTY("1002","用户名为空"),
 	PASSWORDEMPTY("1003","密码为空"),

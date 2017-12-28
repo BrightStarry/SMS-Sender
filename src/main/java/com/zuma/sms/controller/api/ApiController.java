@@ -1,27 +1,12 @@
 package com.zuma.sms.controller.api;
 
-import com.zuma.sms.annotation.Verify;
-import com.zuma.sms.dto.ApiSendSmsResultData;
-import com.zuma.sms.dto.PhoneMessagePair;
 import com.zuma.sms.controller.base.BaseController;
-import com.zuma.sms.dto.ResultDTO;
-import com.zuma.sms.form.PlatformSendSmsForm;
 import com.zuma.sms.service.ApiSendSmsService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
 
 /**
  * author:ZhengXing

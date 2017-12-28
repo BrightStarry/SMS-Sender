@@ -62,7 +62,7 @@ var dictList = {
                 $('#updateForm :input[name="id"]').val(result.data.id);
                 $('#updateForm :input[name="remark"]').attr('placeholder',result.data.remark);
                 $('#updateForm :input[name="value"]').val(result.data.value);
-                $('#updateModal').modal();
+                $('#updateModal').modal({closeViaDimmer:false});
             }
 
         });

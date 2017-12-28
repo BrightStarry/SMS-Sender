@@ -3,6 +3,7 @@ package com.zuma.sms.pool;
 
 import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.enums.system.PhoneOperatorEnum;
+import com.zuma.sms.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +30,20 @@ public class OperatorPatternPoolFactory {
     //无需线程安全
     private List<CommonPool<Pattern>> pools = new ArrayList<>(3);
 
-    //获取Pattern
+    /**
+     * 根据手机运营商获取Pattern
+     * @param phoneOperatorEnum
+     * @return
+     */
     public CommonPool<Pattern> build(PhoneOperatorEnum phoneOperatorEnum){
         return pools.get(phoneOperatorEnum.getCode());
+    }
+
+    /**
+     * 获取 校验是否为手机号的正则
+     */
+    public CommonPool<Pattern> build() {
+        return pools.get(3);
     }
 
 
@@ -73,9 +85,23 @@ public class OperatorPatternPoolFactory {
             }
         };
 
+        CommonPool<Pattern> phonePatternPool = new BaseCommonPool<Pattern>(){
+            @Override
+            SimpleObjectFactory<Pattern> initCommonPool() {
+                return new SimpleObjectFactory<Pattern>() {
+                    @Override
+                    Pattern create() {
+                        return Pattern.compile(configStore.getForCommon("PHONE_NUMBER_REGEXP"));
+                    }
+                };
+            }
+        };
+
+
         pools.add(yidongPatternPool);
         pools.add(dianxinPatternPool);
         pools.add(liantongPatternPool);
+        pools.add(phonePatternPool);
     }
 
 }

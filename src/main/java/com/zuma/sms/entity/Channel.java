@@ -5,6 +5,7 @@ import com.zuma.sms.api.ConcurrentManager;
 import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.api.socket.IPPortPair;
 import com.zuma.sms.enums.db.IntToBoolEnum;
+import com.zuma.sms.util.EnumUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -123,6 +124,11 @@ public class Channel {
     private IPPortPair ipPortPair;
 
 
-
+    /**
+     * 是否是cmpp
+     */
+    public boolean isCMPP() {
+        return EnumUtil.equals(isCmpp, IntToBoolEnum.TRUE);
+    }
 
 }

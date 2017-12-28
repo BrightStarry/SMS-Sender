@@ -23,7 +23,7 @@ var platformList = {
     //弹出新增模态框
     openAddModal : function () {
         common.closeModal($('#addForm')[0], null);
-        $('#addModal').modal();
+        $('#addModal').modal({closeViaDimmer:false});
     },
 
     //新增
@@ -108,7 +108,7 @@ var platformList = {
                 if(result.data.status == 1){
                     $('#updateForm :input[name="status"]').attr('checked', true);
                 }
-                $('#updateModal').modal();
+                $('#updateModal').modal({closeViaDimmer:false});
             }
         });
     },

@@ -5,6 +5,7 @@ import lombok.Getter;
 /**
  * author:ZhengXing
  * datetime:2017/12/19 0019 15:35
+ * 通道枚举 
  */
 @Getter
 public enum ChannelEnum implements CodeEnum<String> {

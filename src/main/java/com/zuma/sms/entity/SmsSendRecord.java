@@ -28,17 +28,15 @@ public class SmsSendRecord {
     @GeneratedValue
     private Long id;
 
-
+    /**
+     * 平台发送记录id,当接口调用发送时
+     */
+    private Long platformSendSmsRecordId;
 
     /**
-     * 平台id,当接口调用发送时
+     * 平台id,当接口调用时
      */
     private Long platformId;
-
-    /**
-     * 平台名,当接口调用发送时
-     */
-    private String platformName;
 
     /**
      * 任务id,,当用户操作发送时
@@ -121,18 +119,19 @@ public class SmsSendRecord {
      */
     private Date updateTime;
 
-    public SmsSendRecord(Long sendTaskId, Long channelId, String channelName, String phones,Integer phoneCount,String message, String requestBody) {
-        this.phoneCount = phoneCount;
+
+    public SmsSendRecord(Long sendTaskId, Long channelId, String channelName, String phones, Integer phoneCount, String message) {
         this.sendTaskId = sendTaskId;
         this.channelId = channelId;
         this.channelName = channelName;
         this.phones = phones;
-        this.requestBody = requestBody;
+        this.phoneCount = phoneCount;
         this.message = message;
     }
 
-    public SmsSendRecord(Long sendTaskId, Long channelId, String channelName, String phones, Integer phoneCount, String message) {
-        this.sendTaskId = sendTaskId;
+    public SmsSendRecord(Long platformSendSmsRecordId, Long platformId, Long channelId, String channelName, String phones, Integer phoneCount, String message) {
+        this.platformSendSmsRecordId = platformSendSmsRecordId;
+        this.platformId = platformId;
         this.channelId = channelId;
         this.channelName = channelName;
         this.phones = phones;

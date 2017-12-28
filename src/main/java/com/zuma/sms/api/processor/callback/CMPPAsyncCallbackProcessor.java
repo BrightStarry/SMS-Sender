@@ -1,6 +1,6 @@
 package com.zuma.sms.api.processor.callback;
 
-import com.zuma.sms.dto.ErrorData;
+import com.zuma.sms.dto.SendData;
 import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.dto.api.cmpp.CMPPDeliverAPI;
 import com.zuma.sms.entity.SmsSendRecord;
@@ -24,15 +24,15 @@ public class CMPPAsyncCallbackProcessor extends SendSmsCallbackProcessor<CMPPDel
 	}
 
 	@Override
-	protected ResultDTO<ErrorData> getResultDTO(CMPPDeliverAPI.Request response, SmsSendRecord record) {
+	protected ResultDTO<SendData> getResultDTO(CMPPDeliverAPI.Request response, SmsSendRecord record) {
 		//如果成功
 		if(EnumUtil.equals(response.getMsgContent().getStat(),CMPPDeliverStatEnum.DELIVERED)){
-			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
+			return ResultDTO.success(new SendData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
 		}
 		//失败
 		//找到失败码对应枚举
 		CMPPDeliverStatEnum errorEnum = EnumUtil.getByCode(response.getMsgContent().getStat(), CMPPDeliverStatEnum.class);
 		//返回失败信息
-		return ResultDTO.error(errorEnum,new ErrorData(record.getPhones(),record.getMessage()));
+		return ResultDTO.error(errorEnum,new SendData(record.getPhones(),record.getMessage()));
 	}
 }

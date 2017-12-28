@@ -1,12 +1,11 @@
 package com.zuma.sms.api.processor.callback;
 
-import com.zuma.sms.dto.ErrorData;
+import com.zuma.sms.dto.SendData;
 import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.dto.api.ChuangLanAPI;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.enums.ResultDTOTypeEnum;
 import com.zuma.sms.enums.error.ChuangLanCallbackErrorEnum;
-import com.zuma.sms.enums.error.ChuangLanErrorEnum;
 import com.zuma.sms.util.EnumUtil;
 import org.springframework.stereotype.Component;
 
@@ -26,10 +25,10 @@ public class ChuangLanCallbackProcessor extends SendSmsCallbackProcessor<ChuangL
 	}
 
 	@Override
-	protected ResultDTO<ErrorData> getResultDTO(ChuangLanAPI.AsyncResponse response,SmsSendRecord record) {
+	protected ResultDTO<SendData> getResultDTO(ChuangLanAPI.AsyncResponse response, SmsSendRecord record) {
 		//如果成功
 		if(EnumUtil.equals(response.getStatus(), ChuangLanCallbackErrorEnum.SUCCESS)){
-			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
+			return ResultDTO.success(new SendData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
 		}
 
 		//失败
@@ -37,7 +36,7 @@ public class ChuangLanCallbackProcessor extends SendSmsCallbackProcessor<ChuangL
 		ChuangLanCallbackErrorEnum errorEnum = EnumUtil.getByCode(response.getStatus(), ChuangLanCallbackErrorEnum.class);
 
 		//返回失败信息
-		return ResultDTO.error(errorEnum,new ErrorData(getPhoneLen(record.getPhones()),record.getPhones(),record.getMessage()));
+		return ResultDTO.error(errorEnum,new SendData(getPhoneLen(record.getPhones()),record.getPhones(),record.getMessage()));
 	}
 
 

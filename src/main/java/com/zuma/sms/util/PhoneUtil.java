@@ -1,13 +1,20 @@
 package com.zuma.sms.util;
 
 import com.zuma.sms.config.ConfigStore;
+import com.zuma.sms.dto.PhoneMessagePair;
 import com.zuma.sms.enums.system.PhoneOperatorEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
+import com.zuma.sms.pool.CommonPool;
+import com.zuma.sms.pool.OperatorPatternPoolFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * author:Administrator
@@ -19,11 +26,31 @@ import org.springframework.stereotype.Component;
 public class PhoneUtil {
 
     private static ConfigStore configStore;
+    private static CommonPool<Pattern> phonePatternPool;
 
     @Autowired
-    private void init(ConfigStore configStore){
+    private void init(ConfigStore configStore,OperatorPatternPoolFactory factory){
         PhoneUtil.configStore = configStore;
+        PhoneUtil.phonePatternPool = factory.build();
     }
+
+    /**
+     * 验证手机号码格式是否正确
+     */
+    public static boolean verifyPhoneFormat(String... phones) {
+        Pattern pattern = null;
+        try {
+            pattern = phonePatternPool.borrow();
+            for (String item : phones) {
+				if (!pattern.matcher(item).matches())
+					return false;
+			}
+            return true;
+        }finally {
+            phonePatternPool.returnObj(pattern);
+        }
+    }
+
 
     /**
      * 根据手机号判断其运营商
@@ -38,13 +65,49 @@ public class PhoneUtil {
                     RegexpUtil.liantongMatch(phones[i]) ? PhoneOperatorEnum.LIANTONG :
                             RegexpUtil.dianxinMatch(phones[i]) ? PhoneOperatorEnum.DIANXIN :
                                     PhoneOperatorEnum.UNKNOWN;
-            //如果运营商未知
-            if(result[i].equals(PhoneOperatorEnum.UNKNOWN)){
-                log.error("【根据手机号判断运营商】运营商未知。phone={}",phones[i]);
-                throw new SmsSenderException(ErrorEnum.PHONE_UNKNOWN);
-            }
+//            //如果运营商未知
+//            if(result[i].equals(PhoneOperatorEnum.UNKNOWN)){
+//                log.error("【根据手机号判断运营商】运营商未知。phone={}",phones[i]);
+//                throw new SmsSenderException(ErrorEnum.PHONE_UNKNOWN);
+//            }
         }
         return result;
+    }
+
+    /**
+     * 一批手机号 group by 运营商类型
+     */
+    public static Map<PhoneOperatorEnum,List<PhoneMessagePair>> getGroupByOperatorForMap(String[] phones,String[] messages) {
+        //返回map
+        Map<PhoneOperatorEnum,List<PhoneMessagePair>> resultMap = new HashMap<>(4);
+        //存入所有数组
+        for (PhoneOperatorEnum item : PhoneOperatorEnum.values()) {
+            resultMap.put(item, new LinkedList<PhoneMessagePair>());
+        }
+
+        //如果只有一个消息- 只插入手机号,,否则消息会存在太多副本
+        if (messages.length == 1) {
+            for (String item : phones) {
+                //运营商判断
+                PhoneOperatorEnum flag = RegexpUtil.yidongMatch(item) ? PhoneOperatorEnum.YIDONG :
+                        RegexpUtil.liantongMatch(item) ? PhoneOperatorEnum.LIANTONG :
+                                RegexpUtil.dianxinMatch(item) ? PhoneOperatorEnum.DIANXIN :
+                                        PhoneOperatorEnum.UNKNOWN;
+                resultMap.get(flag).add(new PhoneMessagePair(item));
+            }
+        }else{
+            //否则 - 就是多对多
+            for (int i = 0; i < phones.length; i++) {
+                //运营商判断
+                PhoneOperatorEnum flag = RegexpUtil.yidongMatch(phones[i]) ? PhoneOperatorEnum.YIDONG :
+                        RegexpUtil.liantongMatch(phones[i]) ? PhoneOperatorEnum.LIANTONG :
+                                RegexpUtil.dianxinMatch(phones[i]) ? PhoneOperatorEnum.DIANXIN :
+                                        PhoneOperatorEnum.UNKNOWN;
+                resultMap.get(flag).add(new PhoneMessagePair(phones[i],messages[i]));
+            }
+        }
+
+        return resultMap;
     }
 
     /**

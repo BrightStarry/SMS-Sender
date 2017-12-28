@@ -41,9 +41,9 @@ CREATE TABLE channel(
 
 INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name, cache_name,support_operator,a_key,b_key,c_key,d_key)
     VALUES
-      ('掌游_移动',0,1,100,1,0,'zhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh',''),
-      ('宽信_移动',0,1,100,2,1,'kuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197','',''),
-      ('宽信_联通',0,1,100,4,1,'kuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197','',''),
+      ('宽信_移动',0,1,100,2,0,'kuanXin','kuanXinYD',1,'387568','84f26c091438461bb01fcd021da1c197','',''),
+      ('宽信_联通',0,1,100,4,0,'kuanXin','kuanXinDX',3,'387568','84f26c091438461bb01fcd021da1c197','',''),
+      ('掌游_移动',0,1,100,1,1,'zhangYou','zhangYouYD',1,'10010317','710317','asdfg123456ghjjjjjkh',''),
       ('宽信_CMPP',1,1,200,5,2,'CMPP','kuanXinCMPP',1,'387843','387843','zuma#387843','10689082'),
       ('群正_移动',0,1,100,6,3,'qunZheng','qunZhengYD',1,'hzzmkjyzm','YBpFJzkc2q170501','',''),
       ('筑望_CMPP',1,1,300,7,4,'CMPP','zhuWangCMPP',1,'944027','944027','SVPOUXJLYD','1069026427'),
@@ -94,6 +94,7 @@ INSERT INTO dict(remark,module, type, name, value)
       ('电信手机号正则','common','common','DIANXIN_PHONE_NUMBER_REGEXP','(^(133|153|173|177|(18[0|1|9]))\\d{8}$)|(^1(349|700)\\d{7}$)'),
       ('移动手机号正则','common','common','YIDONG_PHONE_NUMBER_REGEXP','(^((13[4-9])|147|(15[0|1|2|7|8|9])|178|(18[2|3|4|7|8]))\\d{8}$)|(^1705\\d{7}$)'),
       ('联通手机号正则','common','common','LIANTONG_PHONE_NUMBER_REGEXP','(^((13[0-2])|145|(15[5|6])|17[5|6]|(18[5|6]))\\d{8}$)|(^1709\\d{7}$)'),
+      ('手机号正则','common','common','PHONE_NUMBER_REGEXP','^1[3-9][0-9]\\d{8}$'),
       ('手机号数组分隔符','common','common','PHONES_SEPARATOR',','),
       ('短信内容分隔符','common','common','SMS_MESSAGE_SEPARATOR','!&'),
       ('默认每页条数','common','common','PAGE_SIZE','5'),
@@ -132,11 +133,11 @@ CREATE TABLE sms_up_record(
 /*短信发送记录表,每调用接口一次,生成一条记录*/
 CREATE TABLE sms_send_record(
   id BIGINT AUTO_INCREMENT COMMENT 'id',
-  platform_id BIGINT DEFAULT 0 COMMENT '平台id,当接口调用发送时',
-  platform_name VARCHAR(16) DEFAULT '' COMMENT '平台名,当接口调用发送时',
-  send_task_id BIGINT DEFAULT 0 COMMENT '任务id,,当用户操作发送时',
-  channel_id BIGINT DEFAULT 0 COMMENT '通道id',
-  channel_name VARCHAR(16) DEFAULT 0 COMMENT '通道名',
+  platform_send_sms_record_id BIGINT COMMENT '平台发送记录id,当平台发送时',
+  platform_id BIGINT COMMENT '平台id,当平台发送时',
+  send_task_id BIGINT  COMMENT '任务id,,当用户操作发送时',
+  channel_id BIGINT  COMMENT '通道id',
+  channel_name VARCHAR(16)  COMMENT '通道名',
   phones VARCHAR(4096) NOT NULL COMMENT '发送手机号',
   phone_count SMALLINT NOT NULL COMMENT '发送手机号数',
   message VARCHAR(4096) NOT NULL COMMENT '短信消息',
@@ -144,10 +145,10 @@ CREATE TABLE sms_send_record(
   request_body VARCHAR(1024) DEFAULT '' COMMENT '调用者请求对象json字符',
   other_id VARCHAR(32) DEFAULT '' COMMENT '其他id,一般为接口返回的该次调用唯一标识',
 
-  sync_time TIMESTAMP DEFAULT '0000-00-00 00:00:00' COMMENT '同步回调时间',
+  sync_time DATETIME DEFAULT 0 COMMENT '同步回调时间',
   sync_result_body VARCHAR(1024) DEFAULT '' COMMENT '同步返回对象json字符',
 
-  async_time TIMESTAMP DEFAULT '0000-00-00 00:00:00' COMMENT '异步回调时间',
+  async_time DATETIME DEFAULT 0 COMMENT '异步回调时间',
   async_result_body VARCHAR(1024) DEFAULT  '' COMMENT '异步返回对象json字符',
 
   error_info VARCHAR(128) COMMENT '异常信息,如果有的话',
@@ -160,7 +161,8 @@ CREATE TABLE sms_send_record(
   KEY idx_platform_id(platform_id),
   KEY idx_task_id(send_task_id),
   KEY idx_channel_id(channel_id),
-  KEY idx_other_id(other_id)
+  KEY idx_other_id(other_id),
+  KEY idx_platform_record_id(platform_send_sms_record_id)
 )ENGINE = InnoDB AUTO_INCREMENT = 1000 COMMENT = '短信发送记录表,每调用接口一次,生成一条记录';
 
 /*发送任务表*/
@@ -186,12 +188,12 @@ CREATE TABLE send_task_record(
   total_time SMALLINT DEFAULT 0 COMMENT '总用时(秒)',
 
   status TINYINT DEFAULT 0 COMMENT '状态. 0:等待中;1:运行中;2:成功;-1:失败;-2:中断',
-  number_num SMALLINT NOT NULL COMMENT '号码总数',
-  success_num SMALLINT DEFAULT 0 COMMENT '成功数,异步成功',
-  failed_num SMALLINT DEFAULT 0 COMMENT '失败数,异步失败',
-  un_response SMALLINT DEFAULT 0 COMMENT '未响应数',
+  number_num INT NOT NULL COMMENT '号码总数',
+  success_num INT DEFAULT 0 COMMENT '成功数,异步成功',
+  failed_num INT DEFAULT 0 COMMENT '失败数,异步失败',
+  un_response INT DEFAULT 0 COMMENT '未响应数',
 #   async_un_response SMALLINT DEFAULT 0 COMMENT '异步未响应数',
-  used_num SMALLINT DEFAULT 0 COMMENT '已操作总数(可能被中断导致后续号码未操作)',
+  used_num INT DEFAULT 0 COMMENT '已操作总数(可能被中断导致后续号码未操作)',
 
   error_number_path VARCHAR(128) DEFAULT '' COMMENT '失败号码路径,可供下载',
   error_info VARCHAR(256) DEFAULT '' COMMENT '失败信息,可能为空',
@@ -276,8 +278,9 @@ CREATE TABLE sms_content(
 CREATE TABLE platform_send_sms_record(
   id BIGINT AUTO_INCREMENT COMMENT 'id',
   platform_id BIGINT NOT NULL COMMENT '平台id',
-  phone VARCHAR(4096) NOT NULL COMMENT '发送的手机号',
-  sms_message VARCHAR(4096) NOT NULL COMMENT '发送的消息',
+  phone VARCHAR(2048) NOT NULL COMMENT '发送的手机号',
+  sms_message VARCHAR(2048) NOT NULL COMMENT '发送的消息',
+  request VARCHAR(4096) COMMENT '请求对象json串',
   result VARCHAR(4096) COMMENT '发送返回结果json串',
   status TINYINT COMMENT '状态: -1:失败; 0:等待; 1:成功',
 

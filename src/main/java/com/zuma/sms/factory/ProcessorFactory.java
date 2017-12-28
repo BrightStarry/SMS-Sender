@@ -1,4 +1,4 @@
-package com.zuma.sms.api.processor;
+package com.zuma.sms.factory;
 
 import com.zuma.sms.api.processor.callback.SendSmsCallbackProcessor;
 import com.zuma.sms.api.processor.send.SendSmsProcessor;
@@ -16,7 +16,7 @@ import java.util.Map;
  * 封装了 根据channel实体匹配对应 Processor实现类的方法
  */
 @Component
-public class CustomProcessorFactory {
+public class ProcessorFactory {
 	//发送短信处理器
 	private static Map<String,SendSmsProcessor> sendSmsProcessorMap;
 	//短信回调处理器
@@ -28,40 +28,40 @@ public class CustomProcessorFactory {
 	private void init(Map<String,SendSmsProcessor> sendSmsProcessorMap,
 					  Map<String,SendSmsCallbackProcessor> sendSmsCallbackProcessorMap,
 					  Map<String, SmsUpProcessor> smsUpProcessorMap) {
-		CustomProcessorFactory.sendSmsProcessorMap = sendSmsProcessorMap;
-		CustomProcessorFactory.sendSmsCallbackProcessorMap = sendSmsCallbackProcessorMap;
-		CustomProcessorFactory.smsUpProcessorMap = smsUpProcessorMap;
+		ProcessorFactory.sendSmsProcessorMap = sendSmsProcessorMap;
+		ProcessorFactory.sendSmsCallbackProcessorMap = sendSmsCallbackProcessorMap;
+		ProcessorFactory.smsUpProcessorMap = smsUpProcessorMap;
 	}
 
 
 
 	//根据通道和名字后缀构建
-	public static SendSmsProcessor buildSendSmsProcessor(Channel channel,String nameSuf) {
+	public  SendSmsProcessor buildSendSmsProcessor(Channel channel,String nameSuf) {
 		return sendSmsProcessorMap.get(channel.getKeyName() + nameSuf);
 	}
 
 	//根据通道使用默认后缀构建
-	public static SendSmsProcessor buildSendSmsProcessor(Channel channel) {
+	public  SendSmsProcessor buildSendSmsProcessor(Channel channel) {
 		return sendSmsProcessorMap.get(channel.getKeyName() + "SendSmsProcessor");
 	}
 
 	//根据通道和名字后缀构建
-	public static SendSmsCallbackProcessor buildSendSmsCallbackProcessor(Channel channel,String nameSuf) {
+	public  SendSmsCallbackProcessor buildSendSmsCallbackProcessor(Channel channel,String nameSuf) {
 		return sendSmsCallbackProcessorMap.get(channel.getKeyName() + nameSuf);
 	}
 
 	//根据通道使用默认后缀构建
-	public static SendSmsCallbackProcessor buildSendSmsCallbackProcessor(Channel channel) {
+	public  SendSmsCallbackProcessor buildSendSmsCallbackProcessor(Channel channel) {
 		return sendSmsCallbackProcessorMap.get(channel.getKeyName() + "CallbackProcessor");
 	}
 
 	//根据通道和名字后缀构建
-	public static SmsUpProcessor buildSmsUpProcessor(Channel channel,String nameSuf) {
+	public  SmsUpProcessor buildSmsUpProcessor(Channel channel,String nameSuf) {
 		return smsUpProcessorMap.get(channel.getKeyName() + nameSuf);
 	}
 
 	//根据通道使用默认后缀构建
-	public static SmsUpProcessor buildSmsUpProcessor(Channel channel) {
+	public  SmsUpProcessor buildSmsUpProcessor(Channel channel) {
 		return smsUpProcessorMap.get(channel.getKeyName() + "SmsUpProcessor");
 	}
 

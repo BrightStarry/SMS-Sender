@@ -8,14 +8,17 @@ import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.system.ChannelEnum;
 import com.zuma.sms.exception.SmsSenderException;
+import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.repository.ChannelRepository;
 import com.zuma.sms.util.EnumUtil;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +35,9 @@ public class ChannelStore {
 	@Autowired
 	private ConfigStore configStore;
 
+	@Autowired
+	private PageRequestFactory pageRequestFactory;
+
 	//存储所有帐号,启动时加载
 	private Map<Long, Channel> channels;
 
@@ -39,7 +45,19 @@ public class ChannelStore {
 	 * 获取所有通道List
 	 */
 	public List<Channel> getAll() {
-		return  new ArrayList<>(this.channels.values());
+		return  new LinkedList<>(this.channels.values());
+	}
+
+	/**
+	 * 获取所有非CMPP通道
+	 */
+	public List<Channel> getAllNotCMPP() {
+		LinkedList<Channel> result = new LinkedList<>();
+		for (Map.Entry<Long,Channel> item : channels.entrySet()) {
+			if (!item.getValue().isCMPP())
+				result.add(item.getValue());
+		}
+		return result;
 	}
 
 	/**
@@ -56,9 +74,20 @@ public class ChannelStore {
 	/**
 	 * 根据通道id获取通道
 	 */
-
 	public Channel get(Long id){
 		return channels.get(id);
+	}
+
+	/**
+	 * 根据通道 type字段获取通道
+	 */
+	public List<Channel> getByType(int type) {
+		List<Channel> result = new LinkedList<>();
+		for (Channel item : channels.values()) {
+			if(item.getType().equals(type))
+				result.add(item);
+		}
+		return result;
 	}
 
 
@@ -71,7 +100,7 @@ public class ChannelStore {
 	public  void loadChannel(ChannelRepository channelRepository) {
 		Map<Long, Channel> map = new ConcurrentHashMap<>();
 		//查询所有通道
-		List<Channel> list = channelRepository.findAll();
+		List<Channel> list = channelRepository.findAll(pageRequestFactory.buildSortASC("type"));
 		//存储已经加载的并发管理器
 		ConcurrentManager[] concurrentManagers = new ConcurrentManager[list.size()];
 		//遍历

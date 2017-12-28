@@ -25,7 +25,7 @@ var numberGroupTypeList = {
     openAddModal : function () {
         common.closeModal($('#addForm')[0], null);
         isUpdate = false;
-        $('#addModal').modal();
+        $('#addModal').modal({closeViaDimmer:false});
     },
 
     //新增
@@ -112,7 +112,7 @@ var numberGroupTypeList = {
                 $('#addForm :input[name="name"]').val(result.data.name);
                 $('#addForm :input[name="remark"]').val(result.data.remark);
                 isUpdate = true;
-                $('#addModal').modal();
+                $('#addModal').modal({closeViaDimmer:false});
             }
         });
     },

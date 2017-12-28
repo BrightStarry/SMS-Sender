@@ -1,6 +1,7 @@
 package com.zuma.sms.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.zuma.sms.dto.DateHourPair;
 import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.db.IsDeleteEnum;
 import com.zuma.sms.enums.db.SendTaskRecordStatusEnum;
@@ -8,6 +9,7 @@ import com.zuma.sms.util.EnumUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -171,7 +173,7 @@ public class SendTaskRecord implements Cloneable{
     /**
      * 失败信息,可能为空
      */
-    private String errorInfo;
+    private String errorInfo = "";
 
     /**
      * 是否被删除. 0:否;1:是
@@ -189,51 +191,8 @@ public class SendTaskRecord implements Cloneable{
     private Date updateTime;
 
 
-    /**
-     * 当前任务的DateHourPair 非DB
-     */
-    @Transient
-    @JsonIgnore
-    private List<DateHourPair> dateHourPairs;
 
 
 
-
-    /**
-     * 时间小时对
-     * 将开始时间-结束时间转换
-     * 例如 2017-11-11 12:32:21 - 2017-11-11 15:02:34
-     * 转换为一个list:
-     * 2017-11-11 12:32:21 - 2017-11-11 13:00:00
-     * 2017-11-11 13:00:00 - 2017-11-11 14:00:00
-     * 2017-11-11 14:00:00 - 2017-11-11 15:00:00
-     * 2017-11-11 15:00:00 - 2017-11-11 15:02:34
-     */
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class DateHourPair{
-        private Date startTime;
-        private Date endTime;
-
-
-        /**
-         * 计算指定时间是否在该区间内
-         * -1: 小于startTime
-         * 0: 在范围内
-         * 1: 大于endTime
-         */
-        public int compareRange(Date time) {
-            //如果早于开始时间
-            if(time.before(startTime))
-                return -1;
-            //如果晚于结束时间
-            if(time.after(endTime))
-                return 1;
-            //否则就是在范围内
-            return 0;
-        }
-
-    }
 
 }

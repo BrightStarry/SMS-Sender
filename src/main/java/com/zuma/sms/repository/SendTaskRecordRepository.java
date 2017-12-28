@@ -63,5 +63,5 @@ public interface SendTaskRecordRepository extends JpaRepository<SendTaskRecord,L
 	@Query("update SendTaskRecord " +
 			" set successNum = successNum + :successNum , failedNum = failedNum + :failedNum " +
 			"where id = :taskId ")
-	SendTaskRecord updateSuccessAndFailedNum(Integer successNum, Integer failedNum, Long taskId);
+	void updateSuccessAndFailedNum(@Param("successNum")Integer successNum, @Param("failedNum")Integer failedNum, @Param("taskId")Long taskId);
 }

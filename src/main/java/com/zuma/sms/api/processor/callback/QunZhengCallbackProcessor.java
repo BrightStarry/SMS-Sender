@@ -1,6 +1,6 @@
 package com.zuma.sms.api.processor.callback;
 
-import com.zuma.sms.dto.ErrorData;
+import com.zuma.sms.dto.SendData;
 import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.dto.api.QunZhengAPI;
 import com.zuma.sms.entity.SmsSendRecord;
@@ -27,10 +27,10 @@ public class QunZhengCallbackProcessor extends SendSmsCallbackProcessor<QunZheng
 	}
 
 	@Override
-	protected ResultDTO<ErrorData> getResultDTO(QunZhengAPI.AsyncResponseChild response,SmsSendRecord record) {
+	protected ResultDTO<SendData> getResultDTO(QunZhengAPI.AsyncResponseChild response, SmsSendRecord record) {
 		//如果成功
 		if(EnumUtil.equals(response.getState(), QunZhengErrorEnum.CALLBACK_SUCCESS)){
-			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
+			return ResultDTO.success(new SendData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_ASYNC.getCode());
 		}
 
 		//失败--宽信接口似乎只会将成功返回，此处应该不会执行到
@@ -40,7 +40,7 @@ public class QunZhengCallbackProcessor extends SendSmsCallbackProcessor<QunZheng
 		//计算出手机号个数
 		int length = StringUtils.split(record.getPhones(), ",").length;
 		//返回失败信息
-		return ResultDTO.error(errorEnum,new ErrorData(length,record.getPhones(),record.getMessage()));
+		return ResultDTO.error(errorEnum,new SendData(length,record.getPhones(),record.getMessage()));
 	}
 
 

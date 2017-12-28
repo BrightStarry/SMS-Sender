@@ -287,7 +287,7 @@ var sendTaskRecordList = {
                 sendTaskRecordList.warn($('#startTime').attr('data-value'),$('#endTime').attr('data-value'));
             });
         $('#addWarn').hide();
-        $('#addModal').modal();
+        $('#addModal').modal({closeViaDimmer:false});
     }
     ,
     //新增
@@ -453,7 +453,7 @@ var sendTaskRecordList = {
                     }
                 });
 
-                $('#updateModal').modal();
+                $('#updateModal').modal({closeViaDimmer:false});
             }
 
         });

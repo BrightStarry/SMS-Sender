@@ -112,7 +112,7 @@ var numberSourceList = {
                 $('#updateInfoForm :input[name="id"]').val(result.data.id);
                 $('#updateInfoForm :input[name="name"]').val(result.data.name);
                 $('#updateInfoForm :input[name="remark"]').val(result.data.remark);
-                $('#updateInfoModal').modal();
+                $('#updateInfoModal').modal({closeViaDimmer:false});
             }
         });
     },

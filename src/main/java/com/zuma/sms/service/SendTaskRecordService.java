@@ -72,7 +72,8 @@ public class SendTaskRecordService {
 	 */
 	@Transactional
 	public SendTaskRecord incrementSuccessAndFailedNumById(int successNum, int failedNum,long taskId) {
-		return sendTaskRecordRepository.updateSuccessAndFailedNum(successNum,failedNum,taskId);
+		sendTaskRecordRepository.updateSuccessAndFailedNum(successNum,failedNum,taskId);
+		return findOne(taskId);
 	}
 
 
@@ -325,18 +326,28 @@ public class SendTaskRecordService {
 	 * 修改记录状态,以及异常信息
 	 */
 	@Transactional
-	public SendTaskRecord updateStatus(Long id, SendTaskRecordStatusEnum statusEnum, String errorInfo) {
+	public SendTaskRecord updateStatus(long id, SendTaskRecordStatusEnum statusEnum, String errorInfo) {
 		SendTaskRecord sendTaskRecord = sendTaskRecordRepository.findOne(id);
 		sendTaskRecord.setStatus(statusEnum.getCode());
 		if (StringUtils.isNotBlank(errorInfo))
-			sendTaskRecord.setErrorInfo(errorInfo);
+			sendTaskRecord.setErrorInfo(sendTaskRecord.getErrorInfo() + "|" + errorInfo);
 		return sendTaskRecordRepository.save(sendTaskRecord);
+	}
+
+	/**
+	 * 累加记录异常信息
+	 */
+	@Transactional
+	public SendTaskRecord updateErrorInfo(long id,String errorInfo) {
+		SendTaskRecord record = findOne(id);
+		record.setErrorInfo(record.getErrorInfo() + "|" + errorInfo);
+		return save(record);
 	}
 
 	/**
 	 * 保存
 	 */
-	public SendTaskRecord updateOne(SendTaskRecord sendTaskRecord) {
+	public SendTaskRecord save(SendTaskRecord sendTaskRecord) {
 		return sendTaskRecordRepository.save(sendTaskRecord);
 	}
 

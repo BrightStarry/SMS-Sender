@@ -90,6 +90,8 @@ public enum ErrorEnum implements CodeEnum<String> {
     PHONE_NUMBER_OVER("0004","手机号数目超限"),
     SMS_LEN_AND_PHONE_LEN_MISMATCH("0005", "短信数和手机号数不匹配，必须为一对一或一对多或多对多且数目相同"),
     UNSUPPORTED_OPERATOR("0006","包含指定通道不支持的运营商手机号"),
+    PROCESS_ERROR("0007", "发送过程异常"),
+    PHONE_FORMAT_ERROR("0008","有手机号存在格式错误"),
 
     OTHER_ERROR("9999", "其他异常(消息自定义)"),
 

@@ -36,16 +36,16 @@ public class BatchRepository {
 		String sql = "update sms_send_record set " + field + " = ? where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
-		if (isString){
+		if (isString) {
 			for (IdFieldValuePair item : list) {
 				preparedStatement.setString(1, item.getValue());
-				preparedStatement.setLong(2,item.getId());
+				preparedStatement.setLong(2, item.getId());
 				preparedStatement.addBatch();
 			}
-		}else{
+		} else {
 			for (IdFieldValuePair item : list) {
 				preparedStatement.setInt(1, Integer.parseInt(field));
-				preparedStatement.setLong(2,item.getId());
+				preparedStatement.setLong(2, item.getId());
 				preparedStatement.addBatch();
 			}
 		}
@@ -60,11 +60,17 @@ public class BatchRepository {
 	@SneakyThrows
 	public void batchInsertSmsSendRecord(List<SmsSendRecord> list) {
 		Connection connection = entityManager.unwrap(SessionImpl.class).connection();
-		StringBuilder sql = new StringBuilder("INSERT INTO sms_send_record(send_task_id,channel_id,channel_name,phones,phone_count,message) VALUES ");
+		StringBuilder sql = new StringBuilder("INSERT INTO sms_send_record(send_task_id,platform_send_sms_record_id,channel_id,channel_name,phones,phone_count,message) VALUES ");
 		for (SmsSendRecord record : list) {
-			sql.append("(")
-					.append(DBBatchStringUtil.wrap(record.getSendTaskId(), false, true))
-					.append(DBBatchStringUtil.wrap(record.getChannelId(), false, true))
+			sql.append("(");
+			if (record.getSendTaskId() != null)
+				sql.append(DBBatchStringUtil.wrap(record.getSendTaskId(), false, true))
+					.append("null,");
+			else
+				sql.append("null,")
+						.append(DBBatchStringUtil.wrap(record.getPlatformSendSmsRecordId(), false, true));
+
+			sql.append(DBBatchStringUtil.wrap(record.getChannelId(), false, true))
 					.append(DBBatchStringUtil.wrap(record.getChannelName(), true, true))
 					.append(DBBatchStringUtil.wrap(record.getPhones(), true, true))
 					.append(DBBatchStringUtil.wrap(record.getPhoneCount(), false, true))

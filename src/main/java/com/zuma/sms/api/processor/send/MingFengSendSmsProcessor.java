@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 /**
  * author:ZhengXing
  * datetime:2017/12/15 0015 16:18
- * 畅想 短信发送
+ * 铭锋 短信发送
  */
 @Component
 @Slf4j
@@ -39,7 +39,7 @@ public class MingFengSendSmsProcessor extends AbstractSendSmsProcessor<MingFengA
 	@Override
 	protected UpdateRecordInfo<MingFengErrorEnum> getUpdateRecordInfo(MingFengAPI.Response response) {
 		return new UpdateRecordInfo<>(response.getTaskID(),response.getReturnStatus(),
-				MingFengErrorEnum.class,MingFengErrorEnum.SUCCESS,response.getMessage());
+				MingFengErrorEnum.class,MingFengErrorEnum.SUCCESS2,response.getMessage());
 	}
 
 	@Override

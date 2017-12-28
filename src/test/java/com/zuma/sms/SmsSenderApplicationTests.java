@@ -37,7 +37,7 @@ public class SmsSenderApplicationTests {
 		l.add(new SmsSendRecord(1002L,1000L,"aaa","bbb",10,"xxxx"));
 
 
-		batchService.batchInsertSmsSendRecord(l);
+		batchService.batchSave(l);
 	}
 
 	@Test

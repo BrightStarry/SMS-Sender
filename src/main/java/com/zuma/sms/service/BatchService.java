@@ -36,8 +36,8 @@ public class BatchService {
 	 */
 	@Transactional
 	public void batchSave(List c) {
-		if(CollectionUtils.isEmpty(c))
-			return;
+//		if(CollectionUtils.isEmpty(c))
+//			return;
 		batchRepository.batchSave(c);
 	}
 

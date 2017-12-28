@@ -1,6 +1,6 @@
 package com.zuma.sms.api.processor.callback;
 
-import com.zuma.sms.dto.ErrorData;
+import com.zuma.sms.dto.SendData;
 import com.zuma.sms.dto.ResultDTO;
 import com.zuma.sms.dto.api.cmpp.CMPPSubmitAPI;
 import com.zuma.sms.entity.Channel;
@@ -25,7 +25,7 @@ public class CMPPCallbackProcessor extends SendSmsCallbackProcessor<CMPPSubmitAP
 	 * 重写通用处理部分
 	 */
 	@Override
-	protected boolean commonProcess(SmsSendRecord record, ResultDTO<ErrorData> resultDTO, Channel channel) {
+	protected boolean commonProcess(SmsSendRecord record, ResultDTO<SendData> resultDTO, Channel channel) {
 		//如果成功
 		if (ResultDTO.isSuccess(resultDTO))
 			return true;
@@ -40,16 +40,16 @@ public class CMPPCallbackProcessor extends SendSmsCallbackProcessor<CMPPSubmitAP
 	}
 
 	/**
-	 * TODO 该类需要重写该方法
+	 * 该类需要重写该方法
 	 * @param resultDTO 返回对象
 	 * @param record    记录
 	 * @param channel   短信通道
 	 */
 	@Override
-	protected void taskHandle(ResultDTO<ErrorData> resultDTO, SmsSendRecord record, Channel channel) {
+	protected void taskHandle(ResultDTO<SendData> resultDTO, SmsSendRecord record, Channel channel) {
 		//该处理类,成功时,不累加,因为之前全都直接返回成功了,失败,才累加
 		if(!ResultDTO.isSuccess(resultDTO))
-			sendTaskManager.asyncStatusIncrement(record.getSendTaskId(),false);
+			sendTaskManager.asyncStatusIncrement(record.getSendTaskId(),false,resultDTO.getData().getCount());
 	}
 
 	@Override
@@ -58,15 +58,15 @@ public class CMPPCallbackProcessor extends SendSmsCallbackProcessor<CMPPSubmitAP
 	}
 
 	@Override
-	protected ResultDTO<ErrorData> getResultDTO(CMPPSubmitAPI.Response response, SmsSendRecord record) {
+	protected ResultDTO<SendData> getResultDTO(CMPPSubmitAPI.Response response, SmsSendRecord record) {
 		//如果成功
 		if(CMPPSubmitErrorEnum.SUCCESS.getCode().equals((int)response.getResult())){
-			return ResultDTO.success(new ErrorData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_SYNC.getCode());
+			return ResultDTO.success(new SendData()).setType(ResultDTOTypeEnum.SEND_SMS_CALLBACK_SYNC.getCode());
 		}
 		//失败
 		//找到失败码对应枚举
 		CMPPSubmitErrorEnum errorEnum = EnumUtil.getByCode((int) response.getResult(), CMPPSubmitErrorEnum.class);
 		//返回失败信息
-		return ResultDTO.errorOfInteger(errorEnum,new ErrorData(getPhoneLen(record.getPhones()),record.getPhones(),record.getMessage()));
+		return ResultDTO.errorOfInteger(errorEnum,new SendData(getPhoneLen(record.getPhones()),record.getPhones(),record.getMessage()));
 	}
 }

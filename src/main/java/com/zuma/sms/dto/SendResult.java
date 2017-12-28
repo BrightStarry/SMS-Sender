@@ -10,17 +10,17 @@ import lombok.Data;
 @Data
 public class SendResult {
 	//失败的数据
-	private ErrorData errorData;
+	private SendData sendData;
 	//发送的手机号数
 	private Integer phoneNum;
 
-	public SendResult(ErrorData errorData, Integer phoneNum) {
-		this.errorData = errorData;
+	public SendResult(SendData sendData, Integer phoneNum) {
+		this.sendData = sendData;
 		this.phoneNum = phoneNum;
 	}
 
 	public SendResult(String phones , String message, Integer phoneNum) {
-		this.errorData = new ErrorData(phones, message);
+		this.sendData = new SendData(phones, message);
 		this.phoneNum = phoneNum;
 	}
 }

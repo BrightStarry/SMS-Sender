@@ -1,5 +1,6 @@
 package com.zuma.sms.util;
 
+import com.zuma.sms.dto.DateHourPair;
 import com.zuma.sms.entity.SendTaskRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -48,20 +49,20 @@ public class DateUtil {
 
     /**
      * 按小时划分 开始日期 - 结束日期
-     * See {@link SendTaskRecord.DateHourPair}
+     * See {@link DateHourPair}
      */
-    public static List<SendTaskRecord.DateHourPair> customParseDate(Date startTime, Date endTime) {
-        List<SendTaskRecord.DateHourPair> result = new ArrayList<>();
+    public static List<DateHourPair> customParseDate(Date startTime, Date endTime) {
+        List<DateHourPair> result = new ArrayList<>();
         //第一次
         //结束时间为,开始时间加一小时然后去整
         Date tmpEndDate = getIntHour(incrementHour(startTime,1));
-        result.add(new SendTaskRecord.DateHourPair(startTime,tmpEndDate));
+        result.add(new DateHourPair(startTime,tmpEndDate));
 
         //如果最后时间比前一段时间的最后时间 大于 超过 60s,才记入
         while ((endTime.getTime() - tmpEndDate.getTime()) > 60 * 1000){
             startTime = tmpEndDate;
             tmpEndDate = incrementHour(tmpEndDate, 1);
-            result.add(new SendTaskRecord.DateHourPair(startTime,tmpEndDate));
+            result.add(new DateHourPair(startTime,tmpEndDate));
         }
         result.get(result.size() - 1).setEndTime(endTime);
 
@@ -72,8 +73,8 @@ public class DateUtil {
     public static void main(String[] args) {
         Date a = stringToDate("2017-11-11 12:03:24", FORMAT_D);
         Date b = stringToDate("2017-11-11 13:00:00", FORMAT_D);
-        List<SendTaskRecord.DateHourPair> list = customParseDate(a, b);
-        for (SendTaskRecord.DateHourPair item : list) {
+        List<DateHourPair> list = customParseDate(a, b);
+        for (DateHourPair item : list) {
             System.out.println(item);
         }
     }

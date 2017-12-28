@@ -151,8 +151,8 @@ public class CMPPConnection {
 	 */
 	private void start1() {
 		try {
-			//创建线程组
-			EventLoopGroup eventLoopGroup =  new NioEventLoopGroup();
+			//创建线程组 - 手动设置线程数,默认为cpu核心数2倍
+			EventLoopGroup eventLoopGroup =  new NioEventLoopGroup(4);
 			//创建引导程序
 			Bootstrap bootstrap = new Bootstrap();
 			//保持长连接

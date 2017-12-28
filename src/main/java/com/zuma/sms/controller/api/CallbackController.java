@@ -1,21 +1,24 @@
 package com.zuma.sms.controller.api;
 
+import com.zuma.sms.api.processor.callback.SendSmsCallbackProcessor;
+import com.zuma.sms.api.processor.smsup.SmsUpProcessor;
 import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.dto.api.*;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.ZhangYouCallbackMsgTypeEnum;
 import com.zuma.sms.enums.error.ChangXiangErrorEnum;
+import com.zuma.sms.enums.error.MingFengErrorEnum;
 import com.zuma.sms.enums.error.ZhangYouErrorEnum;
 import com.zuma.sms.enums.system.ChannelEnum;
+import com.zuma.sms.factory.ProcessorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
-import java.util.List;
 
-import static com.zuma.sms.api.processor.CustomProcessorFactory.*;
+import static com.zuma.sms.factory.ProcessorFactory.*;
 
 /**
  * author:ZhengXing
@@ -27,6 +30,8 @@ import static com.zuma.sms.api.processor.CustomProcessorFactory.*;
 public class CallbackController {
 	@Autowired
 	private ChannelStore channelStore;
+	@Autowired
+	private ProcessorFactory processorFactory;
 
 
 	/**
@@ -34,7 +39,8 @@ public class CallbackController {
 	 */
 	@RequestMapping("/mingfeng/callback")
 	public void mingfengCallback(@RequestBody MingFengAPI.AsyncResponse response) {
-		System.out.println(response);
+		Channel mingfengChannel = channelStore.get(ChannelEnum.MINGFENG_YD);
+		processorFactory.buildSendSmsCallbackProcessor(mingfengChannel).process(response, mingfengChannel);
 	}
 
 	/**
@@ -42,8 +48,8 @@ public class CallbackController {
 	 */
 	@RequestMapping("/chuanglan/callback")
 	public void chuanglanCallback(ChuangLanAPI.AsyncResponse response) {
-		Channel channel = channelStore.get(ChannelEnum.CHUANGLAN_YD);
-		buildSendSmsCallbackProcessor(channel).process(response, channel);
+		Channel chuanglanChannel = channelStore.get(ChannelEnum.CHUANGLAN_YD);
+		processorFactory.buildSendSmsCallbackProcessor(chuanglanChannel).process(response, chuanglanChannel);
 	}
 
 
@@ -52,9 +58,10 @@ public class CallbackController {
 	 */
 	@RequestMapping("/changxiang/callback")
 	public String changxiangCallback(ChangXiangAPI.AsyncResponse response) {
-		Channel channel = channelStore.get(ChannelEnum.CHANGXIANG_YD);
+		Channel changxiangChannel = channelStore.get(ChannelEnum.CHANGXIANG_YD);
+		SendSmsCallbackProcessor processor = processorFactory.buildSendSmsCallbackProcessor(changxiangChannel);
 		for (ChangXiangAPI.AsyncResponseChild asyncResponseChild : response.getReport()) {
-			buildSendSmsCallbackProcessor(channel).process(response, channel);
+			processor.process(asyncResponseChild, changxiangChannel);
 		}
 		return ChangXiangErrorEnum.SUCCESS.getCode();
 	}
@@ -64,15 +71,15 @@ public class CallbackController {
 	 */
 	@RequestMapping("/zhangyou/callback")
 	public ZhangYouAPI.AsyncResponseReturn zhangyouCallback(@RequestBody ZhangYouAPI.AsyncResponse response) {
+		Channel zhangyouChannel = channelStore.get(ChannelEnum.ZHANGYOU_YD);
 
-		Channel channel = channelStore.get(ChannelEnum.ZHANGYOU_YD);
 		//如果为下行结果报告
 		if (ZhangYouCallbackMsgTypeEnum.REPORT.getMessage().equals(response.getMsgType())) {
-			buildSendSmsCallbackProcessor(channel).process(response, channel);
+			processorFactory.buildSendSmsCallbackProcessor(zhangyouChannel).process(response, zhangyouChannel);
 		}
 		//如果为上行推送
 		if (ZhangYouCallbackMsgTypeEnum.MO.getMessage().equals(response.getMsgType())) {
-			buildSmsUpProcessor(channel).process(response, channel);
+			processorFactory.buildSmsUpProcessor(zhangyouChannel).process(response, zhangyouChannel);
 		}
 
 		//返回成功
@@ -84,8 +91,8 @@ public class CallbackController {
 	 */
 	@RequestMapping("/kanxin/callback")
 	public void kuanxinSendSmsCallback(KuanXinAPI.AsyncResponse response) {
-		Channel channel = channelStore.get(ChannelEnum.KUANXIN_YD);
-		buildSendSmsCallbackProcessor(channel).process(response,channel);
+		Channel kuanxinChannel = channelStore.get(ChannelEnum.KUANXIN_YD);
+		processorFactory.buildSendSmsCallbackProcessor(kuanxinChannel).process(response, kuanxinChannel);
 	}
 
 	/**
@@ -93,10 +100,11 @@ public class CallbackController {
 	 */
 	@RequestMapping("/qunzheng/callback")
 	public void qunzhengSendSmsCallback(@RequestBody QunZhengAPI.AsyncResponse response) {
+		Channel qunzhengChannel = channelStore.get(ChannelEnum.QUNZHENG_YD);
+		SendSmsCallbackProcessor processor = processorFactory.buildSendSmsCallbackProcessor(qunzhengChannel);
 		//循环调用
-		Channel channel = channelStore.get(ChannelEnum.QUNZHENG_YD);
 		for (QunZhengAPI.AsyncResponseChild asyncResponseChild : response.getSms()) {
-			buildSendSmsCallbackProcessor(channel).process(asyncResponseChild,channel);
+			processor.process(asyncResponseChild,qunzhengChannel);
 		}
 	}
 
@@ -105,8 +113,9 @@ public class CallbackController {
 	 */
 	@RequestMapping("/kuanxin/smsup")
 	public void kuanxinSmsUp(KuanXinAPI.SmsUpResponse response) {
-		Channel channel = channelStore.get(ChannelEnum.KUANXIN_YD);
-		buildSmsUpProcessor(channel).process(response,channel);
+		Channel kuanxinChannel = channelStore.get(ChannelEnum.KUANXIN_YD);
+
+		processorFactory.buildSmsUpProcessor(kuanxinChannel).process(response,kuanxinChannel);
 	}
 
 	/**
@@ -114,10 +123,11 @@ public class CallbackController {
 	 */
 	@RequestMapping("/qunzheng/smsup")
 	public void qunzhengSmsUp(@RequestBody QunZhengAPI.SmsUpResponse response) {
+		Channel qunzhengChannel = channelStore.get(ChannelEnum.QUNZHENG_YD);
+		SmsUpProcessor processor = processorFactory.buildSmsUpProcessor(qunzhengChannel);
 		//循环调用
-		Channel channel = channelStore.get(ChannelEnum.QUNZHENG_YD);
 		for (QunZhengAPI.SmsUpResponseChild smsUpResponseChild : response.getSms()) {
-			buildSmsUpProcessor(channel).process(smsUpResponseChild,channel);
+			processor.process(smsUpResponseChild,qunzhengChannel);
 		}
 
 	}
@@ -127,8 +137,8 @@ public class CallbackController {
 	 */
 	@RequestMapping("/changxiang/smsup")
 	public String changxiangSmsUp(ChangXiangAPI.SmsUpResponse response) {
-		Channel channel = channelStore.get(ChannelEnum.CHANGXIANG_YD);
-		buildSmsUpProcessor(channel).process(response,channel);
+		Channel changxiangChannel = channelStore.get(ChannelEnum.CHANGXIANG_YD);
+		processorFactory.buildSmsUpProcessor(changxiangChannel).process(response,changxiangChannel);
 		return ChangXiangErrorEnum.SUCCESS.getCode();
 	}
 
@@ -137,8 +147,8 @@ public class CallbackController {
 	 */
 	@RequestMapping("/chuanglan/smsup")
 	public void chuanglanSmsUp(ChuangLanAPI.SmsUpResponse response) {
-		Channel channel = channelStore.get(ChannelEnum.CHUANGLAN_YD);
-		buildSmsUpProcessor(channel).process(response,channel);
+		Channel chuanglanChannel = channelStore.get(ChannelEnum.CHUANGLAN_YD);
+		processorFactory.buildSmsUpProcessor(chuanglanChannel).process(response,chuanglanChannel);
 	}
 
 	/**
@@ -146,9 +156,13 @@ public class CallbackController {
 	 */
 	@RequestMapping("/mingfeng/smsup")
 	public String mingfengSmsUp(@RequestBody MingFengAPI.SmsUpResponse response) {
-
+		Channel mingfengChannel = channelStore.get(ChannelEnum.MINGFENG_YD);
+		SmsUpProcessor processor = processorFactory.buildSmsUpProcessor(mingfengChannel);
+		for (MingFengAPI.SmsUpResponseChild item : response.getChilds()) {
+			processor.process(item, mingfengChannel);
+		}
 		//返回1表示成功
-		return "1";
+		return MingFengErrorEnum.SUCCESS2.getCode();
 	}
 
 

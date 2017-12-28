@@ -23,7 +23,7 @@ var smsContentList = {
     //弹出新增模态框
     openAddModal : function () {
         common.closeModal($('#addForm')[0], null);
-        $('#addModal').modal();
+        $('#addModal').modal({closeViaDimmer:false});
     },
 
     //新增
@@ -106,7 +106,7 @@ var smsContentList = {
                 $('#updateForm :input[name="name"]').val(result.data.name);
                 $('#updateForm :input[name="content"]').val(result.data.content);
                 $('#updateForm :input[name="remark"]').val(result.data.remark);
-                $('#updateModal').modal();
+                $('#updateModal').modal({closeViaDimmer:false});
             }
 
         });

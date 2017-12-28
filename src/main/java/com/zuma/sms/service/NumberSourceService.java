@@ -126,7 +126,7 @@ public class NumberSourceService {
 				//手机号字符
 				String tmp;
 				try {
-					tmp = IOUtils.toString(file.getInputStream(), "UTF-8");
+					tmp = IOUtils.toString(file.getInputStream(), Encoder.UTF_8);
 				} catch (IOException e) {
 					log.error("[号码源]文件读取异常.e:{}",e.getMessage(),e);
 					throw new SmsSenderException(ErrorEnum.IO_ERROR);

@@ -53,7 +53,7 @@ var platformList = {
     //弹出修改平台名模态框
     openModifyNameModal : function (platformId) {
         tempPlatformId= platformId;
-        $('#modifyNameModal').modal({closeViaDimmer: 0, width: 600, height: 300});
+        $('#modifyNameModal').modal({closeViaDimmer: 0, width: 600, height: 300,closeViaDimmer:false});
     },
     //修改平台名
     modifyName : function () {
@@ -78,7 +78,7 @@ var platformList = {
     //打开某平台的授权用户列表模态框
     openRootUserListModal : function (platformId) {
         platformList.pageByRootUser(platformId, 1);
-        $('#rootUserListModal').modal();
+        $('#rootUserListModal').modal({closeViaDimmer:false});
     },
 
     //获取/取消某用户和某平台间的授权

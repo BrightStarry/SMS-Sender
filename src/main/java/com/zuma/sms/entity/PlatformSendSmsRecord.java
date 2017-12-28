@@ -48,6 +48,11 @@ public class PlatformSendSmsRecord {
 	private String smsMessage;
 
 	/**
+	 * 请求对象json串
+	 */
+	private String request;
+
+	/**
 	 * 返回结果json串
 	 */
 	private String result;
@@ -67,9 +72,10 @@ public class PlatformSendSmsRecord {
 	 */
 	private Date updateTime;
 
-	public PlatformSendSmsRecord(Long platformId, String phone, String smsMessage) {
+	public PlatformSendSmsRecord(Long platformId, String phone, String smsMessage,String request) {
 		this.platformId = platformId;
 		this.phone = phone;
 		this.smsMessage = smsMessage;
+		this.request = request;
 	}
 }

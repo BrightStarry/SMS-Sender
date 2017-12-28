@@ -15,4 +15,8 @@ import lombok.NoArgsConstructor;
 public class PhoneMessagePair {
 	private String phones;
 	private String Message;
+
+	public PhoneMessagePair(String phones) {
+		this.phones = phones;
+	}
 }

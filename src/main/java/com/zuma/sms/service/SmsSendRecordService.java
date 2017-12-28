@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * author:ZhengXing
@@ -35,21 +36,7 @@ public class SmsSendRecordService {
 		return JPAPage2PageVOConverter.convert(page);
 	}
 
-	/**
-	 * 新建记录
-	 * @param taskId
-	 * @param channel
-	 * @param phones
-	 * @param requestBody
-	 * @return
-	 */
-	public SmsSendRecord newRecord(Platform platform,Long taskId,
-								   Channel channel, String phones, String message,String requestBody,Integer phoneCount) {
-		SmsSendRecord temp = new SmsSendRecord(taskId, channel.getId(), channel.getName(), phones,phoneCount, message,requestBody);
-		if(platform != null)
-			temp.setPlatformId(platform.getId()).setPlatformName(platform.getName());
-		return smsSendRecordRepository.save(temp);
-	}
+
 
 
 
@@ -63,8 +50,8 @@ public class SmsSendRecordService {
 	/**
 	 * 批量保存
 	 */
-	public void save(Iterable<SmsSendRecord> records) {
-		smsSendRecordRepository.save(records);
+	public List<SmsSendRecord> save(Iterable<SmsSendRecord> records) {
+		return smsSendRecordRepository.save(records);
 	}
 
 	/**

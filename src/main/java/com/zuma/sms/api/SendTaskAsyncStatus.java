@@ -12,19 +12,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Data
 public class SendTaskAsyncStatus {
 	//成功数-异步响应成功
-	private AtomicInteger successNum = new AtomicInteger();
+	private AtomicInteger asyncSuccessNum = new AtomicInteger();
 	//失败数-总失败数
-	private AtomicInteger failedNum = new AtomicInteger();
+	private AtomicInteger asyncFailedNum = new AtomicInteger();
 
 
 	/**
-	 * 累加成功或失败数
+	 * 累加异步成功或失败数
 	 */
 	public void increment(boolean isSuccessNum,int num) {
 		if(isSuccessNum)
-			successNum.addAndGet(num);
+			asyncSuccessNum.addAndGet(num);
 		else
-			failedNum.addAndGet(num);
+			asyncFailedNum.addAndGet(num);
 	}
 
 

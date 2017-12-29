@@ -47,6 +47,7 @@ public interface MingFengAPI {
 
 	//发送短信响应
 	@Data
+	@Accessors(chain = true)
 	class Response {
 		private String returnStatus;//返回状态
 		private String message;//消息
@@ -54,6 +55,15 @@ public interface MingFengAPI {
 		private String taskID;//id
 		private String successCount;//成功数
 	}
+
+	//发送短信响应...另一种响应..
+	@Data
+	class Response2 {
+		private String error;
+		private String remark;
+	}
+
+
 
 //	//主动请求异步回调
 //	@Data

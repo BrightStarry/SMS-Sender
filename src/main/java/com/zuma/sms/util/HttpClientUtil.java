@@ -4,6 +4,7 @@ import com.sun.xml.internal.fastinfoset.Encoder;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.http.*;
@@ -19,6 +20,7 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -28,6 +30,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -87,7 +90,7 @@ public class HttpClientUtil {
     /**
      * 发送post请求,使用json数据,返回string
      */
-    public <T> String doPostForString(String url, String jsonString){
+    public  String doPostForString(String url, String jsonString){
         CloseableHttpResponse response = null;
         String result;
         try {
@@ -102,22 +105,16 @@ public class HttpClientUtil {
         return result;
     }
 
+
     /**
      * 发起post请求,根据url，参数实体
      */
     public <T> CloseableHttpResponse doPost(String url, T obj) {
-        //实体类转map
-        Map<String, String> map = null;
-        try {
-            map = BeanUtils.describe(obj);
-        } catch (IllegalAccessException |InvocationTargetException |NoSuchMethodException e) {
-            log.error("【httpClient】实体类转map失败.error={}",e.getMessage(),e);
-            throw new SmsSenderException(ErrorEnum.HTTP_ERROR);
-        }
+        Map<String, String> map = objectToMap(obj);
         //遍历map将其将如paramList
         List<NameValuePair> params = new ArrayList<>();
-        for(Map.Entry<String,String> each : map.entrySet()){
-            params.add(new BasicNameValuePair(each.getKey(),each.getValue()));
+        for(Map.Entry<String,String> item : map.entrySet()){
+            params.add(new BasicNameValuePair(item.getKey(),item.getValue()));
         }
         //放入请求参数中
         HttpPost httpPost = new HttpPost(url);
@@ -125,6 +122,7 @@ public class HttpClientUtil {
 
         return execute(httpPost);
     }
+
 
     /**
      * 发起post请求,json格式
@@ -137,6 +135,28 @@ public class HttpClientUtil {
         httpPost.setEntity(stringEntity);
 
         return execute(httpPost);
+    }
+
+
+
+    /**
+     * 对象转map
+     * @param obj
+     * @param <T>
+     * @return
+     */
+    private <T> Map<String, String> objectToMap(T obj) {
+        //实体类转map
+        Map<String, String> map = null;
+        try {
+            map = BeanUtils.describe(obj);
+            //会产生key为class的元素
+            map.remove("class");
+        } catch (IllegalAccessException |InvocationTargetException |NoSuchMethodException e) {
+            log.error("【httpClient】实体类转map失败.error={}",e.getMessage(),e);
+            throw new SmsSenderException(ErrorEnum.HTTP_ERROR);
+        }
+        return map;
     }
 
     /**

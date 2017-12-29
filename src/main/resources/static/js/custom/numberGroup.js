@@ -7,6 +7,7 @@ var url = {
     query: '/query',//查询单个
     updateInfo: '/update',//修改信息
 };
+var flag = true;
 var numberGroupList = {
     //下拉选择-号码组类别
     numberGroupTypeSelect: function () {
@@ -101,6 +102,9 @@ var numberGroupList = {
 
     //新增
     add: function () {
+        if(!flag)
+            return;
+        flag = false;
         $.post(url.commonPre + url.add, $('#addForm').serialize(), function (result) {
             if (!common.errorHandle(result)) {
                 numberGroupList.page();
@@ -113,6 +117,7 @@ var numberGroupList = {
                 $('#numberGroupTypeSelect').selected('enable');
 
             }
+            flag = true;
         });
 
     },
@@ -211,12 +216,16 @@ var numberGroupList = {
     },
     //修改信息
     updateInfo: function () {
+        if(!flag)
+            return;
+        flag = false;
         $.post(url.commonPre + url.updateInfo, $('#updateForm').serialize(), function (result) {
             if (!common.errorHandle(result)) {
                 numberGroupList.page();
                 common.successHandle();
                 common.closeModal($('#updateForm')[0], $('#updateModal'));
             }
+            flag = true;
         });
         $('#updateNumberGroupTypeSelect').selected('destroy');
         $('#updateNumberGroupTypeSelect').selected('enable');

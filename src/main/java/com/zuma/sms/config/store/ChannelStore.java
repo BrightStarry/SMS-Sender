@@ -16,11 +16,9 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -57,6 +55,14 @@ public class ChannelStore {
 			if (!item.getValue().isCMPP())
 				result.add(item.getValue());
 		}
+		//按类型排序
+		Collections.sort(result, new Comparator<Channel>() {
+			@Override
+			public int compare(Channel o1, Channel o2) {
+				return o1.getType() > o2.getType() ? 1 :
+						o1.getType() < o2.getType() ? -1 : 0;
+			}
+		});
 		return result;
 	}
 
@@ -137,7 +143,7 @@ public class ChannelStore {
 	//开启某个短信通道对应CMPP连接操作
 	private void openCMPPConnection(Channel channel) {
 		//TODO 宽信蹦了
-		if(!channel.getCacheName().equalsIgnoreCase("kuanXinCMPP"))
+//		if(!channel.getCacheName().equalsIgnoreCase("kuanXinCMPP"))
 			channel.getCmppConnectionManager().openConnection();
 	}
 

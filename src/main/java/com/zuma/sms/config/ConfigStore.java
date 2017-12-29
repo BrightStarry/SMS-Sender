@@ -43,10 +43,10 @@ public class ConfigStore {
 	//短信消息分隔符
 	public String smsMessageSeparator = "!&";
 
-	//发送任务 号码数 预警 阈值 - 20W TODO 修改回原值
-	public Integer sendTaskWarnOfPhoneNum = 0;
-	//发送任务 线程数 预警 阈值 - 100
-	public Integer sendTaskWarnOfThreadNum = 0;
+	//发送任务 号码数 预警 阈值 - 10W TODO 修改回原值
+	public Integer sendTaskWarnOfPhoneNum = 100000;
+	//发送任务 线程数 预警 阈值 - 50
+	public Integer sendTaskWarnOfThreadNum = 50;
 
 	//是否开启CMPP连接
 	public Boolean isOpenCMPPConnection = true;
@@ -91,7 +91,8 @@ public class ConfigStore {
 	//掌游发送短信url
 	public  String zhangyouSendSmsUrl = "http://ysms.game2palm.com:8899/smsAccept/sendSms.action";
 	//宽信url前缀
-	public String kuanxinUrlPre = "http://114.55.90.98:8808/api";
+//	public String kuanxinUrlPre = "http://114.55.90.98:8808/api";
+	public String kuanxinUrlPre = "http://118.178.35.191:8808/api";
 	//宽信发送短信url
 	public String kuanxinSendSmsUrl = kuanxinUrlPre + "/sms/send";
 	//群正发送短信Url

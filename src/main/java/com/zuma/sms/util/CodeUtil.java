@@ -2,6 +2,7 @@ package com.zuma.sms.util;
 
 import com.google.common.base.Charsets;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.zuma.sms.pool.CommonPool;
 import com.zuma.sms.pool.GsonPool;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -258,6 +259,21 @@ public class CodeUtil {
     }
 
     //JSON
+
+    /**
+     * json字符转jsonObject
+     */
+    public static JsonElement jsonStringToObject(String jsonString) {
+        Gson gson = null;
+        try {
+            gson = gsonFactory.borrow();
+            return gson.toJsonTree(jsonString);
+        } finally {
+            gsonFactory.returnObj(gson);
+        }
+    }
+
+
 
     /**
      * 对象转json字符串

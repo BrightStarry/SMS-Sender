@@ -7,6 +7,7 @@ var url = {
     query: '/query',//查询单个
     updateInfo: '/update',//修改信息
 };
+var flag = true;
 var platformList = {
     //分页查询
     page: function (pageNo) {
@@ -28,12 +29,16 @@ var platformList = {
 
     //新增
     add : function () {
+        if(!flag)
+            return;
+        flag = false;
         $.post(url.commonPre + url.add,$('#addForm').serialize(),function (result) {
             if(!common.errorHandle(result)) {
                 platformList.page();
                 common.successHandle();
                 common.closeModal($('#addForm')[0], $('#addModal'));
             }
+            flag = true;
         } );
     },
 
@@ -107,6 +112,8 @@ var platformList = {
                 $('#updateForm :input[name="callbackUrl"]').val(result.data.callbackUrl);
                 if(result.data.status == 1){
                     $('#updateForm :input[name="status"]').attr('checked', true);
+                }else{
+                    $('#updateForm :input[name="status"]').attr('checked', false);
                 }
                 $('#updateModal').modal({closeViaDimmer:false});
             }
@@ -114,12 +121,16 @@ var platformList = {
     },
     //修改信息
     updateInfo :function() {
+        if(!flag)
+            return;
+        flag = false;
         $.post(url.commonPre + url.updateInfo,$('#updateForm').serialize(),function (result) {
             if(!common.errorHandle(result)){
                 platformList.page();
                 common.successHandle();
                 common.closeModal($('#updateForm')[0], $('#updateModal'));
             }
+            flag = true;
         } );
     },
 

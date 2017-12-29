@@ -8,6 +8,7 @@ import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import com.zuma.sms.util.CodeUtil;
 import com.zuma.sms.util.HttpClientUtil;
+import com.zuma.sms.util.Md5Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,14 +35,14 @@ public class KuanXinSendSmsProcessor extends AbstractSendSmsProcessor<KuanXinAPI
 		long ts = System.currentTimeMillis();
 		//签名
 		String sign = CodeUtil.stringToMd5(channel.getAKey() + ts + channel.getBKey());
-		return KuanXinAPI.Request.builder()
-				.userId(channel.getAKey())
-				.mobile(phones)
-				.msgcontent(CodeUtil.stringToUrlEncode(message))
-				.sign(sign)
-				.ts(ts)
-				.build();
+		return new KuanXinAPI.Request()
+				.setUserid(channel.getAKey())
+				.setMobile(phones)
+				.setMsgcontent(CodeUtil.stringToUrlEncode(message))
+				.setSign(sign)
+				.setTs(ts);
 	}
+
 
 
 	@Override

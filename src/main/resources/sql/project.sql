@@ -189,11 +189,11 @@ CREATE TABLE send_task_record(
 
   status TINYINT DEFAULT 0 COMMENT '状态. 0:等待中;1:运行中;2:成功;-1:失败;-2:中断',
   number_num INT NOT NULL COMMENT '号码总数',
-  success_num INT DEFAULT 0 COMMENT '成功数,异步成功',
-  failed_num INT DEFAULT 0 COMMENT '失败数,异步失败',
-  un_response INT DEFAULT 0 COMMENT '未响应数',
-#   async_un_response SMALLINT DEFAULT 0 COMMENT '异步未响应数',
-  used_num INT DEFAULT 0 COMMENT '已操作总数(可能被中断导致后续号码未操作)',
+  success_num INT DEFAULT 0 COMMENT '同步成功数',
+  failed_num INT DEFAULT 0 COMMENT '同步失败数',
+  async_success_num INT DEFAULT 0 COMMENT '异步成功数',
+  async_failed_num INT DEFAULT 0 COMMENT '异步失败数',
+  used_num INT DEFAULT 0 COMMENT '已使用数',
 
   error_number_path VARCHAR(128) DEFAULT '' COMMENT '失败号码路径,可供下载',
   error_info VARCHAR(256) DEFAULT '' COMMENT '失败信息,可能为空',

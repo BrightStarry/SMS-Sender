@@ -31,7 +31,7 @@ public class MingFengSendSmsProcessor extends AbstractSendSmsProcessor<MingFengA
 
 	@Override
 	protected MingFengAPI.Request toRequestObject(Channel channel, String phones, String message) {
-		return new MingFengAPI.Request(channel.getAKey(), channel.getAKey(), channel.getBKey(), phones, message);
+		return new MingFengAPI.Request(channel.getAKey(), channel.getAKey(), CodeUtil.stringToMd5(channel.getBKey()).toUpperCase(), phones, message);
 	}
 
 
@@ -45,7 +45,8 @@ public class MingFengSendSmsProcessor extends AbstractSendSmsProcessor<MingFengA
 	@Override
 	protected String send(MingFengAPI.Request requestObject) {
 		try {
-			return httpClientUtil.doPostForString(configStore.mingfengSendSmsUrl, requestObject);
+			return httpClientUtil.doPostForString(configStore.mingfengSendSmsUrl, CodeUtil.objectToJsonString(requestObject));
+//			return httpClientUtil.doPostForString(configStore.mingfengSendSmsUrl, requestObject);
 		} catch (Exception e) {
 			log.error("[短信发送过程]短信发送http失败.e:{}",e.getMessage(),e);
 			throw new SmsSenderException(ErrorEnum.HTTP_ERROR);
@@ -55,6 +56,13 @@ public class MingFengSendSmsProcessor extends AbstractSendSmsProcessor<MingFengA
 	@Override
 	MingFengAPI.Response stringToResponseObject(String result) {
 		try {
+			//坑爹.和文档上说的不一
+			if(result.contains("remark")){
+				MingFengAPI.Response2 response2 = CodeUtil.jsonStringToObject(result, MingFengAPI.Response2.class);
+				return new MingFengAPI.Response()
+						.setReturnStatus(response2.getError())
+						.setMessage(response2.getRemark());
+			}
 			return CodeUtil.jsonStringToObject(result, MingFengAPI.Response.class);
 		} catch (Exception e) {
 			log.error("[短信发送过程]返回的string转为response对象失败.resultString={},error={}", result, e.getMessage(), e);

@@ -8,6 +8,7 @@ var url = {
     updateInfo: '/update',//修改信息
 };
 var isUpdate = false;
+var flag = true;
 var numberGroupTypeList = {
     //分页查询
     page: function (pageNo) {
@@ -30,16 +31,20 @@ var numberGroupTypeList = {
 
     //新增
     add : function () {
+        if(!flag)
+            return;
         if(isUpdate){
             numberGroupTypeList.updateInfo();
             return;
         }
+        flag = false;
         $.post(url.commonPre + url.add,$('#addForm').serialize(),function (result) {
             if(!common.errorHandle(result)) {
                 numberGroupTypeList.page();
                 common.successHandle();
                 common.closeModal($('#addForm')[0], $('#addModal'));
             }
+            flag = true;
         } );
     },
 
@@ -118,12 +123,16 @@ var numberGroupTypeList = {
     },
     //修改信息
     updateInfo :function() {
+        if(!flag)
+            return;
+        flag = false;
         $.post(url.commonPre + url.updateInfo,$('#addForm').serialize(),function (result) {
             if(!common.errorHandle(result)){
                 numberGroupTypeList.page(1);
                 common.successHandle();
                 common.closeModal($('#addForm')[0], $('#addModal'));
             }
+            flag = true;
         } );
     },
 

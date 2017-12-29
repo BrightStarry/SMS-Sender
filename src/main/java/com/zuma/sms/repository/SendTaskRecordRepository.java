@@ -57,11 +57,21 @@ public interface SendTaskRecordRepository extends JpaRepository<SendTaskRecord,L
 											  @Param("numberGroupId") Long numberGroupId);
 
 	/**
-	 * 修改 累加 成功数 和 失败数
+	 * 修改 累加 同步 成功数 和 失败数
 	 */
 	@Modifying
 	@Query("update SendTaskRecord " +
 			" set successNum = successNum + :successNum , failedNum = failedNum + :failedNum " +
 			"where id = :taskId ")
-	void updateSuccessAndFailedNum(@Param("successNum")Integer successNum, @Param("failedNum")Integer failedNum, @Param("taskId")Long taskId);
+	int updateSuccessAndFailedNum(@Param("successNum")Integer successNum, @Param("failedNum")Integer failedNum, @Param("taskId")Long taskId);
+
+	/**
+	 * 累加 异步 成功数 或 失败数
+	 */
+	@Modifying
+	@Query("update SendTaskRecord " +
+			" set asyncSuccessNum = asyncSuccessNum + :successNum , asyncFailedNum = asyncFailedNum + :failedNum " +
+			"where id = :taskId ")
+	int updateAsyncSuccessAndFailedNum(@Param("successNum")Integer successNum, @Param("failedNum")Integer failedNum, @Param("taskId")Long taskId);
+
 }

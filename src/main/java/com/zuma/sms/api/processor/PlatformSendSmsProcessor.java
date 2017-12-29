@@ -1,6 +1,7 @@
 package com.zuma.sms.api.processor;
 
 import com.zuma.sms.api.processor.send.SendSmsProcessor;
+import com.zuma.sms.batch.SmsSendRecordBatchManager;
 import com.zuma.sms.dto.*;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.Platform;
@@ -39,6 +40,8 @@ public class PlatformSendSmsProcessor {
 	private SmsSendRecordService smsSendRecordService;
 	@Autowired
 	private ProcessorFactory processorFactory;
+	@Autowired
+	private SmsSendRecordBatchManager smsSendRecordBatchManager;
 
 	/**
 	 * 处理方法

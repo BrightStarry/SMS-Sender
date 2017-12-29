@@ -1,6 +1,7 @@
 package com.zuma.sms.service;
 
 import com.zuma.sms.dto.IdFieldValuePair;
+import com.zuma.sms.dto.IdStatusPair;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.repository.BatchRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +37,19 @@ public class BatchService {
 	 */
 	@Transactional
 	public void batchSave(List c) {
-//		if(CollectionUtils.isEmpty(c))
-//			return;
+		if(CollectionUtils.isEmpty(c))
+			return;
 		batchRepository.batchSave(c);
+	}
+
+	/**
+	 * 批量更新记录状态
+	 */
+	@Transactional
+	public void batchUpdateStatus(List<IdStatusPair> list) {
+		if(CollectionUtils.isEmpty(list))
+			return;
+		batchRepository.batchUpdateStatus(list);
 	}
 
 	/**

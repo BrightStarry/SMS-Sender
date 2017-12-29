@@ -16,6 +16,6 @@ public interface ChannelRepository extends JpaRepository<Channel,Long> {
 	/**
 	 * 查询非CMPP通道
 	 */
-	List<Channel> findAllByIsCmpp(Sort sort);
+	List<Channel> findAllByIsCmpp(int isCmpp,Sort sort);
 
 }

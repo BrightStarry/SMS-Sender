@@ -1,6 +1,7 @@
 package com.zuma.sms.service;
 
 import com.zuma.sms.entity.Channel;
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.repository.ChannelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,8 @@ public class ChannelService {
 	 * 查询非cmpp 并根据某字段排序
 	 * @return
 	 */
-	public List<Channel> findAllNotCMPPSort(String fieldName) {
-		return channelRepository.findAllByIsCmpp(pageRequestFactory.buildSortASC(fieldName));
+	public List<Channel> findAllNotCMPPSort(boolean isCmpp,String fieldName) {
+		return channelRepository.findAllByIsCmpp(isCmpp ? IntToBoolEnum.TRUE.getCode() : IntToBoolEnum.FALSE.getCode(),pageRequestFactory.buildSortASC(fieldName));
 	}
 
 

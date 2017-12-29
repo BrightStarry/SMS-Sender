@@ -68,11 +68,15 @@ public class SendTaskRecordService {
 
 
 	/**
-	 * 累加指定id的 成功号码数和失败号码数
+	 * 累加指定id的同步或异步失败成功数
 	 */
 	@Transactional
-	public SendTaskRecord incrementSuccessAndFailedNumById(int successNum, int failedNum,long taskId) {
-		sendTaskRecordRepository.updateSuccessAndFailedNum(successNum,failedNum,taskId);
+	public SendTaskRecord incrementSuccessAndFailedNumById(int successNum, int failedNum,long taskId,boolean isAsync) {
+		int i = sendTaskRecordRepository.updateSuccessAndFailedNum(successNum,failedNum,taskId);
+		if(i != 1){
+			log.error("[发送任务记录]累加成功号码数和失败号码数,数据库操作失败.taskId:{},successNum:{},failedNum:{},isAsync:{}",
+					taskId,successNum,failedNum,isAsync);
+		}
 		return findOne(taskId);
 	}
 
@@ -214,7 +218,7 @@ public class SendTaskRecordService {
 	 */
 	public void stop(Long id) {
 		SendTaskRecord sendTaskRecord = findOne(id);
-		if(!EnumUtil.equals(sendTaskRecord.getStatus(),SendTaskRecordStatusEnum.RUN))
+		if(!EnumUtil.equals(sendTaskRecord.getStatus(),SendTaskRecordStatusEnum.RUN) && !EnumUtil.equals(sendTaskRecord.getStatus(),SendTaskRecordStatusEnum.PAUSE))
 			throw new SmsSenderException("任务不在运行中,无法中断");
 
 		sendTaskManager.interruptTask(id);

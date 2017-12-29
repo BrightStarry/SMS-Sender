@@ -52,5 +52,5 @@ smsSender:
         ip: 115.231.73.206
         port: 8855
     allowIp: 127.0.0.1
-    isOpenCMPPConnection: false
+    isOpenCMPPConnection: true
 

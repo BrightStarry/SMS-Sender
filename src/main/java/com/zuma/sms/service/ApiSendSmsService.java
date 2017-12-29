@@ -11,6 +11,7 @@ import com.zuma.sms.entity.Channel;
 import com.zuma.sms.entity.Platform;
 import com.zuma.sms.entity.PlatformSendSmsRecord;
 import com.zuma.sms.enums.SmsAndPhoneRelationEnum;
+import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.enums.system.ChannelEnum;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.enums.system.PhoneOperatorEnum;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
@@ -55,81 +57,124 @@ public class ApiSendSmsService {
 
 	/**
 	 * 发送短信
+	 *
 	 * @param sendSmsForm
 	 * @return
 	 */
+	@Transactional
 	public ResultDTO<ApiResult> sendSms(PlatformSendSmsForm sendSmsForm) {
-		log.info("[平台调用发送短信]接收到请求.form:{}",sendSmsForm);
-		/**
-		 * 参数校验
-		 */
-		//获取平台,并验证平台和签名
-		Platform platform = getPlatform(sendSmsForm);
-		//根据类型获取通道 TODO 注意,这样.所有的type必须区分同一个短信平台的不同帐号
-		Channel channel = getChannel(sendSmsForm);
-		//获取手机号数组,手机号个数
-		String[] phones = getPhones(sendSmsForm);
-		//确认短信消息
-		String[] smsMessages = StringUtils.split(sendSmsForm.getSmsMessage(), configStore.smsMessageSeparator);
-		//获取并验证 短信-手机号 对应关系
-		SmsAndPhoneRelationEnum smsAndPhoneRelationEnum = getSmsAndPhoneRelationEnum(phones, smsMessages);
-
-		//新建调用记录
-		PlatformSendSmsRecord platformSendSmsRecord = platformSendSmsRecordService.save(new PlatformSendSmsRecord(platform.getId(), sendSmsForm.getPhone(), sendSmsForm.getSmsMessage(),
-				CodeUtil.objectToJsonString(sendSmsForm)));
-
-		//如果指定了通道
-		if (channel != null) {
-			return platformSendSmsProcessor.process(channel, platform,
-					phones,
-					smsMessages, smsAndPhoneRelationEnum,
-					platformSendSmsRecord);
-		}
-
-
-		//如果未指定通道------------------------------------------
-		//该手机号数组可用通道
-		List<Channel> availableChannel = channelService.findAllNotCMPPSort("type");
+		log.info("[平台调用发送短信]接收到请求.form:{}", sendSmsForm);
+		PlatformSendSmsRecord platformSendSmsRecord = null;
 		ResultDTO<ApiResult> resultDTO = null;
-		List<ResultDTO<SendData>> errorResults;
-		//遍历
-		Channel currentChannel = null;
-		for (int i = 0; i < availableChannel.size(); i++) {
-			//跳过tpye相同的通道
-			if(currentChannel != null && currentChannel.getType().equals(availableChannel.get(i).getType()))
-				continue;
-			currentChannel = availableChannel.get(i);
-			//发送
-			resultDTO = platformSendSmsProcessor.process(currentChannel, platform,
-					phones,
-					smsMessages, smsAndPhoneRelationEnum,
-					platformSendSmsRecord);
-			//获取失败数据
-			errorResults = resultDTO.getData().getErrorResults();
-			//如果没有失败数据,或者是最后一次循环重试,直接返回
-			if(CollectionUtils.isEmpty(errorResults) || i == availableChannel.size()-1)
-				return resultDTO;
+		try {
+			/**
+			 * 参数校验
+			 */
+			//获取平台,并验证平台和签名
+			Platform platform = getPlatform(sendSmsForm);
+			//根据类型获取通道 TODO 注意,这样.所有的type必须区分同一个短信平台的不同帐号
+			Channel channel = getChannel(sendSmsForm);
+			//获取手机号数组,手机号个数
+			String[] phones = getPhones(sendSmsForm);
+			//确认短信消息
+			String[] smsMessages = StringUtils.split(sendSmsForm.getSmsMessage(), configStore.smsMessageSeparator);
+			//获取并验证 短信-手机号 对应关系
+			SmsAndPhoneRelationEnum smsAndPhoneRelationEnum = getSmsAndPhoneRelationEnum(phones, smsMessages);
 
-			//处理失败数据
-			//如果是多对多
-			if(smsAndPhoneRelationEnum.equals(SmsAndPhoneRelationEnum.MULTI_MULTI)){
-				phones = new String[0];
-				smsMessages = new  String[0];
-				for (ResultDTO<SendData> item : errorResults) {
-					ArrayUtils.addAll(phones, StringUtils.split(item.getData().getPhones(), ","));
-					ArrayUtils.add(smsMessages, item.getData().getPhones());
-				}
-			}else{
-				//如果是其他
-				phones = new String[0];
-				smsMessages = new  String[1];
-				for (ResultDTO<SendData> item : errorResults) {
-					ArrayUtils.addAll(phones, StringUtils.split(item.getData().getPhones(), ","));
-				}
-				smsMessages[0] = errorResults.get(0).getMessage();
+
+
+
+			//新建调用记录
+			platformSendSmsRecord = platformSendSmsRecordService.save(new PlatformSendSmsRecord(platform.getId(), sendSmsForm.getPhone(), sendSmsForm.getSmsMessage(),
+					CodeUtil.objectToJsonString(sendSmsForm)));
+
+			//如果指定了通道
+			if (channel != null) {
+				resultDTO = platformSendSmsProcessor.process(channel, platform,
+						phones,
+						smsMessages, smsAndPhoneRelationEnum,
+						platformSendSmsRecord);
+				saveRecord(resultDTO,platformSendSmsRecord);
 			}
+
+
+			//如果未指定通道------------------------------------------
+			//该手机号数组可用通道
+			List<Channel> availableChannel = channelStore.getAllNotCMPP();
+
+			List<ResultDTO<SendData>> errorResults;
+			//遍历
+			Channel currentChannel = null;
+			for (int i = 0; i < availableChannel.size(); i++) {
+				//跳过tpye相同的通道
+				if (currentChannel != null && currentChannel.getType().equals(availableChannel.get(i).getType()))
+					continue;
+				currentChannel = availableChannel.get(i);
+				//发送
+				resultDTO = platformSendSmsProcessor.process(currentChannel, platform,
+						phones,
+						smsMessages, smsAndPhoneRelationEnum,
+						platformSendSmsRecord);
+				//获取失败数据
+				errorResults = resultDTO.getData().getErrorResults();
+				//如果没有失败数据,或者是最后一次循环重试,直接返回
+				if (CollectionUtils.isEmpty(errorResults) || i == availableChannel.size() - 1)
+					return resultDTO;
+
+				//处理失败数据
+				//如果是多对多
+				if (smsAndPhoneRelationEnum.equals(SmsAndPhoneRelationEnum.MULTI_MULTI)) {
+					phones = new String[0];
+					smsMessages = new String[0];
+					for (ResultDTO<SendData> item : errorResults) {
+						phones = ArrayUtils.addAll(phones, StringUtils.split(item.getData().getPhones(), ","));
+						smsMessages = ArrayUtils.add(smsMessages, item.getData().getMessages());
+					}
+				} else {
+					//如果是其他
+					phones = new String[0];
+					smsMessages = new String[1];
+					for (ResultDTO<SendData> item : errorResults) {
+						phones = ArrayUtils.addAll(phones, StringUtils.split(item.getData().getPhones(), ","));
+					}
+					smsMessages[0] = errorResults.get(0).getMessage();
+				}
+			}
+			saveRecord(resultDTO,platformSendSmsRecord);
+			return resultDTO;
+
+
+		} catch (SmsSenderException e) {
+			if (resultDTO == null)
+				resultDTO = ResultDTO.error(e.getCode(), e.getMessage(), new ApiResult());
+			else
+				resultDTO.setCode(e.getCode()).setMessage(e.getMessage());
+
+			saveRecord(resultDTO,platformSendSmsRecord);
+
+			return resultDTO;
+		} catch (Exception e) {
+			log.error("[平台调用发送短信]未知异常.e:{}", e.getMessage(), e);
+			if (resultDTO == null)
+				resultDTO = ResultDTO.error(ErrorEnum.UNKNOWN_ERROR, new ApiResult());
+			else
+				resultDTO.setCode(ErrorEnum.UNKNOWN_ERROR.getCode()).setMessage(ErrorEnum.UNKNOWN_ERROR.getMessage());
+
+			saveRecord(resultDTO,platformSendSmsRecord);
+			return resultDTO;
 		}
-		return resultDTO;
+	}
+
+	/**
+	 * 根据 resultDTO 修改记录
+	 */
+	public void saveRecord(ResultDTO<ApiResult> resultDTO, PlatformSendSmsRecord platformSendSmsRecord) {
+		//如果到了创建出记录的阶段,更新记录
+		if(platformSendSmsRecord != null){
+			platformSendSmsRecord.setStatus(ResultDTO.isSuccess(resultDTO) ? IntToBoolEnum.TRUE.getCode() : IntToBoolEnum.FALSE.getCode())
+					.setResult(CodeUtil.objectToJsonString(resultDTO));
+			platformSendSmsRecordService.save(platformSendSmsRecord);
+		}
 	}
 
 	/**
@@ -206,10 +251,11 @@ public class ApiSendSmsService {
 		if (sendSmsForm.getChannelType() != null) {
 			List<Channel> channels = channelStore.getByType(sendSmsForm.getChannelType());
 			//确认指定的通道是否存在,并且不为cmpp
-			if(CollectionUtils.isEmpty(channels) || channels.get(0).isCMPP()){
+			if (CollectionUtils.isEmpty(channels) || channels.get(0).isCMPP()) {
 				log.error("[平台调用发送短信]通道不存在.channel={}", sendSmsForm.getChannelType());
 				throw new SmsSenderException(ErrorEnum.CHANNEL_NOT_EXIST);
 			}
+			//默认返回一种类型通道的第一个channel(因为即使是多运营商通用的一个帐号,也都根据运营商划分成了多个channel.即使他们的帐号都一样.)
 			channel = channels.get(0);
 		}
 		return channel;

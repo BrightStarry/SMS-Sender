@@ -5,6 +5,9 @@ import com.zuma.sms.entity.SmsSendRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * author:ZhengXing
@@ -22,4 +25,11 @@ public interface SmsSendRecordRepository extends JpaRepository<SmsSendRecord,Lon
 	 * 根据任务id 分页查询 记录
 	 */
 	Page<SmsSendRecord> findBySendTaskId(long sendTaskId, Pageable pageable);
+
+	/**
+	 * 根据id 修改 状态
+	 */
+	@Modifying
+	@Query("update SmsSendRecord set status = :status where id = :id")
+	int updateStatusById(@Param("status") int status, @Param("id") long id);
 }

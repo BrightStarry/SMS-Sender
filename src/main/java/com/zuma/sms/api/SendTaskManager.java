@@ -241,8 +241,8 @@ public class SendTaskManager {
 							SendTaskAsyncStatus sendTaskAsyncStatus = sendTaskAsyncStatusMap.remove(taskId);
 							log.info("[任务管理器]处理任务异步回调.获取到任务:{},status:{}",taskId,sendTaskAsyncStatus);
 							//累加
-							sendTaskRecordService.incrementSuccessAndFailedNumById(sendTaskAsyncStatus.getSuccessNum().get(),
-									sendTaskAsyncStatus.getFailedNum().get(), taskId);
+							sendTaskRecordService.incrementSuccessAndFailedNumById(sendTaskAsyncStatus.getAsyncSuccessNum().get(),
+									sendTaskAsyncStatus.getAsyncFailedNum().get(), taskId,true);
 						}
 						//每次等待 30s
 						sendTaskAsyncStatusCondition.await(30, TimeUnit.SECONDS);
@@ -345,7 +345,6 @@ public class SendTaskManager {
 						log.error("[任务管理器]开始任务失败.e:{}", e.getMessage(), e);
 						//发生异常后,如果已经取出任务,将任务状态改为全部失败
 						if (task != null) {
-							//无论如何.先设为中断再说.
 							task.interrupt();
 							//构建异常对象
 							ResultDTO<?> error = ResultDTO.error(String.valueOf(SendTaskRecordStatusEnum.FAILED.getCode()),

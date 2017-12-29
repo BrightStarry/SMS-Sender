@@ -136,22 +136,33 @@ public class SendTaskRecord implements Cloneable{
     /**
      * 号码总数
      */
-    private Integer numberNum;
+    private Integer numberNum = 0;
 
     /**
-     * 成功数,异步成功
+     * 同步成功数
      */
-    private Integer successNum;
+    private Integer successNum = 0;
 
     /**
-     * 失败数,异步失败
+     * 同步失败数
      */
-    private Integer failedNum;
+    private Integer failedNum = 0;
 
     /**
-     * 未响应数
+     * 异步成功数
      */
-    private Integer unResponse;
+    private Integer asyncSuccessNum = 0;
+
+    /**
+     * 异步失败数
+     */
+    private Integer asyncFailedNum = 0;
+
+    /**
+     * 已操作总数(可能被中断导致后续号码未操作)
+     */
+    private Integer usedNum = 0;
+
 
     /**
      * 是否分片处理
@@ -160,10 +171,7 @@ public class SendTaskRecord implements Cloneable{
     private Integer isShard = IntToBoolEnum.FALSE.getCode();
 
 
-    /**2
-     * 已操作总数(可能被中断导致后续号码未操作)
-     */
-    private Integer usedNum;
+
 
     /**
      * 失败号码路径,可供下载

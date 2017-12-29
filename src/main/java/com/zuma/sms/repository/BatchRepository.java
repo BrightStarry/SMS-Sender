@@ -1,14 +1,17 @@
 package com.zuma.sms.repository;
 
 import com.zuma.sms.dto.IdFieldValuePair;
+import com.zuma.sms.dto.IdStatusPair;
 import com.zuma.sms.entity.SmsSendRecord;
 import com.zuma.sms.util.DBBatchStringUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.internal.SessionImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +25,9 @@ import java.util.List;
  */
 @Repository
 public class BatchRepository {
+
+	@Autowired
+	private EntityManagerFactory entityManagerFactory;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -54,7 +60,7 @@ public class BatchRepository {
 
 
 	/**
-	 * TODO 暂时就不写成通用的了
+	 *
 	 * 批量新增 SmsSendRecord
 	 */
 	@SneakyThrows
@@ -81,6 +87,24 @@ public class BatchRepository {
 		System.out.println(sql.toString());
 		PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
 		preparedStatement.execute();
+	}
+
+
+	/**
+	 * 批量更新状态 CAS
+	 */
+	@SneakyThrows
+	public void batchUpdateStatus(List<IdStatusPair> list) {
+		Connection connection = entityManager.unwrap(SessionImpl.class).connection();
+		String sql = "update sms_send_record set status = ? where id = ? and status = ? ";
+		PreparedStatement preparedStatement = connection.prepareStatement(sql);
+		for (IdStatusPair item : list) {
+			preparedStatement.setInt(1,item.getNewStatus());
+			preparedStatement.setLong(2, item.getId());
+			preparedStatement.setInt(3,item.getOldStatus());
+			preparedStatement.addBatch();
+		}
+		preparedStatement.executeBatch();
 	}
 
 	/**

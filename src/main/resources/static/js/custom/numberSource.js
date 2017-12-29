@@ -7,7 +7,7 @@ var url = {
     query: '/query',//查询单个
     updateInfo: '/update',//修改信息
 };
-var tempId;//用作临时保存的id
+var flag = true;
 var numberSourceList = {
     //分页查询
     page: function (pageNo) {
@@ -23,6 +23,9 @@ var numberSourceList = {
 
     //上传文件
     uploadFile: function () {
+        if(!flag)
+            return;
+        flag = false;
         var form = new FormData($('#numberSourceFileForm')[0]);
         $.ajax({
             url: url.commonPre + url.upload,
@@ -39,6 +42,10 @@ var numberSourceList = {
                 } else {
                     common.showErrorMessage(result);
                 }
+                flag = true;
+            },
+            error:function (result) {
+                flag = true;
             }
         });
     },
@@ -118,12 +125,16 @@ var numberSourceList = {
     },
     //修改信息
     updateInfo :function() {
+        if(!flag)
+            return;
+        flag = false;
         $.post(url.commonPre + url.updateInfo,$('#updateInfoForm').serialize(),function (result) {
             if(!common.errorHandle(result)){
                 numberSourceList.page(1);
                 common.successHandle();
                 common.closeModal($('#updateInfoForm')[0], $('#updateInfoModal'));
             }
+            flag = true;
         } );
     },
 

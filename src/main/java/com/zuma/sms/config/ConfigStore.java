@@ -43,7 +43,7 @@ public class ConfigStore {
 	//短信消息分隔符
 	public String smsMessageSeparator = "!&";
 
-	//发送任务 号码数 预警 阈值 - 10W TODO 修改回原值
+	//发送任务 号码数 预警 阈值 - 10W
 	public Integer sendTaskWarnOfPhoneNum = 100000;
 	//发送任务 线程数 预警 阈值 - 50
 	public Integer sendTaskWarnOfThreadNum = 50;

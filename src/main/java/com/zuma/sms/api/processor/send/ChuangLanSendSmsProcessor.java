@@ -17,7 +17,8 @@ import org.springframework.stereotype.Component;
  * datetime:2017/12/15 0015 16:18
  * 创蓝 短信发送
  */
-@Component
+//如果需要替换为创蓝变量接口,可将该bean name修改为其他格式,将变量接口发送类bean name修改为该格式
+@Component("chuangLanSendSmsProcessor")
 @Slf4j
 public class ChuangLanSendSmsProcessor extends AbstractSendSmsProcessor<ChuangLanAPI.Request,ChuangLanAPI.Response,ChuangLanErrorEnum>{
 

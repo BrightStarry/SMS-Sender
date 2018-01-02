@@ -1,5 +1,6 @@
 package com.zuma.sms.api;
 
+import com.zuma.sms.api.resolver.CommonMessageResolver;
 import com.zuma.sms.api.resolver.MessageResolver;
 import com.zuma.sms.batch.SmsSendRecordBatchManager;
 import com.zuma.sms.enums.db.SmsSendRecordStatusEnum;
@@ -537,7 +538,8 @@ public class SendTask implements Delayed {
 		//匹配短信发送器
 		this.sendSmsProcessor = processorFactory.buildSendSmsProcessor(this.channel);
 		//消息解析器
-		this.messageResolver = MessageResolverFactory.build(channel);
+//		this.messageResolver = MessageResolverFactory.build(channel);
+		this.messageResolver = new CommonMessageResolver();
 		//放入 结束任务队列,以便
 		this.closeQueue = closeQueue;
 
@@ -578,19 +580,29 @@ public class SendTask implements Delayed {
 			phoneStrLen = phoneStr.length();
 			//第二层循环 - 遍历手机号, 步长为 该通道每次最大发送数*每个手机字符数
 			for (int i = 0; i < phoneStrLen; i += maxGroupNumber12) {
+				itemPhone = null;
 				try {
 					itemPhone = phoneStr.substring(i, i + maxGroupNumber12 < phoneStrLen ? i + maxGroupNumber12 : phoneStrLen);
 					//如果以逗号结尾,截取逗号
 					itemPhone = StringUtils.removeEnd(itemPhone, ",");
 					//解析号码和短信内容
 					phoneMessagePair = messageResolver.resolve(itemPhone, smsMessage);
+					if(phoneMessagePair.getMessage() == null)
 					//加入记录list
 					records.add(new SmsSendRecord(id, channel.getId(), channel.getName(), phoneMessagePair.getPhones(),
 							phoneMessagePair.getPhones().length() / 11, phoneMessagePair.getMessage()));
-				} catch (Exception e) {
-					log.error("[任务]任务id:{},预先插入发送记录,截取单次发送手机号失败." +
-							"phoneStrLen:{},itemPhone:{},phoneMessagePair:{},e:{}", phoneStrLen, itemPhone, phoneMessagePair, e.getMessage(), e);
-					throw new SmsSenderException("预先插入发送记录,截取单次发送手机号失败");
+				} catch (Exception e){
+					if(!(e instanceof SmsSenderException)){
+						log.error("[任务]任务id:{},预先插入发送记录,截取单次发送手机号失败." +
+								"phoneStrLen:{},itemPhone:{},phoneMessagePair:{},e:{}", phoneStrLen, itemPhone, phoneMessagePair, e.getMessage(), e);
+					}
+					//如果失败
+					if(itemPhone != null){
+						//失败总数增加
+						failedIncrement(StringUtils.split(itemPhone,",").length);
+						//写入失败日志
+						fileAccessor.writeBySendTaskId(id, itemPhone, e.getMessage());
+					}
 				}
 			}
 			//调用批量保存方法

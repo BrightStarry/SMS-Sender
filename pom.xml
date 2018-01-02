@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.zuma</groupId>
-	<artifactId>sms</artifactId>
+	<artifactId>sms-sender</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 
 	<name>SMS-Sender</name>
 	<description>短信发送平台</description>
@@ -154,6 +154,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-freemarker</artifactId>
+		</dependency>
+
+		<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-tomcat</artifactId>
+		<scope>provided</scope>
 		</dependency>
 
 	</dependencies>

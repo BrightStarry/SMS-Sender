@@ -26,12 +26,10 @@ import javax.servlet.http.HttpServletResponse;
 public class IpInterceptor implements HandlerInterceptor {
 
 
-    private static IpAllowStore ipAllow;
     private static String[] ips;
 
     @Autowired
     public void setIpAllowStoreStore(IpAllowStore ipAllow) {
-        ipAllow = ipAllow;
         ips = StringUtils.split(ipAllow.getAllowIp(),",");
     }
 

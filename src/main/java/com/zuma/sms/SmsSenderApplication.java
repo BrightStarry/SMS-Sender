@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableConfigurationProperties(ConfigStore.class)
 @EnableScheduling
-public class SmsSenderApplication extends SpringBootServletInitializer {
+public class SmsSenderApplication  extends SpringBootServletInitializer{
 
 	//	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {

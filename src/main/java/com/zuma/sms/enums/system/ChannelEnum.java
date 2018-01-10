@@ -19,6 +19,9 @@ public enum ChannelEnum implements CodeEnum<String> {
 	CHANGXIANG_YD("changXiangYD", "畅想_移动"),
 	CHUANGLAN_YD("chuangLanYD", "创蓝_移动"),
 	MINGFENG_YD("mingFengYD", "铭锋_移动"),
+	ZHUTONG_YD("zhuTongYD", "助通_移动"),
+	ZHUTONG_DX("zhuTongDX", "助通_电信"),
+	ZHUTONG_LT("zhuTongLT", "助通_联通"),
 
 	;
 

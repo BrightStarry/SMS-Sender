@@ -1,10 +1,8 @@
 package com.zuma.sms.util;
 
-import com.sun.xml.internal.fastinfoset.Encoder;
 import com.zuma.sms.enums.system.ErrorEnum;
 import com.zuma.sms.exception.SmsSenderException;
 import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.http.*;
@@ -20,7 +18,6 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -30,7 +27,6 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -131,7 +127,7 @@ public class HttpClientUtil {
         //放入请求参数中
         HttpPost httpPost = new HttpPost(url);
         StringEntity stringEntity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
-        stringEntity.setContentEncoding(Encoder.UTF_8);
+        stringEntity.setContentEncoding("UTF-8");
         httpPost.setEntity(stringEntity);
 
         return execute(httpPost);

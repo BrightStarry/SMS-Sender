@@ -1,6 +1,5 @@
 package com.zuma.sms.service;
 
-import com.sun.xml.internal.fastinfoset.Encoder;
 import com.zuma.sms.enums.db.IntToBoolEnum;
 import com.zuma.sms.factory.PageRequestFactory;
 import com.zuma.sms.form.NumberSourceForm;
@@ -126,7 +125,7 @@ public class NumberSourceService {
 				//手机号字符
 				String tmp;
 				try {
-					tmp = IOUtils.toString(file.getInputStream(), Encoder.UTF_8);
+					tmp = IOUtils.toString(file.getInputStream(), "UTF-8");
 				} catch (IOException e) {
 					log.error("[号码源]文件读取异常.e:{}",e.getMessage(),e);
 					throw new SmsSenderException(ErrorEnum.IO_ERROR);
@@ -145,7 +144,7 @@ public class NumberSourceService {
 				NumberSource numberSource = numberSourceRepository.save(new NumberSource(names[i], remarks[i], length));
 				//写入文件
 				try {
-					FileUtils.writeStringToFile(getFile(numberSource.getId()),StringUtils.join(phones,","), Encoder.UTF_8);
+					FileUtils.writeStringToFile(getFile(numberSource.getId()),StringUtils.join(phones,","), "UTF-8");
 				} catch (IOException e) {
 					log.error("[号码源]文件写入异常.e:{}",e.getMessage(),e);
 					throw new SmsSenderException(ErrorEnum.IO_ERROR);

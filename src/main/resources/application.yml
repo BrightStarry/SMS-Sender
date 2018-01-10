@@ -7,8 +7,11 @@ spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://hzzmdatabase.mysql.rds.aliyuncs.com:3306/sms_sender?useUnicode=true&characterEncoding=UTF-8&useSSL=false&zeroDateTimeBehavior=convertToNull
-    username: auth_admin
-    password: 4YD9vXdc
+#    url: jdbc:mysql://127.0.0.1:3306/sms_sender?useUnicode=true&characterEncoding=UTF-8&useSSL=false&zeroDateTimeBehavior=convertToNull
+#    username: root
+#    password: 970389
+    username: sms_sender
+    password: 26uORBDj
   freemarker:
     charset: UTF-8
     cache: false
@@ -22,6 +25,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    database-platform: org.hibernate.dialect.MySQL5Dialect
   http:
     multipart:
       max-file-size: 20Mb

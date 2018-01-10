@@ -9,7 +9,9 @@ import com.zuma.sms.api.socket.CMPPConnectionManager;
 import com.zuma.sms.config.store.ChannelStore;
 import com.zuma.sms.entity.Channel;
 import com.zuma.sms.enums.system.ChannelEnum;
+import com.zuma.sms.util.CodeUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.apache.bcel.classfile.Code;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,9 +118,19 @@ public class SendSmsProcessorTest {
 		 * port: 7892
 		 */
 
+
+		/**
+		 * 助通 成功.
+		 */
+//		Channel channel = channelStore.get(ChannelEnum.ZHUTONG_YD);
+//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "17826824998", 1, "温馨提醒：尊敬的移动用户，您有1份专属壕礼，点击领取https://s.9fan.cn/0127517705 回N退订不收此短信【口袋铃声】");
+//		ResultDTO<SendData> result = factory.buildSendSmsProcessor(channel).process(channel, record);
+//		System.out.println(result);
+
 		Thread.sleep(100000000);
 
 	}
+
 
 	/**
 	 * 测试CMPP连接

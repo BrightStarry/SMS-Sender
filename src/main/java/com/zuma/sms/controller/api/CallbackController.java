@@ -11,9 +11,13 @@ import com.zuma.sms.enums.error.MingFengErrorEnum;
 import com.zuma.sms.enums.error.ZhangYouErrorEnum;
 import com.zuma.sms.enums.system.ChannelEnum;
 import com.zuma.sms.factory.ProcessorFactory;
+import com.zuma.sms.util.DateUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
@@ -27,11 +31,40 @@ import static com.zuma.sms.factory.ProcessorFactory.*;
  */
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class CallbackController {
 	@Autowired
 	private ChannelStore channelStore;
 	@Autowired
 	private ProcessorFactory processorFactory;
+
+
+	/**
+	 * 助通异步回调
+	 */
+	@RequestMapping("/zhutong/callback")
+	public String zhutongCallback(String param) {
+		/**
+		 * 该接口需要先解析
+		 */
+		String[] params = StringUtils.split(param, ";");
+		ZhuTongAPI.AsyncResponse asyncResponse;
+		//获取处理器
+		Channel mingfengChannel = channelStore.get(ChannelEnum.ZHUTONG_YD);
+		SendSmsCallbackProcessor sendSmsCallbackProcessor = processorFactory.buildSendSmsCallbackProcessor(mingfengChannel);
+		for (String item : params) {
+			try {
+				String[] strings = StringUtils.split(item, ",");
+				asyncResponse = new ZhuTongAPI.AsyncResponse(strings[0], strings[1], strings[2], DateUtil.stringToDate(strings[3], DateUtil.FORMAT_A));
+				sendSmsCallbackProcessor.process(asyncResponse, mingfengChannel);
+			} catch (Exception e) {
+				log.error("[助通异步回调]解析失败.currentItem:{}");
+			}
+		}
+		//返回0表示成功
+		return "0";
+
+	}
 
 
 	/**
@@ -104,7 +137,7 @@ public class CallbackController {
 		SendSmsCallbackProcessor processor = processorFactory.buildSendSmsCallbackProcessor(qunzhengChannel);
 		//循环调用
 		for (QunZhengAPI.AsyncResponseChild asyncResponseChild : response.getSms()) {
-			processor.process(asyncResponseChild,qunzhengChannel);
+			processor.process(asyncResponseChild, qunzhengChannel);
 		}
 	}
 
@@ -115,7 +148,7 @@ public class CallbackController {
 	public void kuanxinSmsUp(KuanXinAPI.SmsUpResponse response) {
 		Channel kuanxinChannel = channelStore.get(ChannelEnum.KUANXIN_YD);
 
-		processorFactory.buildSmsUpProcessor(kuanxinChannel).process(response,kuanxinChannel);
+		processorFactory.buildSmsUpProcessor(kuanxinChannel).process(response, kuanxinChannel);
 	}
 
 	/**
@@ -127,7 +160,7 @@ public class CallbackController {
 		SmsUpProcessor processor = processorFactory.buildSmsUpProcessor(qunzhengChannel);
 		//循环调用
 		for (QunZhengAPI.SmsUpResponseChild smsUpResponseChild : response.getSms()) {
-			processor.process(smsUpResponseChild,qunzhengChannel);
+			processor.process(smsUpResponseChild, qunzhengChannel);
 		}
 
 	}
@@ -138,7 +171,7 @@ public class CallbackController {
 	@RequestMapping("/changxiang/smsup")
 	public String changxiangSmsUp(ChangXiangAPI.SmsUpResponse response) {
 		Channel changxiangChannel = channelStore.get(ChannelEnum.CHANGXIANG_YD);
-		processorFactory.buildSmsUpProcessor(changxiangChannel).process(response,changxiangChannel);
+		processorFactory.buildSmsUpProcessor(changxiangChannel).process(response, changxiangChannel);
 		return ChangXiangErrorEnum.SUCCESS.getCode();
 	}
 
@@ -148,7 +181,7 @@ public class CallbackController {
 	@RequestMapping("/chuanglan/smsup")
 	public void chuanglanSmsUp(ChuangLanAPI.SmsUpResponse response) {
 		Channel chuanglanChannel = channelStore.get(ChannelEnum.CHUANGLAN_YD);
-		processorFactory.buildSmsUpProcessor(chuanglanChannel).process(response,chuanglanChannel);
+		processorFactory.buildSmsUpProcessor(chuanglanChannel).process(response, chuanglanChannel);
 	}
 
 	/**
@@ -165,5 +198,16 @@ public class CallbackController {
 		return MingFengErrorEnum.SUCCESS2.getCode();
 	}
 
+	/**
+	 * 助通短信上行
+	 */
+	@RequestMapping("/zhutong/smsup")
+	public String zhutongSmsUp(String mobile, String content, String msgId, @RequestParam(required = false) String xh) {
+		ZhuTongAPI.SmsUpResponse smsUpResponse = new ZhuTongAPI.SmsUpResponse(mobile, content, msgId, xh);
 
+		Channel channel = channelStore.get(ChannelEnum.ZHUTONG_YD);
+		processorFactory.buildSmsUpProcessor(channel).process(smsUpResponse, channel);
+
+		return "0";
+	}
 }

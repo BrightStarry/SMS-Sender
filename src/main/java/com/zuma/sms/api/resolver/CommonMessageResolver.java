@@ -51,7 +51,6 @@ public class CommonMessageResolver implements MessageResolver{
 			//截取出纯粹的url
 			url = url.substring(5, url.length()).trim();
 			return PhoneUtil.getShortUrl(url,"","0");
-
 		}
 		//如果不存在该表达式,返回空串
 		return "";
@@ -63,6 +62,5 @@ public class CommonMessageResolver implements MessageResolver{
 						"{url:https://tianyiring.com/m/pop/18&02340710130052.html?a={phone}}" +
 						" 回N不收此短信【翼铃】");
 		System.out.println(a.getMessage());
-
 	}
 }

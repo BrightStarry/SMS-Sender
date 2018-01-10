@@ -51,7 +51,10 @@ INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name
       ('创蓝_移动',0,1,100,9,6,'chuangLan','chuangLanYD',1,'M8671404','vHEZ1bywo','',''),
       ('铭锋_移动',0,1,100,10,7,'mingFeng','mingFengYD',1,'zmkjhy','zmkjhy01','','')
       ;
-
+INSERT INTO channel(name,is_cmpp, max_connect,max_concurrent,sort ,type,key_name, cache_name,support_operator,a_key,b_key,c_key,d_key)
+VALUES ('助通_移动',0,1,100,11,8,'zhuTong','zhuTongYD',1,'zumayx','g8pKd7','',''),
+       ('助通_电信',0,1,100,12,8,'zhuTong','zhuTongDX',1,'zumayx','g8pKd7','',''),
+       ('助通_联通',0,1,100,13,8,'zhuTong','zhuTongLT',1,'zumayx','g8pKd7','','');
 
 /*系统用户表*/
 CREATE TABLE user(

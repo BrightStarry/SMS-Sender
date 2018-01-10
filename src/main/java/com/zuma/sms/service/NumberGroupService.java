@@ -1,6 +1,5 @@
 package com.zuma.sms.service;
 
-import com.sun.xml.internal.fastinfoset.Encoder;
 import com.zuma.sms.config.ConfigStore;
 import com.zuma.sms.converter.JPAPage2PageVOConverter;
 import com.zuma.sms.dto.PageVO;
@@ -166,7 +165,7 @@ public class NumberGroupService {
 			case SEQUENCE_MODE:
 				//获取 号码数量相同的号码字符, ","分割
 				try (BufferedInputStream inputStream = numberSourceService.getInputStream(numberSource.getId())) {
-					String tmp = IOUtils.toString(inputStream, Encoder.UTF_8);
+					String tmp = IOUtils.toString(inputStream, "UTF-8");
 					String[] numberSplit = StringUtils.split(tmp,",");
 					numberArr = ArrayUtils.subarray(numberSplit, 0, form.getNumberCount());
 				} catch (IOException e) {
@@ -178,7 +177,7 @@ public class NumberGroupService {
 			case RANDOM_MODE:
 				//获取 号码数量相同的号码字符, ","分割
 				try (BufferedInputStream inputStream = numberSourceService.getInputStream(numberSource.getId())) {
-					String tmp = IOUtils.toString(inputStream, Encoder.UTF_8);
+					String tmp = IOUtils.toString(inputStream, "UTF-8");
 					numberArr = StringUtils.split(tmp,",");
 					//使用list
 					List<String> numberList = new ArrayList<>(Arrays.asList(numberArr));
@@ -233,7 +232,7 @@ public class NumberGroupService {
 		//拼接号码数组,产生最终结果
 		String result = StringUtils.join(numberArr, ",");
 		try {
-			FileUtils.writeStringToFile(getFile(numberGroup.getId()),result, Encoder.UTF_8);
+			FileUtils.writeStringToFile(getFile(numberGroup.getId()),result, "UTF-8");
 		} catch (IOException e) {
 			log.error("[numberSource]新增,写入字符到号码文件失败.e:{}",e.getMessage(),e);
 			throw new SmsSenderException(ErrorEnum.IO_ERROR);

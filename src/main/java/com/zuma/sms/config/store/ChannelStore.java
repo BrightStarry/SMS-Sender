@@ -143,10 +143,10 @@ public class ChannelStore {
 	//开启某个短信通道对应CMPP连接操作
 	private void openCMPPConnection(Channel channel) {
 		//TODO 宽信蹦了
-//		if(!channel.getCacheName().equalsIgnoreCase("kuanXinCMPP")){
+		if(!channel.getCacheName().equalsIgnoreCase("kuanXinCMPP")){
 			channel.getCmppConnectionManager().openConnection();
 			channel.getCmppConnectionManager().openConnection();
-//		}
+		}
 
 	}
 

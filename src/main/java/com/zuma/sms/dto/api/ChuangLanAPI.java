@@ -1,6 +1,5 @@
 package com.zuma.sms.dto.api;
 
-import com.sun.xml.internal.fastinfoset.Encoder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -108,10 +107,9 @@ public interface ChuangLanAPI {
 		private String uid;//用户在提交该短信时提交的uid参数，未提交则无该参数
 		private String status;//状态 ,也就是code
 		private String statusDesc;//状态说明，内容经过URLEncode编码(UTF-8)
-
 		public void setStatusDesc(String statusDesc) {
 			try {
-				this.statusDesc = URLDecoder.decode(statusDesc, Encoder.UTF_8);
+				this.statusDesc = URLDecoder.decode(statusDesc, "UTF-8");
 			} catch (Exception e) {
 				log.error("[创蓝接口-短信异步回调]statusDesc解码异常.e:{}",e.getMessage(),e);
 			}
@@ -140,7 +138,7 @@ public interface ChuangLanAPI {
 
 		public void setMsg(String msg) {
 			try {
-				this.msg = URLDecoder.decode(msg, Encoder.UTF_8);
+				this.msg = URLDecoder.decode(msg, "UTF-8");
 			} catch (Exception e) {
 				log.error("[创蓝接口-短信上行推送]msg解码异常.e:{}",e.getMessage(),e);
 			}

@@ -109,6 +109,10 @@ public class ConfigStore {
 	public String mingfengUrlPre = "http://121.196.208.240";
 	//铭锋发送短信url
 	public String mingfengSendSmsUrl = mingfengUrlPre + "/smsJson.aspx";
+	//助通url前缀
+	public String zhutongUrlPre = "http://api.zthysms.com";
+	//助通发送短信url
+	public String zhutongSendSmsUrl = zhutongUrlPre + "/sendSms.do";
 
 
 

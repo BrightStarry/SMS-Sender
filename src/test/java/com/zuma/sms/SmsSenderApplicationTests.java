@@ -96,7 +96,7 @@ public class SmsSenderApplicationTests {
 	@Test
 	public void testApiSendSms() throws Exception {
 		Long platformId = 1000L;
-		String phone = "17826824998,13325869158";
+		String phone = "";
 		Integer channel = 0;
 		String smsMessage = "xxxxxx!&aaaaaa";
 		Long timestamp = System.currentTimeMillis();

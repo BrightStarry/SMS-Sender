@@ -34,7 +34,7 @@
         <commons-pool2.version>2.4.2</commons-pool2.version>
         <commons-beanutils.version>1.9.3</commons-beanutils.version>
         <netty.version>5.0.0.Alpha2</netty.version>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <!--<thymeleaf.version>3.0.9.RELEASE</thymeleaf.version>-->
         <!--<thymeleaf-layout-dialect.version>2.2.2</thymeleaf-layout-dialect.version>-->
         <commons-text.version>1.1</commons-text.version>

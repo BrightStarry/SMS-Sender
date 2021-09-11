@@ -52,19 +52,19 @@ public class SendSmsProcessorTest {
 	@Test
 	public void testSendSms() throws InterruptedException {
 		// 创蓝 成功
-//		chuangLanVariateSendSmsProcessor.process(channelStore.get(1014L),"17826824998,https://www.baidu.com;13588809885,https://www.baidu.com;","温馨提醒：尊敬的移动用户，您有1份专属壕礼，点击领取{$var} 回N不收此短信【口袋铃声】",1000L);
+//		chuangLanVariateSendSmsProcessor.process(channelStore.get(1014L),"xxxxxxxxxxx,https://www.baidu.com;13588809885,https://www.baidu.com;","温馨提醒：尊敬的移动用户，您有1份专属壕礼，点击领取{$var} 回N不收此短信【口袋铃声】",1000L);
 
 		//群正 成功
-//		qunZhengSendSmsProcessor.process(channelStore.get(ChannelEnum.QUNZHENG_YD), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
+//		qunZhengSendSmsProcessor.process(channelStore.get(ChannelEnum.QUNZHENG_YD), "xxxxxxxxxxx", "【口袋铃声】您的验证码：1439", 1000L);
 
 		//畅想 成功
-//		factory.buildSendSmsProcessor(channelStore.get(ChannelEnum.CHANGXIANG_YD)).process(channelStore.get(ChannelEnum.CHANGXIANG_YD), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
+//		factory.buildSendSmsProcessor(channelStore.get(ChannelEnum.CHANGXIANG_YD)).process(channelStore.get(ChannelEnum.CHANGXIANG_YD), "xxxxxxxxxxx", "【口袋铃声】您的验证码：1439", 1000L);
 
 		//宽信cmpp
-//		factory.buildSendSmsProcessor(channelStore.get(ChannelEnum.KUANXIN_CMPP)).process(channelStore.get(ChannelEnum.KUANXIN_CMPP), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
+//		factory.buildSendSmsProcessor(channelStore.get(ChannelEnum.KUANXIN_CMPP)).process(channelStore.get(ChannelEnum.KUANXIN_CMPP), "xxxxxxxxxxx", "【口袋铃声】您的验证码：1439", 1000L);
 
 		//筑望CMPP 成功
-//		factory.buildSendSmsProcessor(channelStore.get(ChannelEnum.ZHUWANG_CMPP)).process(channelStore.get(ChannelEnum.ZHUWANG_CMPP), "17826824998", "【口袋铃声】您的验证码：1439", 1000L);
+//		factory.buildSendSmsProcessor(channelStore.get(ChannelEnum.ZHUWANG_CMPP)).process(channelStore.get(ChannelEnum.ZHUWANG_CMPP), "xxxxxxxxxxx", "【口袋铃声】您的验证码：1439", 1000L);
 //		Thread.sleep(10000000);
 
 
@@ -75,12 +75,12 @@ public class SendSmsProcessorTest {
 		 * http://121.196.208.240/smsJson.aspx
 		 *
 		 * MingFengAPI.Request(userId=zmkjhy, account=zmkjhy,
-		 * password=zmkjhy01, mobile=17826824998,
+		 * password=zmkjhy01, mobile=xxxxxxxxxxx,
 		 * content=【口袋铃声】您的验证码：1439, sendTime=null, action=send, extno=null)
 		 *
 		 */
 //		Channel channel = channelStore.get(ChannelEnum.MINGFENG_YD);
-//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "17826824998", 1, "【口袋铃声】您的验证码：1439");
+//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "xxxxxxxxxxx", 1, "【口袋铃声】您的验证码：1439");
 //		ResultDTO<SendData> resultDTO = mingFengSendSmsProcessor.process(channel, record);
 //		System.out.println(resultDTO);
 
@@ -91,11 +91,11 @@ public class SendSmsProcessorTest {
 		 * http://ysms.game2palm.com:8899/smsAccept/sendSms.action
 		 *
 		 * ZhangYouAPI.Request(sid=10010317, cpid=710317,
-		 * mobi=17826824998, sign=00b78619e5a4c38764ab17edfd678309,
+		 * mobi=xxxxxxxxxxx, sign=00b78619e5a4c38764ab17edfd678309,
 		 * msg=44CQ5Y%2Bj6KKL6ZOD5aOw44CR5oKo55qE6aqM6K%2BB56CB77yaMTQzOQ%3D%3D, spcode=null)
 		 */
 //		Channel channel = channelStore.get(ChannelEnum.ZHANGYOU_YD);
-//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "17826824998", 1, "【口袋铃声】您的验证码：1439");
+//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "xxxxxxxxxxx", 1, "【口袋铃声】您的验证码：1439");
 //		ResultDTO<SendData> resultDTO = zhangYouSendSmsProcessor.process(channel, record);
 //		System.out.println(resultDTO);
 
@@ -123,7 +123,7 @@ public class SendSmsProcessorTest {
 		 * 助通 成功.
 		 */
 //		Channel channel = channelStore.get(ChannelEnum.ZHUTONG_YD);
-//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "17826824998", 1, "温馨提醒：尊敬的移动用户，您有1份专属壕礼，点击领取https://s.9fan.cn/0127517705 回N退订不收此短信【口袋铃声】");
+//		SmsSendRecord record = new SmsSendRecord(1000L, channel.getId(), channel.getName(), "xxxxxxxxxxx", 1, "温馨提醒：尊敬的移动用户，您有1份专属壕礼，点击领取https://s.9fan.cn/0127517705 回N退订不收此短信【口袋铃声】");
 //		ResultDTO<SendData> result = factory.buildSendSmsProcessor(channel).process(channel, record);
 //		System.out.println(result);
 

@@ -49,7 +49,7 @@ public class TokenUtil {
     }
 
     public static void main(String[] args) {
-        String str = "a" + "17826824998,17826824998,17826824998" + "111111";
+        String str = "a" + "xxx,xxx,xxx" + "111111";
         String s = DigestUtils.md5DigestAsHex(str.getBytes());
         System.out.println(s);
     }
